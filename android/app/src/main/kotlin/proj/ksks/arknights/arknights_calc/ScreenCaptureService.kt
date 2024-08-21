@@ -9,7 +9,6 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.drawable.Icon
 import android.hardware.display.DisplayManager
@@ -21,11 +20,6 @@ import android.media.projection.MediaProjectionManager
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
-import android.view.View
-import android.view.ViewGroup
-import android.view.WindowManager
-import android.widget.RelativeLayout
-import android.widget.TextView
 
 
 @TargetApi(Build.VERSION_CODES.TIRAMISU)
@@ -35,50 +29,19 @@ class ScreenCaptureService : Service() {
     private var mVirtualDisplay: VirtualDisplay? = null
     private var mImageReader: ImageReader? = null
 
-
-    private var mWindowManager: WindowManager? = null
-    private var mFloatingView: View? = null
+    private var mBitmapIcon : Bitmap? = null
 
     override fun onCreate() {
         super.onCreate()
         mProjectionManager =
             getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager?
+    }
 
-
-        // Create the RelativeLayout
-        mFloatingView = RelativeLayout(this).apply {
-            layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-        }
-
-        // Create the TextView
-        val textView = TextView(this).apply {
-            layoutParams = RelativeLayout.LayoutParams(
-                RelativeLayout.LayoutParams.WRAP_CONTENT,
-                RelativeLayout.LayoutParams.WRAP_CONTENT
-            ).apply {
-                addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE)
-            }
-            text = "Floating Widget"
-            textSize = 16f
-            setTextColor(Color.WHITE)
-        }
-
-        // Add the TextView to the RelativeLayout
-        (mFloatingView as RelativeLayout).addView(textView)
-
-        val params = WindowManager.LayoutParams(
-            WindowManager.LayoutParams.WRAP_CONTENT,
-            WindowManager.LayoutParams.WRAP_CONTENT,
-            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-            PixelFormat.TRANSLUCENT
-        )
-
-        mWindowManager = getSystemService(WINDOW_SERVICE) as WindowManager?
-        mWindowManager?.addView(mFloatingView, params)
+    fun launchAmiya(bitmap: Bitmap?) {
+        val intent = Intent(this, FloatingAmiya::class.java)
+        intent.putExtra("icon", bitmap)
+        startService(intent)
+        Log.i("ScreenCaptureService", "Trying to run service.")
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -95,6 +58,8 @@ class ScreenCaptureService : Service() {
     }
 
     private fun createNotificationChannel(bitmap: Bitmap?) {
+        mBitmapIcon = bitmap;
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 "ScreenRecorder", "Foreground notification",
@@ -114,6 +79,7 @@ class ScreenCaptureService : Service() {
 
         startForeground(1, notification)
 
+        launchAmiya(mBitmapIcon)
     }
     private fun startScreenCapture(intent: Intent) {
         if (mMediaProjection == null) {
@@ -143,7 +109,7 @@ class ScreenCaptureService : Service() {
         mImageReader!!.setOnImageAvailableListener({ reader ->
             val image: Image = reader.acquireLatestImage()
             image.close()
-            Log.i("ScreenCaptureService", "captured??");
+            //Log.i("ScreenCaptureService", "captured??");
         }, null)
         Log.i("ScreenCaptureService", "started service");
     }

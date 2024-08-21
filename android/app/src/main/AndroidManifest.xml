@@ -50,9 +50,13 @@
             android:name="proj.ksks.arknights.arknights_calc.ScreenCaptureService"
             android:enabled="true"
             android:exported="false"
-        android:foregroundServiceType="mediaProjection"
-            >
-        </service>
+            android:foregroundServiceType="mediaProjection"
+            />
+        <service
+            android:name="proj.ksks.arknights.arknights_calc.FloatingAmiya"
+            android:enabled="true"
+            android:exported="false"
+            />
     </application>
 
     <queries>
