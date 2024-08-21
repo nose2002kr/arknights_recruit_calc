@@ -1,38 +1,16 @@
 import 'package:arknights_calc/floating_view.dart';
 import 'package:flutter/material.dart';
 import 'package:arknights_calc/capture.dart';
-import 'package:flutter/services.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(MainApp());
 }
 
 void redirect_recruit_calc_view() {
   runApp(RecruitCalcViewApp());
 }
 
-class MyApp extends StatefulWidget {
-  @override
-  _MyAppState createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  static const platform = MethodChannel('com.example/navigation');
-
-  @override
-  void initState() {
-    super.initState();
-    print("init state main app");
-
-    platform.setMethodCallHandler((MethodCall call) async {
-      if (call.method == 'navigate') {
-        String route = call.arguments as String;
-        print("accept navigate " + route);
-        Navigator.of(context).pushNamed(route);
-      }
-    });
-  }
-
+class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     print("build main app");
@@ -44,23 +22,14 @@ class _MyAppState extends State<MyApp> {
       ),
       initialRoute: '/',
       routes: {
-        '/': (context) => MyHomePage(),
-        '/floating_view': (context) => RecruitCalcViewApp(),
+        '/': (context) => HomePage(),
+        '/floating_view': (context) => RecruitCalcView(),
       },
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  ScreenCaptureService captureService = ScreenCaptureService();
-
+class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     print("build homepage");

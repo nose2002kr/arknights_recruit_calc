@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 class RecruitCalcViewApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    print("build recruit app");
+
     return MaterialApp(
         initialRoute: '/',
         routes: {
