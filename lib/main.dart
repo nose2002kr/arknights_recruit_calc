@@ -29,26 +29,24 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  CaptureController captureController = CaptureController();
+  ScreenCaptureService captureService = ScreenCaptureService();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: Screenshot(
-          controller: captureController.controller(),
           child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            Text('version:0.0.1b'),
             IconButton(
-                onPressed: captureController.captureScreen,
+                onPressed: (){ScreenCaptureService.startProjectionRequest();},
                 icon: Image.asset('assets/sticker_9.gif', fit: BoxFit.cover),
                 color: Colors.red
             ),
           ],
           ),
         )
-      ),
     );
   }
 }

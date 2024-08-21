@@ -1,20 +1,15 @@
-import 'package:image_gallery_saver/image_gallery_saver.dart';
-import 'package:screenshot/screenshot.dart';
-import 'dart:typed_data';
+import 'package:flutter/services.dart';
 
-class CaptureController  {
-  ScreenshotController screenshotController = ScreenshotController();
+class ScreenCaptureService  {
+  static const MethodChannel _channel = MethodChannel('screen_capture');
 
-  void captureScreen() async {
-    Uint8List? capturedImage = await screenshotController.capture();
-    if (capturedImage != null) {
-      final result = await ImageGallerySaver.saveImage(capturedImage);
-      print("File saved to gallery: $result");
-
-    }
+  static Future<void> stopScreenCapture() async {
+    await _channel.invokeMethod('stopScreenCapture');
   }
 
-  controller() {
-    return screenshotController;
+  static Future<void> startProjectionRequest() async {
+    ByteData imageData = await rootBundle.load('assets/sticker_9_small.gif');
+    final Uint8List bytes = imageData.buffer.asUint8List();
+    await _channel.invokeMethod('startProjectionRequest', bytes);
   }
 }
