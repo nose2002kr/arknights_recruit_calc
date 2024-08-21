@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 
-class FloatingViewApp extends StatelessWidget {
+class RecruitCalcViewApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
         initialRoute: '/',
         routes: {
-          '/': (context) => FloatingView(),
+          '/': (context) => RecruitCalcView(),
         }
     );
   }
 }
 
-class FloatingView extends StatelessWidget {
+class RecruitCalcView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(

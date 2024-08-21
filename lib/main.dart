@@ -7,8 +7,8 @@ void main() {
   runApp(MyApp());
 }
 
-void main2() {
-  runApp(FloatingViewApp());
+void redirect_recruit_calc_view() {
+  runApp(RecruitCalcViewApp());
 }
 
 class MyApp extends StatefulWidget {
@@ -45,7 +45,7 @@ class _MyAppState extends State<MyApp> {
       initialRoute: '/',
       routes: {
         '/': (context) => MyHomePage(),
-        '/floating_view': (context) => FloatingView(),
+        '/floating_view': (context) => RecruitCalcViewApp(),
       },
     );
   }

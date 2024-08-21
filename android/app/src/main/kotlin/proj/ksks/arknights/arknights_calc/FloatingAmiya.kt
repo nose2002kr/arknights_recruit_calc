@@ -84,7 +84,7 @@ class FloatingAmiya : Service() {
         flutterEngine.dartExecutor.executeDartEntrypoint(
             DartExecutor.DartEntrypoint(
                 FlutterMain.findAppBundlePath(),
-                "launch_floating_view"
+                "redirect_recruit_calc_view"
             )
         )
         val flutterView = FlutterView(this)
