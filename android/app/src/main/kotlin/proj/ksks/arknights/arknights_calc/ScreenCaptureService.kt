@@ -1,6 +1,5 @@
 package proj.ksks.arknights.arknights_calc
 
-import android.R
 import android.annotation.TargetApi
 import android.app.Activity
 import android.app.Notification
@@ -11,7 +10,6 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.PixelFormat
-import android.graphics.drawable.Icon
 import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
 import android.media.Image
@@ -20,7 +18,6 @@ import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
 import android.os.Build
 import android.os.Build.VERSION.SDK_INT
-import android.os.Bundle
 import android.os.IBinder
 import android.os.Parcelable
 import android.util.Log
@@ -41,19 +38,15 @@ class ScreenCaptureService : Service() {
             getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager?
     }
 
-    fun launchAmiya(bitmap: Bitmap?) {
+    private fun launchAmiya(bitmap: Bitmap?) {
         val intent = Intent(this, FloatingAmiya::class.java)
         intent.putExtra("icon", bitmap)
         startService(intent)
-        Log.i("ScreenCaptureService", "Trying to run service.")
+        Log.d("ScreenCaptureService", "Trying to run service.")
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val bitmap = if (SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            intent?.getParcelableExtra("icon", Bitmap::class.java)
-        } else {
-            intent?.getParcelableExtra<Bitmap>("icon")
-        }
+        val bitmap: Bitmap? = intent?.getParcelable("icon")
 
         createNotification(bitmap)
         if (intent != null && intent.action.equals("START_SCREEN_CAPTURE")) {
@@ -93,11 +86,7 @@ class ScreenCaptureService : Service() {
         if (mMediaProjection == null) {
             mMediaProjection = mProjectionManager?.getMediaProjection(
                 intent.getIntExtra("resultCode", Activity.RESULT_CANCELED),
-                (if (SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    intent.getParcelableExtra("data", Intent::class.java)
-                } else {
-                    intent.getParcelableExtra<Intent>("data")
-                })!!
+                intent.getParcelable("data")!!
             )
         }
 
@@ -135,4 +124,12 @@ class ScreenCaptureService : Service() {
         return null
     }
 
+    @Suppress("DEPRECATION")
+    private inline fun <reified P : Parcelable> Intent.getParcelable(key: String): P? {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            getParcelableExtra(key, P::class.java)
+        } else {
+            getParcelableExtra(key)
+        }
+    }
 }

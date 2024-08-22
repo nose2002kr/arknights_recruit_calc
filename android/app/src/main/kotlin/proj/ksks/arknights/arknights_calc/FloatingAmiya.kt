@@ -1,6 +1,5 @@
 package proj.ksks.arknights.arknights_calc
 
-import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.app.Notification
 import android.app.NotificationChannel
@@ -12,8 +11,8 @@ import android.graphics.Bitmap
 import android.graphics.PixelFormat
 import android.graphics.drawable.Icon
 import android.os.Build
-import android.os.Build.VERSION.SDK_INT
 import android.os.IBinder
+import android.os.Parcelable
 import android.util.Log
 import android.view.Gravity
 import android.view.MotionEvent
@@ -50,11 +49,7 @@ class FloatingAmiya : Service() {
 
     @TargetApi(Build.VERSION_CODES.TIRAMISU)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        mBitmap = (if (SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            intent?.getParcelableExtra("icon", Bitmap::class.java)
-        } else {
-            intent?.getParcelableExtra<Bitmap>("icon")
-        })!!
+        mBitmap = intent?.getParcelable("icon")!!
 
         showIcon()
         return START_STICKY
@@ -180,5 +175,14 @@ class FloatingAmiya : Service() {
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
+    }
+
+    @Suppress("DEPRECATION")
+    private inline fun <reified P : Parcelable> Intent.getParcelable(key: String): P? {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            getParcelableExtra(key, P::class.java)
+        } else {
+            getParcelableExtra(key)
+        }
     }
 }
