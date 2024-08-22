@@ -91,6 +91,11 @@ class FloatingAmiya : Service() {
 
     @TargetApi(Build.VERSION_CODES.O)
     private fun showPanel() {
+        val intent = Intent(this, ScreenCaptureService::class.java).apply {
+            action = "CAPTURE"
+        }
+        startForegroundService(intent)
+
         val flutterEngine = FlutterEngine(this)
         flutterEngine.dartExecutor.executeDartEntrypoint(
             DartExecutor.DartEntrypoint(

@@ -35,6 +35,7 @@ class ScreenCaptureService : Service() {
     private val notificationChannelId : String = "Arknights recruit calc"
     private val notificationRecorderId = 1
     private val notificationAmiyaId = 2
+    private var image: Image? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -70,6 +71,14 @@ class ScreenCaptureService : Service() {
             stopScreenCapture()
             closeAmiya()
             stopSelf()
+        } else if (intent != null && intent.action.equals("CAPTURE")) {
+            Log.d("ScreenCaptureService", "capture start")
+            val captureBitmap = image?.let { imageToBitmap(it) }
+            captureBitmap?.let {
+                saveBitmapToGallery(this, it)
+                Log.d("ScreenCaptureService", "capture success")
+            }
+            Log.d("ScreenCaptureService", "capture done")
         }
 
         return START_STICKY
@@ -143,11 +152,10 @@ class ScreenCaptureService : Service() {
         )
 
         mImageReader!!.setOnImageAvailableListener({ reader ->
-            val image: Image? = reader.acquireLatestImage()
             image?.close()
-            //Log.i("ScreenCaptureService", "captured??");
+            image = reader.acquireLatestImage()
         }, null)
-        Log.i("ScreenCaptureService", "started service");
+        Log.d("ScreenCaptureService", "started service");
     }
 
     private fun stopScreenCapture() {
