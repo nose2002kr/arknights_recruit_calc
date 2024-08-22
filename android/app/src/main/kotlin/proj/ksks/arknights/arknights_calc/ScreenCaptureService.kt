@@ -75,7 +75,7 @@ class ScreenCaptureService : Service() {
             Log.d("ScreenCaptureService", "capture start")
             val captureBitmap = image?.let { imageToBitmap(it) }
             captureBitmap?.let {
-                saveBitmapToGallery(this, it)
+                ocrBitmap(it)
                 Log.d("ScreenCaptureService", "capture success")
             }
             Log.d("ScreenCaptureService", "capture done")

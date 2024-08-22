@@ -14,6 +14,10 @@ import android.util.Log
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
 import java.nio.ByteBuffer
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import com.google.mlkit.vision.text.korean.KoreanTextRecognizerOptions
 
 @TargetApi(Build.VERSION_CODES.KITKAT)
 private fun yuv420888ToNv21(image: Image): ByteArray {
@@ -104,4 +108,20 @@ fun saveBitmapToGallery(context: Context, bitmap: Bitmap, displayName: String = 
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
         }
     }
+}
+
+fun ocrBitmap(bitmap: Bitmap) {
+    val image = InputImage.fromBitmap(bitmap, 0)
+    val recognizer = TextRecognition.getClient(KoreanTextRecognizerOptions.Builder().build())
+
+    recognizer.process(image)
+        .addOnSuccessListener { visionText ->
+            for (block in visionText.textBlocks) {
+                val blockText = block.text
+                Log.d("ImageUtil", (blockText))
+            }
+        }
+        .addOnFailureListener { e ->
+            e.printStackTrace()
+        }
 }
