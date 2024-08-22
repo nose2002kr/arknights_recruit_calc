@@ -42,8 +42,8 @@ class HomePage extends StatelessWidget {
             Text('version:0.0.1b'),
             ElevatedButton(
                 onPressed: () {
-                  //Navigator.of(context).pushNamed('/floating_view');
-                  ScreenCaptureService.stopScreenCapture();
+                  Navigator.of(context).pushNamed('/floating_view');
+                  //ScreenCaptureService.stopScreenCapture();
                 },
                 child: Text('press')),
             IconButton(
@@ -60,3 +60,33 @@ class HomePage extends StatelessWidget {
     );
   }
 }
+
+
+/*
+
+import 'package:flutter/material.dart';
+import 'package:arknights_calc/src/rust/api/simple.dart';
+import 'package:arknights_calc/src/rust/frb_generated.dart';
+
+Future<void> main() async {
+  await RustLib.init();
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: const Text('flutter_rust_bridge quickstart')),
+        body: Center(
+          child: Text(
+              'Action: Call Rust `greet("Tom")`\nResult: `${greet(name: "Tom")}`'),
+        ),
+      ),
+    );
+  }
+}
+*/

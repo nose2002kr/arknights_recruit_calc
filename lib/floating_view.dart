@@ -6,22 +6,10 @@ class RecruitCalcViewApp extends StatelessWidget {
     print("build recruit app");
 
     return MaterialApp(
-        theme: ThemeData(
-          elevatedButtonTheme: ElevatedButtonThemeData(
-            style: ElevatedButton.styleFrom(
-              /*primary: Colors.teal, // Button background color
-              onPrimary: Colors.white, // Text color*/
-              // padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-               textStyle: TextStyle(fontSize: 12),
-            ),
-          ),
-        ),
-
         initialRoute: '/',
         routes: {
           '/': (context) => RecruitCalcView(),
-        }
-    );
+        });
   }
 }
 
@@ -44,14 +32,12 @@ class RecruitCalcView extends StatelessWidget {
       child: SingleChildScrollView(
         child: Wrap(
           spacing: 3, // Space between buttons horizontally
-          children: buttons
-          .toList(),
+          children: buttons.toList(),
         ),
       )
     );
   }
 }
-
 
 class ToggleTextButton extends StatefulWidget {
   final String text;
@@ -78,8 +64,8 @@ class _ToggleTextButtonState extends State<ToggleTextButton> {
   Widget build(BuildContext context) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
-          foregroundColor: widget.isPressed ? Colors.black : Colors.black54,
-          backgroundColor: widget.isPressed ? Colors.white : Colors.white30,
+        foregroundColor: widget.isPressed ? Colors.black : Colors.black54,
+        backgroundColor: widget.isPressed ? Colors.white : Colors.white30,
       ),
       onPressed: toggle,
       child: Text(widget.text),
