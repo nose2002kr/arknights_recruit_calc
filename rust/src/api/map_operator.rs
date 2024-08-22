@@ -4,16 +4,8 @@ use reqwest::blocking::Client;
 use scraper::{Html, Selector};
 use zip::read::ZipArchive;
 
-
-pub struct Operator {
-    pub name: String,
-    pub grade: i8,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Tag {
-    pub name: String,
-}
+mod types;
+use types::{Operator, Tag};
 
 pub fn make_operator_table() -> Result<HashMap<Vec<Tag>, Operator>, Box<dyn std::error::Error>> {
     // Send the HTTP GET request
