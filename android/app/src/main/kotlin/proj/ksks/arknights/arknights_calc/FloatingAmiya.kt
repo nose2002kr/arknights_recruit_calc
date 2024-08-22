@@ -1,15 +1,11 @@
 package proj.ksks.arknights.arknights_calc
 
 import android.annotation.TargetApi
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.PixelFormat
-import android.graphics.drawable.Icon
 import android.os.Build
 import android.os.IBinder
 import android.os.Parcelable
@@ -57,6 +53,10 @@ class FloatingAmiya : Service() {
             Log.d("FloatingAmiya", "Show amiya.")
             mBitmap = intent.getParcelable("icon")!!
             showIcon()
+        } else if (intent.action.equals("SHOW_PANEL")) {
+            Log.d("FloatingAmiya", "Show panel.")
+            val matchedTags : ArrayList<String> = intent.getStringArrayListExtra("tags")!!
+            showPanel(matchedTags)
         }
         return START_STICKY
     }
@@ -90,12 +90,7 @@ class FloatingAmiya : Service() {
     }
 
     @TargetApi(Build.VERSION_CODES.O)
-    private fun showPanel() {
-        val intent = Intent(this, ScreenCaptureService::class.java).apply {
-            action = "CAPTURE"
-        }
-        startForegroundService(intent)
-
+    private fun showPanel(matchedTags : ArrayList<String>?) {
         val flutterEngine = FlutterEngine(this)
         flutterEngine.dartExecutor.executeDartEntrypoint(
             DartExecutor.DartEntrypoint(
@@ -157,9 +152,16 @@ class FloatingAmiya : Service() {
 
     var switch: Boolean = false
     private inner class ClickListener : View.OnClickListener {
+        @TargetApi(Build.VERSION_CODES.O)
         override fun onClick(v: View?) {
             Log.i("FloatingAmiya", "Clicked")
-            if (!switch) showPanel();
+            if (!switch) {
+                removeAllViews()
+                startForegroundService(
+                    Intent(this@FloatingAmiya, ScreenCaptureService::class.java).apply {
+                        action = "CAPTURE"
+                    })
+            };
             else         showIcon();
             switch !=switch;
         }

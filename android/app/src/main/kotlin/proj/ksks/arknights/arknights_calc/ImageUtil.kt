@@ -18,6 +18,8 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import com.google.mlkit.vision.text.korean.KoreanTextRecognizerOptions
+import com.google.android.gms.tasks.OnSuccessListener
+import com.google.mlkit.vision.text.Text
 
 @TargetApi(Build.VERSION_CODES.KITKAT)
 private fun yuv420888ToNv21(image: Image): ByteArray {
@@ -110,17 +112,11 @@ fun saveBitmapToGallery(context: Context, bitmap: Bitmap, displayName: String = 
     }
 }
 
-fun ocrBitmap(bitmap: Bitmap) {
+fun ocrBitmap(bitmap: Bitmap, callback: OnSuccessListener<Text>) {
     val image = InputImage.fromBitmap(bitmap, 0)
     val recognizer = TextRecognition.getClient(KoreanTextRecognizerOptions.Builder().build())
-
     recognizer.process(image)
-        .addOnSuccessListener { visionText ->
-            for (block in visionText.textBlocks) {
-                val blockText = block.text
-                Log.d("ImageUtil", (blockText))
-            }
-        }
+        .addOnSuccessListener(callback)
         .addOnFailureListener { e ->
             e.printStackTrace()
         }
