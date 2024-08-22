@@ -37,6 +37,11 @@ android {
             signingConfig = signingConfigs.debug
         }
     }
+    dependencies {
+        def core_version = "1.13.1"
+        // Kotlin
+        implementation "androidx.core:core-ktx:$core_version"
+    }
 }
 
 flutter {

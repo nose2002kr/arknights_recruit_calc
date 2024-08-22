@@ -40,7 +40,12 @@ class HomePage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text('version:0.0.1b'),
-            ElevatedButton(onPressed: (){Navigator.of(context).pushNamed('/floating_view');}, child: Text('press')),
+            ElevatedButton(
+                onPressed: () {
+                  //Navigator.of(context).pushNamed('/floating_view');
+                  ScreenCaptureService.openNotification();
+                },
+                child: Text('press')),
             IconButton(
                 onPressed: (){
                   ScreenCaptureService.startProjectionRequest();

@@ -1,5 +1,6 @@
 package proj.ksks.arknights.arknights_calc
 
+import android.R
 import android.annotation.TargetApi
 import android.app.Activity
 import android.app.Notification
@@ -18,7 +19,10 @@ import android.media.ImageReader
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
 import android.os.Build
+import android.os.Build.VERSION.SDK_INT
+import android.os.Bundle
 import android.os.IBinder
+import android.os.Parcelable
 import android.util.Log
 
 
@@ -45,9 +49,13 @@ class ScreenCaptureService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val bitmap = intent?.getParcelableExtra("icon", Bitmap::class.java)
+        val bitmap = if (SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent?.getParcelableExtra("icon", Bitmap::class.java)
+        } else {
+            intent?.getParcelableExtra<Bitmap>("icon")
+        }
 
-        createNotificationChannel(bitmap)
+        createNotification(bitmap)
         if (intent != null && intent.action.equals("START_SCREEN_CAPTURE")) {
             startScreenCapture(intent)
         } else if (intent != null && intent.action.equals("STOP_SCREEN_CAPTURE")) {
@@ -57,24 +65,24 @@ class ScreenCaptureService : Service() {
         return START_STICKY
     }
 
-    private fun createNotificationChannel(bitmap: Bitmap?) {
-        mBitmapIcon = bitmap;
+    private val notificationChannelId : String = "Arknights recruit calc"
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+    private fun createNotification(bitmap: Bitmap?) {
+        mBitmapIcon = bitmap;
+        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        if (SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
-                "ScreenRecorder", "Foreground notification",
+                notificationChannelId, "Foreground notification",
                 NotificationManager.IMPORTANCE_DEFAULT
             )
-            val manager = getSystemService(
-                NotificationManager::class.java
-            )
+
+            channel.run { Log.i("ScreenCaptureService", "Hi Notification Channel.") }
             manager.createNotificationChannel(channel)
         }
 
-        val notification = Notification.Builder(this, "ScreenRecorder")
-            .setContentTitle("Screen Recording")
-            .setContentText("Screen recording is running")
-            .setSmallIcon(Icon.createWithBitmap(bitmap))
+
+        val notification = Notification.Builder(this, notificationChannelId)
             .build()
 
         startForeground(1, notification)
@@ -85,7 +93,11 @@ class ScreenCaptureService : Service() {
         if (mMediaProjection == null) {
             mMediaProjection = mProjectionManager?.getMediaProjection(
                 intent.getIntExtra("resultCode", Activity.RESULT_CANCELED),
-                intent.getParcelableExtra<Intent>("data", Intent::class.java)!!
+                (if (SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    intent.getParcelableExtra("data", Intent::class.java)
+                } else {
+                    intent.getParcelableExtra<Intent>("data")
+                })!!
             )
         }
 
@@ -107,8 +119,8 @@ class ScreenCaptureService : Service() {
         )
 
         mImageReader!!.setOnImageAvailableListener({ reader ->
-            val image: Image = reader.acquireLatestImage()
-            image.close()
+            val image: Image? = reader.acquireLatestImage()
+            image?.close()
             //Log.i("ScreenCaptureService", "captured??");
         }, null)
         Log.i("ScreenCaptureService", "started service");

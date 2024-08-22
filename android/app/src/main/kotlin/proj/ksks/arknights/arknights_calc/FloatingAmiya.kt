@@ -2,12 +2,17 @@ package proj.ksks.arknights.arknights_calc
 
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.PixelFormat
+import android.graphics.drawable.Icon
 import android.os.Build
+import android.os.Build.VERSION.SDK_INT
 import android.os.IBinder
 import android.util.Log
 import android.view.Gravity
@@ -45,13 +50,36 @@ class FloatingAmiya : Service() {
 
     @TargetApi(Build.VERSION_CODES.TIRAMISU)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        mBitmap = intent?.getParcelableExtra("icon", Bitmap::class.java)!!
+        mBitmap = (if (SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent?.getParcelableExtra("icon", Bitmap::class.java)
+        } else {
+            intent?.getParcelableExtra<Bitmap>("icon")
+        })!!
 
         showIcon()
         return START_STICKY
     }
 
+    @TargetApi(Build.VERSION_CODES.O)
     private fun showIcon() {
+        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                "22", "Foreground notification",
+                NotificationManager.IMPORTANCE_DEFAULT
+            )
+
+            channel.run { Log.i("ScreenCaptureService", "Hi Notification Channel.") }
+            manager.createNotificationChannel(channel)
+        }
+        val noti: Notification = Notification.Builder(this, "22")
+            .setContentTitle("aaaaa")
+            .setContentText("ffff")
+            .setSmallIcon(Icon.createWithBitmap(mBitmap))
+            .build()
+
+        manager.notify(2, noti)
+
         val outerLayoutParams = WindowManager.LayoutParams(
             300,
             300,
