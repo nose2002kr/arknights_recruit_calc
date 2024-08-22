@@ -47,14 +47,13 @@ class MainActivity: FlutterActivity() {
             return
         }
 
-        launchService(Activity.RESULT_OK,this.data)
+        launchService(this.data)
 
     }
 
-    private fun launchService(resultCode: Int, data: Intent?) {
+    private fun launchService(data: Intent?) {
         val intent: Intent = Intent(this, ScreenCaptureService::class.java)
         intent.setAction("START_SCREEN_CAPTURE")
-        intent.putExtra("resultCode", resultCode)
         intent.putExtra("data", data)
         intent.putExtra("icon", bitmap)
         startForegroundService(intent)

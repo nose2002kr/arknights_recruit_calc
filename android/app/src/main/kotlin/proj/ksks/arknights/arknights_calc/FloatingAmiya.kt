@@ -147,7 +147,6 @@ class FloatingAmiya : Service() {
             }
             return false
         }
-
     }
 
     var switch: Boolean = false

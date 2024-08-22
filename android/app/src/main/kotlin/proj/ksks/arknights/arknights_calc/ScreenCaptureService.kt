@@ -75,11 +75,6 @@ class ScreenCaptureService : Service() {
             val captureBitmap = image?.let { imageToBitmap(it) }
             captureBitmap?.let {
                 ocrBitmap(it, { visionText ->
-                    val tagDictionary : List<String> = listOf("신입", "특별채용", "고급특별채용",
-                        "근거리", "원거리",
-                        "가드", "디펜더", "메딕", "뱅가드", "서포터", "스나이퍼", "스페셜리스트", "캐스터",
-                        "감속", "강제이동", "누커", "디버프", "딜러", "로봇", "방어형", "범위공격", "생존형", "소환", "제어형", "지원", "코스트+", "쾌속부활", "힐링")
-
                     val matchedTag = ArrayList<String>()
                     for (block in visionText.textBlocks) {
                         val blockText : String = block.text
@@ -147,7 +142,7 @@ class ScreenCaptureService : Service() {
     private fun startScreenCapture(intent: Intent) {
         if (mMediaProjection == null) {
             mMediaProjection = mProjectionManager?.getMediaProjection(
-                intent.getIntExtra("resultCode", Activity.RESULT_CANCELED),
+                Activity.RESULT_OK,
                 intent.getParcelable("data")!!
             )
         }
