@@ -36,8 +36,8 @@ class MainActivity: FlutterActivity() {
     private var bitmap: Bitmap? = null
 
     private suspend fun requestPermissions() {
-        if (permissionGranted and REQUEST_CODE_PJM == 0)
-            requestProjectionManagerPerm()
+        permissionGranted = 0
+        requestProjectionManagerPerm()
         if (permissionGranted and REQUEST_CODE_OVL == 0)
             requestOverlaysPerm()
         if (permissionGranted and REQUEST_CODE_NTF == 0)
@@ -61,6 +61,12 @@ class MainActivity: FlutterActivity() {
         startForegroundService(intent)
     }
 
+    private fun stopService() {
+        val intent: Intent = Intent(this, ScreenCaptureService::class.java)
+        intent.setAction("STOP_SCREEN_CAPTURE")
+        startForegroundService(intent)
+    }
+
     @TargetApi(Build.VERSION_CODES.O)
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         Log.d("ArknightsCalc", "synchronized the app2");
@@ -70,17 +76,13 @@ class MainActivity: FlutterActivity() {
                 if (call.method.equals("stopScreenCapture")) {
                     val intent: Intent = Intent(this, ScreenCaptureService::class.java)
                     intent.setAction("STOP_SCREEN_CAPTURE")
-                    stopService(intent)
+                    stopService()
                 } else if (call.method.equals("startProjectionRequest")) {
                     val byteArray = call.arguments as ByteArray
                     bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
                     GlobalScope.launch {
                         requestPermissions()
                     }
-
-                } else if (call.method.equals("openNotification")) {
-                    val byteArray = call.arguments as ByteArray
-                    bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
                 }
             }
     }

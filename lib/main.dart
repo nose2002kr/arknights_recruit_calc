@@ -43,7 +43,7 @@ class HomePage extends StatelessWidget {
             ElevatedButton(
                 onPressed: () {
                   //Navigator.of(context).pushNamed('/floating_view');
-                  ScreenCaptureService.openNotification();
+                  ScreenCaptureService.stopScreenCapture();
                 },
                 child: Text('press')),
             IconButton(

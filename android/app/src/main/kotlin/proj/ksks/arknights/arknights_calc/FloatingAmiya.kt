@@ -48,33 +48,21 @@ class FloatingAmiya : Service() {
     }
 
     @TargetApi(Build.VERSION_CODES.TIRAMISU)
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        mBitmap = intent?.getParcelable("icon")!!
-
-        showIcon()
+    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+        Log.d("FloatingAmiya", "Amiya, " + intent.action)
+        if (intent.action.equals("STOP")) {
+            Log.d("FloatingAmiya", "Hide amiya.")
+            removeAllViews()
+        } else if (intent.action.equals("START")) {
+            Log.d("FloatingAmiya", "Show amiya.")
+            mBitmap = intent.getParcelable("icon")!!
+            showIcon()
+        }
         return START_STICKY
     }
 
     @TargetApi(Build.VERSION_CODES.O)
     private fun showIcon() {
-        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                "22", "Foreground notification",
-                NotificationManager.IMPORTANCE_DEFAULT
-            )
-
-            channel.run { Log.i("ScreenCaptureService", "Hi Notification Channel.") }
-            manager.createNotificationChannel(channel)
-        }
-        val noti: Notification = Notification.Builder(this, "22")
-            .setContentTitle("aaaaa")
-            .setContentText("ffff")
-            .setSmallIcon(Icon.createWithBitmap(mBitmap))
-            .build()
-
-        manager.notify(2, noti)
-
         val outerLayoutParams = WindowManager.LayoutParams(
             300,
             300,

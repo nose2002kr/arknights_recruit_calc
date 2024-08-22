@@ -5,11 +5,13 @@ import android.app.Activity
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.PixelFormat
+import android.graphics.drawable.Icon
 import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
 import android.media.Image
@@ -29,8 +31,10 @@ class ScreenCaptureService : Service() {
     private var mMediaProjection: MediaProjection? = null
     private var mVirtualDisplay: VirtualDisplay? = null
     private var mImageReader: ImageReader? = null
-
     private var mBitmapIcon : Bitmap? = null
+    private val notificationChannelId : String = "Arknights recruit calc"
+    private val notificationRecorderId = 1
+    private val notificationAmiyaId = 2
 
     override fun onCreate() {
         super.onCreate()
@@ -40,25 +44,36 @@ class ScreenCaptureService : Service() {
 
     private fun launchAmiya(bitmap: Bitmap?) {
         val intent = Intent(this, FloatingAmiya::class.java)
+        intent.setAction("START")
         intent.putExtra("icon", bitmap)
         startService(intent)
         Log.d("ScreenCaptureService", "Trying to run service.")
     }
 
+    private fun closeAmiya() {
+        val intent = Intent(this, FloatingAmiya::class.java)
+        intent.setAction("STOP")
+        startService(intent)
+        Log.d("ScreenCaptureService", "Trying to stop service.")
+    }
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val bitmap: Bitmap? = intent?.getParcelable("icon")
 
-        createNotification(bitmap)
         if (intent != null && intent.action.equals("START_SCREEN_CAPTURE")) {
+            createNotification(bitmap)
+            launchAmiya(mBitmapIcon)
+            stopScreenCapture()
             startScreenCapture(intent)
         } else if (intent != null && intent.action.equals("STOP_SCREEN_CAPTURE")) {
+            removeNotification()
             stopScreenCapture()
+            closeAmiya()
+            stopSelf()
         }
 
         return START_STICKY
     }
-
-    private val notificationChannelId : String = "Arknights recruit calc"
 
     private fun createNotification(bitmap: Bitmap?) {
         mBitmapIcon = bitmap;
@@ -70,18 +85,38 @@ class ScreenCaptureService : Service() {
                 NotificationManager.IMPORTANCE_DEFAULT
             )
 
-            channel.run { Log.i("ScreenCaptureService", "Hi Notification Channel.") }
             manager.createNotificationChannel(channel)
         }
-
 
         val notification = Notification.Builder(this, notificationChannelId)
             .build()
 
-        startForeground(1, notification)
+        startForeground(notificationRecorderId, notification)
 
-        launchAmiya(mBitmapIcon)
+        val intent = Intent(this, ScreenCaptureService::class.java).apply {
+            action = "STOP_SCREEN_CAPTURE"
+        }
+        val pendingIntent: PendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+
+        val noti: Notification = Notification.Builder(this, notificationChannelId)
+            .setContentTitle("Arknights calculator")
+            .setContentText("Tap to close.")
+            .setContentIntent(pendingIntent)
+            .setDeleteIntent(pendingIntent)
+            .setAutoCancel(true)
+            .setOngoing(true)
+            .setSmallIcon(Icon.createWithBitmap(mBitmapIcon))
+            .build()
+
+        manager.notify(notificationAmiyaId, noti)
     }
+
+    private fun removeNotification() {
+        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        manager.cancel(notificationRecorderId)
+        manager.cancel(notificationAmiyaId)
+    }
+
     private fun startScreenCapture(intent: Intent) {
         if (mMediaProjection == null) {
             mMediaProjection = mProjectionManager?.getMediaProjection(
@@ -118,6 +153,7 @@ class ScreenCaptureService : Service() {
     private fun stopScreenCapture() {
         mVirtualDisplay?.release()
         mMediaProjection?.stop()
+        mMediaProjection = null
     }
 
     override fun onBind(intent: Intent?): IBinder? {
