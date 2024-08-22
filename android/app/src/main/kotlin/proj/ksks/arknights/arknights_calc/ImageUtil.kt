@@ -11,15 +11,14 @@ import android.media.Image
 import android.os.Build
 import android.provider.MediaStore
 import android.util.Log
+import com.google.android.gms.tasks.OnSuccessListener
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.text.Text
+import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.korean.KoreanTextRecognizerOptions
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
 import java.nio.ByteBuffer
-import com.google.mlkit.vision.common.InputImage
-import com.google.mlkit.vision.text.TextRecognition
-import com.google.mlkit.vision.text.latin.TextRecognizerOptions
-import com.google.mlkit.vision.text.korean.KoreanTextRecognizerOptions
-import com.google.android.gms.tasks.OnSuccessListener
-import com.google.mlkit.vision.text.Text
 
 @TargetApi(Build.VERSION_CODES.KITKAT)
 private fun yuv420888ToNv21(image: Image): ByteArray {

@@ -3,7 +3,6 @@ package proj.ksks.arknights.arknights_calc
 import android.Manifest
 import android.annotation.TargetApi
 import android.app.Activity
-import android.content.Context.MEDIA_PROJECTION_SERVICE
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
