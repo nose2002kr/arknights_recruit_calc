@@ -56,6 +56,7 @@ class MainActivity: FlutterActivity() {
         intent.setAction("START_SCREEN_CAPTURE")
         intent.putExtra("data", data)
         intent.putExtra("icon", bitmap)
+
         startForegroundService(intent)
     }
 
@@ -69,7 +70,8 @@ class MainActivity: FlutterActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         Log.d("ArknightsCalc", "synchronized the app2");
 
-        MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), "screen_capture")
+        ChannelManager.screencapture = MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), "screen_capture")
+        ChannelManager.screencapture
             .setMethodCallHandler { call, result ->
                 if (call.method.equals("stopScreenCapture")) {
                     val intent: Intent = Intent(this, ScreenCaptureService::class.java)
@@ -84,15 +86,18 @@ class MainActivity: FlutterActivity() {
                 }
             }
 
-
-        MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), "arknights")
+        ChannelManager.arknights = MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), "arknights");
+        ChannelManager.arknights
             .setMethodCallHandler { call, result ->
                 if (call.method.equals("listTags")) {
                     val list = call.arguments as ArrayList<String>
                     tagDictionary = list
                     Log.d("MainActivity", "Debug tagDictionary: " + (tagDictionary.get(0)))
+                } else if (call.method.equals("getCacheDir")) {
+                    result.success(context.cacheDir.toString())
                 }
             }
+
     }
 
 

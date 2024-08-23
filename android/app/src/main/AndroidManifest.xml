@@ -36,14 +36,6 @@
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
-        <activity
-            android:name="proj.ksks.arknights.arknights_calc.FloatingActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="action.ACTION_VIEW"/>
-            </intent-filter>
-        </activity>
-
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />

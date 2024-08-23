@@ -14,7 +14,8 @@ pub fn list_tags() -> Vec<Tag> {
 }
 
 #[flutter_rust_bridge::frb(mirror(Vec<Operator>))]
-pub fn lookup_operator_by_tags(zip_path: String, tags: Vec<Tag>) -> Vec<Operator> {
+pub fn lookup_operator_by_tags(zip_path: String, tags: Vec<String>) -> Vec<Operator> {
     let table = make_operator_table(zip_path.as_str()).unwrap();
-    lookup_operator(table, tags)
+    let _tags: Vec<Tag> = tags.iter().map(|tag| Tag { name: tag.clone() }).collect();
+    lookup_operator(table, _tags)
 }
