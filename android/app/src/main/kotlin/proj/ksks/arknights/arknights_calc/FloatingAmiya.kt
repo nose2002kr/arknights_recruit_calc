@@ -5,31 +5,26 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.Color
 import android.graphics.PixelFormat
-import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.IBinder
 import android.os.Parcelable
 import android.util.Log
-import android.view.ContextThemeWrapper
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
-import android.view.ViewGroup
 import android.view.WindowManager
-import android.widget.ArrayAdapter
-import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.ListView
-import android.widget.ScrollView
-import android.widget.TextView
-import com.google.android.flexbox.FlexWrap
-import com.google.android.flexbox.FlexboxLayout
-import com.google.android.material.R
-import com.google.android.material.chip.Chip
 import io.flutter.plugin.common.MethodChannel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import proj.ksks.arknights.arknights_calc.OperatorChartLayout.Listener
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 
 class FloatingAmiya : Service() {
@@ -37,7 +32,6 @@ class FloatingAmiya : Service() {
     private lateinit var mBitmap : Bitmap
     private var mOuterLayoutParams: WindowManager.LayoutParams? = null
     private val addedViews = mutableListOf<View>()
-    private var lowerLayout : LinearLayout? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -56,27 +50,29 @@ class FloatingAmiya : Service() {
         addedViews.clear()
     }
 
-    inner class Callback : MethodChannel.Result {
-        override fun success(var1: Any?) {
-            val operator = var1 as Map<Int, List<String>>
-            lowerLayout!!.removeAllViews()
-            operator.forEach { (_, u) ->
-                u.forEach { v ->
-                    lowerLayout!!.addView(TextView(this@FloatingAmiya).apply {
-                        text = v
-                    })
-                }
-            }
+    inner class Callback(
+        private val continuation: kotlinx.coroutines.CancellableContinuation<Map<Int, List<String>>>
+    ) : MethodChannel.Result {
 
-            Log.i("FloatingAmiya", "Received the result, Doctor: " + var1.toString())
+        override fun success(var1: Any?) {
+            val operator = var1 as? Map<Int, List<String>>
+            if (operator != null) {
+                continuation.resume(operator)
+            } else {
+                continuation.resumeWithException(IllegalArgumentException("Unexpected result type"))
+            }
         }
+
         override fun error(var1: String, var2: String?, var3: Any?) {
-            Log.i("FloatingAmiya", "Received the error, Doctor: " + var1 + ", " + var2 + ", " + var3.toString())
+            continuation.resumeWithException(Exception("Error: $var1, $var2, $var3"))
         }
+
         override fun notImplemented() {
-            Log.i("FloatingAmiya", "Received the notImplemented, Doctor")
+            continuation.resumeWithException(NotImplementedError("Method not implemented"))
         }
     }
+
+
     @TargetApi(Build.VERSION_CODES.TIRAMISU)
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         Log.d("FloatingAmiya", "Amiya, " + intent.action)
@@ -123,124 +119,41 @@ class FloatingAmiya : Service() {
         mOuterLayoutParams = outerLayoutParams
     }
 
-    private val selectedTag = ArrayList<String>()
-    private fun requestLookingUpOperator(tags : ArrayList<String>) {
-        ChannelManager.arknights.invokeMethod(
-            "lookupOperator",
-            tags,
-            Callback())
+    private suspend fun requestLookingUpOperator(tags: List<String>): Map<Int, List<String>> {
+        return suspendCancellableCoroutine { continuation ->
+            ChannelManager.arknights.invokeMethod(
+                "lookupOperator",
+                tags,
+                Callback(continuation)
+            )
+        }
     }
 
     @TargetApi(Build.VERSION_CODES.O)
     private fun showPanel(matchedTags : ArrayList<String>) {
-        val themedContext: Context = ContextThemeWrapper(this, R.style.Theme_MaterialComponents_Light_NoActionBar)
 
-        selectedTag.addAll(matchedTags)
-        requestLookingUpOperator(selectedTag)
-
-        // Set background with rounded corners
-        val shape = GradientDrawable().apply {
-            shape = GradientDrawable.RECTANGLE
-            cornerRadius = 50f // Adjust corner radius as needed
-            setColor(Color.BLACK)
-        }
-
-        val layout = LinearLayout(themedContext).apply {
-            layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-            )
-            orientation = LinearLayout.VERTICAL
-            background = shape
-
-        }
-
-        val adapterVal = ArrayAdapter(
-            this,
-            android.R.layout.simple_list_item_1,
-            selectedTag
-        )
-
-        val topBar = LinearLayout(themedContext).apply {
-            layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-            setBackgroundColor(Color.GRAY)
-
-            addView(Button(themedContext).apply {
-                text = "Back"
-                setOnClickListener { showIcon() }
-            })
-            addView(ListView(themedContext).apply {
-                adapter = adapterVal
-                orientation = LinearLayout.HORIZONTAL
-            })
-            orientation = LinearLayout.VERTICAL
-        }
-        layout.addView(topBar)
-
-        val upperScrollView = ScrollView(themedContext).apply {
-            layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                300
-            )
-        }
-        val upperLayout = FlexboxLayout(themedContext).apply {
-            layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-            clipToPadding = false
-            clipChildren = false
-            flexWrap = FlexWrap.WRAP
-            setBackgroundColor(Color.WHITE)
-        }
-
-        for (tag in tagDictionary) {
-            val chip = Chip(themedContext).apply {
-                text = tag
-                isClickable = true
-                isCheckable = true
-                setOnClickListener {
-                    when (isChecked) {
-                        true -> selectedTag.add(text as String)
-                        false -> selectedTag.remove(text as String)
-                    }
-                    adapterVal.notifyDataSetChanged()
-                    requestLookingUpOperator(selectedTag)
-                }
+        val layout = OperatorChartLayout(this, matchedTags, object : Listener {
+            override fun requestDismiss(self: OperatorChartLayout) {
+                showIcon()
             }
 
-            val params = ViewGroup.MarginLayoutParams(
-                ViewGroup.MarginLayoutParams.WRAP_CONTENT,
-                ViewGroup.MarginLayoutParams.WRAP_CONTENT
-            )
-            params.marginEnd = 8 // 오른쪽 여백
-            params.bottomMargin = 8 // 아래쪽 여백
-            chip.layoutParams = params
+            override fun requestUpdate(self: OperatorChartLayout, tags: List<String>) {
+                CoroutineScope(Dispatchers.Main).launch {
+                    try {
+                        val dataDeferred = async { requestLookingUpOperator(tags) }
+                        val operatorMap = dataDeferred.await()
+                        println("Received operator data: $operatorMap")
 
-            upperLayout.addView(chip)
-        }
-        upperScrollView.addView(upperLayout)
-        layout.addView(upperScrollView)
+                        self.updateOperatorView(operatorMap)
 
-        val lowerScrollView = ScrollView(themedContext).apply {
-            layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-            )
-        }
-        lowerLayout = LinearLayout(themedContext).apply {
-            layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-            )
-            orientation = LinearLayout.HORIZONTAL
-            setBackgroundColor(Color.WHITE)
-        }
-        lowerScrollView.addView(lowerLayout)
-        layout.addView(lowerScrollView)
+                    } catch (e: NotImplementedError) {
+                        println("The method is not implemented")
+                    } catch (e: Exception) {
+                        println("An error occurred: ${e.message}")
+                    }
+                }
+            }
+        })
 
         val outerLayoutParams = WindowManager.LayoutParams(
             1200,
@@ -300,9 +213,9 @@ class FloatingAmiya : Service() {
                     Intent(this@FloatingAmiya, ScreenCaptureService::class.java).apply {
                         action = "CAPTURE"
                     })
-            };
-            else         showIcon();
-            switch !=switch;
+            }
+            else         showIcon()
+            switch !=switch
         }
     }
 
