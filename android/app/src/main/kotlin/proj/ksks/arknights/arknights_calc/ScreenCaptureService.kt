@@ -83,7 +83,7 @@ class ScreenCaptureService : Service() {
                         }
                     }
                     Log.d("ScreenCaptureService", "Complete detection.")
-                    startForegroundService(
+                    startService(
                         Intent(this, FloatingAmiya::class.java).apply {
                             action = "SHOW_PANEL"
                             putExtra("tags", matchedTag)
