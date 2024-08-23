@@ -7,7 +7,6 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.PixelFormat
-import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.IBinder
@@ -25,9 +24,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ListView
 import android.widget.ScrollView
-import androidx.core.content.ContextCompat
-import androidx.core.view.marginBottom
-import androidx.core.view.marginEnd
+import android.widget.TextView
 import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.material.R
@@ -59,8 +56,18 @@ class FloatingAmiya : Service() {
         addedViews.clear()
     }
 
-    class Callback : MethodChannel.Result {
+    inner class Callback : MethodChannel.Result {
         override fun success(var1: Any?) {
+            val operator = var1 as Map<Int, List<String>>
+            lowerLayout!!.removeAllViews()
+            operator.forEach { (_, u) ->
+                u.forEach { v ->
+                    lowerLayout!!.addView(TextView(this@FloatingAmiya).apply {
+                        text = v
+                    })
+                }
+            }
+
             Log.i("FloatingAmiya", "Received the result, Doctor: " + var1.toString())
         }
         override fun error(var1: String, var2: String?, var3: Any?) {
@@ -229,6 +236,8 @@ class FloatingAmiya : Service() {
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
             )
+            orientation = LinearLayout.HORIZONTAL
+            setBackgroundColor(Color.WHITE)
         }
         lowerScrollView.addView(lowerLayout)
         layout.addView(lowerScrollView)
