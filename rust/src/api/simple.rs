@@ -1,4 +1,4 @@
-use crate::core::map_operator::lookup_operator;
+use crate::core::map_operator::{lookup_operator, make_operator_table};
 use crate::core::types::{Operator, Tag};
 use crate::core::list_tag::list_all_tags;
 
@@ -14,6 +14,7 @@ pub fn list_tags() -> Vec<Tag> {
 }
 
 #[flutter_rust_bridge::frb(mirror(Vec<Operator>))]
-pub fn lookup_operator_by_tags(tags: Vec<Tag>) -> Vec<Operator> {
-    lookup_operator(tags)
+pub fn lookup_operator_by_tags(zip_path: String, tags: Vec<Tag>) -> Vec<Operator> {
+    let table = make_operator_table(zip_path.as_str()).unwrap();
+    lookup_operator(table, tags)
 }

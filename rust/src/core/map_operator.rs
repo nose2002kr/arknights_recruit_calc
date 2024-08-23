@@ -1,6 +1,5 @@
-use std::{collections::HashMap, io::{Cursor, Read}};
+use std::{collections::HashMap, fs::File, io::{BufReader, Read}};
 
-use reqwest::blocking::Client;
 use scraper::{Html, Selector};
 use zip::read::ZipArchive;
 
@@ -8,14 +7,12 @@ use crate::core::types::{Operator, Tag};
 
 use super::list_tag::list_all_tags;
 
-pub fn make_operator_table() -> Result<HashMap<Vec<Tag>, Operator>, Box<dyn std::error::Error>> {
-    // Send the HTTP GET request
-    let url = "https://docs.google.com/spreadsheets/d/1bEbqM1mo0FFttwlw9_hOBdnzeLZhCVQJ83oR8LOYyTs/export?format=zip";
-    let client = Client::new();
-    let response = client.get(url).send()?.bytes()?;
-    let mut zip = ZipArchive::new(Cursor::new(response))?;
+type Table = HashMap<Vec<Tag>, Operator>;
 
-    let mut table: HashMap<Vec<Tag>, Operator> =  HashMap::new();
+pub fn make_operator_table(zip_path : &str) -> Result<Table, Box<dyn std::error::Error>> {
+    let mut zip = ZipArchive::new(BufReader::new(File::open(zip_path)?))?;
+
+    let mut table: Table =  HashMap::new();
 
     let file_names: Vec<String> = zip.file_names().map(|name| name.to_string()).collect();
 
@@ -81,13 +78,12 @@ pub fn make_operator_table() -> Result<HashMap<Vec<Tag>, Operator>, Box<dyn std:
     return Ok(table);
 }
 
-pub fn lookup_operator(tags : Vec<Tag>) -> Vec<Operator> {
+pub fn lookup_operator(table: Table, tags : Vec<Tag>) -> Vec<Operator> {
     let normalized_tags: Vec<Tag> = tags.iter().filter(|tag| list_all_tags().contains(*tag)).cloned().collect();
     if normalized_tags.is_empty() {
         return Vec::new();
     }
     
-    let table = make_operator_table().unwrap();
     let mut matched_operator: Vec<Operator> = table.iter()
         .filter(|(tags, _)| 
             normalized_tags.iter().all(|tag| {

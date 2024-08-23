@@ -1,10 +1,9 @@
-use core::map_operator::lookup_operator;
-
 #[path="../src/core/mod.rs"]
 mod core;
 
 pub fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let table = core::map_operator::make_operator_table()?;
+    let dir = "/path/for/test/".to_string();
+    let table = core::map_operator::make_operator_table(&(dir + "datasheets.zip"))?;
 
     // Print the parsed operators and their tags
     for element in &table {
@@ -22,7 +21,7 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     println!("");
 
-    let operators = lookup_operator(
+    let operators = core::map_operator::lookup_operator(table,
         vec![
             core::types::Tag { name: "폭발".to_string() },
             core::types::Tag { name: "근거리".to_string() },
