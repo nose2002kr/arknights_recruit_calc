@@ -1,5 +1,4 @@
-mod types;
-use types::Tag;
+use crate::core::types::Tag;
 
 pub fn list_all_tags() -> Vec<Tag> {
     let tag_dictionary: Vec<Tag> = Vec::from(

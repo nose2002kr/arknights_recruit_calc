@@ -1,11 +1,8 @@
-#[path="../src/api/map_operator.rs"]
-mod seq1;
-
-#[path="../src/api/list_tag.rs"]
-mod seq2;
+#[path="../src/core/mod.rs"]
+mod core;
 
 pub fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let table = seq1::make_operator_table()?;
+    let table = core::map_operator::make_operator_table()?;
 
     // Print the parsed operators and their tags
     for element in &table {
@@ -16,7 +13,7 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
 
-    let tags = seq2::list_all_tags();
+    let tags = core::list_tag::list_all_tags();
     print!("Tag: ");
     for tag in tags {
         print!("{}, ", tag.name);

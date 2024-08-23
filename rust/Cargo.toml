@@ -8,9 +8,12 @@ crate-type = ["cdylib", "staticlib"]
 
 [dependencies]
 flutter_rust_bridge = "=2.3.0"
-reqwest = { version = "0.11", features = ["blocking", "json"] }
+reqwest = { version = "0.11",  default-features = false, features = ["blocking", "json"] }
 scraper = "0.13"
 zip = "0.5"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tempfile = "3.3"
 
 [[bin]]
 name = "test_arknights_calc"

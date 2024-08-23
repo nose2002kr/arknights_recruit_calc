@@ -25,5 +25,5 @@ You can install them as follows.
    You need to be able to run `cargo --version`.
  - Flutter Rust Bridge: https://cjycode.com/flutter_rust_bridge/quickstart
    You need to be able to run `flutter_rust_bridge_codegen --version`.
+   To update function symbol `flutter_rust_bridge_codegen generate -r rust/src/api/**/*.rs -d lib/src/rust/`
 
- flutter_rust_bridge_codegen

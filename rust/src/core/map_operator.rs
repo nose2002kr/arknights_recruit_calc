@@ -4,8 +4,7 @@ use reqwest::blocking::Client;
 use scraper::{Html, Selector};
 use zip::read::ZipArchive;
 
-mod types;
-use types::{Operator, Tag};
+use crate::core::types::{Operator, Tag};
 
 pub fn make_operator_table() -> Result<HashMap<Vec<Tag>, Operator>, Box<dyn std::error::Error>> {
     // Send the HTTP GET request
