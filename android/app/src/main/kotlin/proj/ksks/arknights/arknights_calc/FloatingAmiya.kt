@@ -5,26 +5,42 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.PixelFormat
+import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.IBinder
 import android.os.Parcelable
 import android.util.Log
+import android.view.ContextThemeWrapper
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
 import android.view.WindowManager
+import android.widget.ArrayAdapter
+import android.widget.Button
 import android.widget.ImageView
-import io.flutter.embedding.android.FlutterView
-import io.flutter.embedding.engine.FlutterEngine
-import io.flutter.embedding.engine.dart.DartExecutor
-import io.flutter.view.FlutterMain
+import android.widget.LinearLayout
+import android.widget.ListView
+import android.widget.ScrollView
+import androidx.core.content.ContextCompat
+import androidx.core.view.marginBottom
+import androidx.core.view.marginEnd
+import com.google.android.flexbox.FlexWrap
+import com.google.android.flexbox.FlexboxLayout
+import com.google.android.material.R
+import com.google.android.material.chip.Chip
+import io.flutter.plugin.common.MethodChannel
+
 
 class FloatingAmiya : Service() {
     private lateinit var mWindowManager : WindowManager
     private lateinit var mBitmap : Bitmap
     private var mOuterLayoutParams: WindowManager.LayoutParams? = null
     private val addedViews = mutableListOf<View>()
+    private var lowerLayout : LinearLayout? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -43,6 +59,17 @@ class FloatingAmiya : Service() {
         addedViews.clear()
     }
 
+    class Callback : MethodChannel.Result {
+        override fun success(var1: Any?) {
+            Log.i("FloatingAmiya", "Received the result, Doctor: " + var1.toString())
+        }
+        override fun error(var1: String, var2: String?, var3: Any?) {
+            Log.i("FloatingAmiya", "Received the error, Doctor: " + var1 + ", " + var2 + ", " + var3.toString())
+        }
+        override fun notImplemented() {
+            Log.i("FloatingAmiya", "Received the notImplemented, Doctor")
+        }
+    }
     @TargetApi(Build.VERSION_CODES.TIRAMISU)
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         Log.d("FloatingAmiya", "Amiya, " + intent.action)
@@ -89,17 +116,122 @@ class FloatingAmiya : Service() {
         mOuterLayoutParams = outerLayoutParams
     }
 
+    private val selectedTag = ArrayList<String>()
+    private fun requestLookingUpOperator(tags : ArrayList<String>) {
+        ChannelManager.arknights.invokeMethod(
+            "lookupOperator",
+            tags,
+            Callback())
+    }
+
     @TargetApi(Build.VERSION_CODES.O)
-    private fun showPanel(matchedTags : ArrayList<String>?) {
-        val flutterEngine = FlutterEngine(this)
-        flutterEngine.dartExecutor.executeDartEntrypoint(
-            DartExecutor.DartEntrypoint(
-                FlutterMain.findAppBundlePath(),
-                "redirect_recruit_calc_view"
+    private fun showPanel(matchedTags : ArrayList<String>) {
+        val themedContext: Context = ContextThemeWrapper(this, R.style.Theme_MaterialComponents_Light_NoActionBar)
+
+        selectedTag.addAll(matchedTags)
+        requestLookingUpOperator(selectedTag)
+
+        // Set background with rounded corners
+        val shape = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = 50f // Adjust corner radius as needed
+            setColor(Color.BLACK)
+        }
+
+        val layout = LinearLayout(themedContext).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
             )
+            orientation = LinearLayout.VERTICAL
+            background = shape
+
+        }
+
+        val adapterVal = ArrayAdapter(
+            this,
+            android.R.layout.simple_list_item_1,
+            selectedTag
         )
-        val flutterView = FlutterView(this)
-        flutterView.attachToFlutterEngine(flutterEngine)
+
+        val topBar = LinearLayout(themedContext).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            setBackgroundColor(Color.GRAY)
+
+            addView(Button(themedContext).apply {
+                text = "Back"
+                setOnClickListener { showIcon() }
+            })
+            addView(ListView(themedContext).apply {
+                adapter = adapterVal
+                orientation = LinearLayout.HORIZONTAL
+            })
+            orientation = LinearLayout.VERTICAL
+        }
+        layout.addView(topBar)
+
+        val upperScrollView = ScrollView(themedContext).apply {
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                300
+            )
+        }
+        val upperLayout = FlexboxLayout(themedContext).apply {
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            clipToPadding = false
+            clipChildren = false
+            flexWrap = FlexWrap.WRAP
+            setBackgroundColor(Color.WHITE)
+        }
+
+        for (tag in tagDictionary) {
+            val chip = Chip(themedContext).apply {
+                text = tag
+                isClickable = true
+                isCheckable = true
+                setOnClickListener {
+                    when (isChecked) {
+                        true -> selectedTag.add(text as String)
+                        false -> selectedTag.remove(text as String)
+                    }
+                    adapterVal.notifyDataSetChanged()
+                    requestLookingUpOperator(selectedTag)
+                }
+            }
+
+            val params = ViewGroup.MarginLayoutParams(
+                ViewGroup.MarginLayoutParams.WRAP_CONTENT,
+                ViewGroup.MarginLayoutParams.WRAP_CONTENT
+            )
+            params.marginEnd = 8 // 오른쪽 여백
+            params.bottomMargin = 8 // 아래쪽 여백
+            chip.layoutParams = params
+
+            upperLayout.addView(chip)
+        }
+        upperScrollView.addView(upperLayout)
+        layout.addView(upperScrollView)
+
+        val lowerScrollView = ScrollView(themedContext).apply {
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+        }
+        lowerLayout = LinearLayout(themedContext).apply {
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+        }
+        lowerScrollView.addView(lowerLayout)
+        layout.addView(lowerScrollView)
 
         val outerLayoutParams = WindowManager.LayoutParams(
             1200,
@@ -114,12 +246,11 @@ class FloatingAmiya : Service() {
             outerLayoutParams.x = param.x
             outerLayoutParams.y = param.y
         }
-        flutterView.setOnTouchListener(DragTouchListener())
-        flutterView.setOnClickListener(ClickListener())
+        layout.setOnTouchListener(DragTouchListener())
 
         Log.i("FloatingAmiya", "showPanel")
         removeAllViews()
-        addView(flutterView, outerLayoutParams)
+        addView(layout, outerLayoutParams)
         mOuterLayoutParams = outerLayoutParams
     }
 
