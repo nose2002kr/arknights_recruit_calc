@@ -1,11 +1,13 @@
 import 'package:arknights_calc/floating_view.dart';
-import 'package:arknights_calc/src/rust/api/simple.dart';
+import 'package:arknights_calc/arknights.dart';
 import 'package:arknights_calc/src/rust/frb_generated.dart';
 import 'package:flutter/material.dart';
 import 'package:arknights_calc/capture.dart';
 
 Future<void> main() async {
   await RustLib.init();
+  ArknightsService.sendTagList();
+
   runApp(MainApp());
 }
 
@@ -46,12 +48,6 @@ class HomePage extends StatelessWidget {
             ElevatedButton(
                 onPressed: () {
                   print('pressed');
-                  listTags().then((v) {
-                    print(v);
-                    v.forEach((a) {
-                      print(a.name);
-                    });
-                  });
                   //Navigator.of(context).pushNamed('/floating_view');
                   //ScreenCaptureService.stopScreenCapture();
                 },

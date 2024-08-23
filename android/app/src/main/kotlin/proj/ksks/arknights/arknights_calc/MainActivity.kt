@@ -83,6 +83,16 @@ class MainActivity: FlutterActivity() {
                     }
                 }
             }
+
+
+        MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), "arknights")
+            .setMethodCallHandler { call, result ->
+                if (call.method.equals("listTags")) {
+                    val list = call.arguments as ArrayList<String>
+                    tagDictionary = list
+                    Log.d("MainActivity", "Debug tagDictionary: " + (tagDictionary.get(0)))
+                }
+            }
     }
 
 
