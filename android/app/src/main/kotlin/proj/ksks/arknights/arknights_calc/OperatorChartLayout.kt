@@ -27,6 +27,7 @@ class OperatorChartLayout (
     private val listener: Listener,
 ) : LinearLayout(context) {
 
+    var lastClickedChip: Chip? = null
     fun updateOperatorView(operatorMap: List<Map<String, Any>>) {
         matchedOperatorLayout.removeAllViews()
 
@@ -51,8 +52,12 @@ class OperatorChartLayout (
                         else -> ColorStateList.valueOf(rgb(234,234,234))
                     }
                 )
-                setOnClickListener {
+                setOnClickListener { v ->
+                    (v as Chip).chipBackgroundColor = ColorStateList.valueOf(rgb(200, 200, 200))
+                    lastClickedChip?.chipBackgroundColor = ColorStateList.valueOf(Color.WHITE)
+                    lastClickedChip = v
                     selectedChipDictionary.forEach { (t, u) ->
+
                         if (tags.contains(t)) {
                             u.chipBackgroundColor =
                                 ColorStateList.valueOf(rgb(244, 244, 244))
@@ -258,7 +263,7 @@ class OperatorChartLayout (
         upperScrollView.addView(upperLayout)
         container.addView(upperScrollView)
 
-        val lowerScrollView = ScrollView(themedContext).apply {
+        val lowerScrollView = HorizontalScrollView(themedContext).apply {
             layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
