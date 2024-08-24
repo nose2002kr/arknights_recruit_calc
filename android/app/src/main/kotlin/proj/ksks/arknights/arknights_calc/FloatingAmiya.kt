@@ -51,11 +51,11 @@ class FloatingAmiya : Service() {
     }
 
     inner class Callback(
-        private val continuation: kotlinx.coroutines.CancellableContinuation<Map<Int, Map<String, List<String>>>>
+        private val continuation: kotlinx.coroutines.CancellableContinuation<List<Map<String, Any>>>
     ) : MethodChannel.Result {
 
         override fun success(var1: Any?) {
-            val operator = var1 as? Map<Int, Map<String, List<String>>>
+            val operator = var1 as? List<Map<String, Any>>
             if (operator != null) {
                 continuation.resume(operator)
             } else {
@@ -119,7 +119,7 @@ class FloatingAmiya : Service() {
         mOuterLayoutParams = outerLayoutParams
     }
 
-    private suspend fun requestLookingUpOperator(tags: List<String>): Map<Int, Map<String, List<String>>> {
+    private suspend fun requestLookingUpOperator(tags: List<String>): List<Map<String, Any>> {
         return suspendCancellableCoroutine { continuation ->
             ChannelManager.arknights.invokeMethod(
                 "lookupOperator",

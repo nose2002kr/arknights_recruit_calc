@@ -28,44 +28,46 @@ class OperatorChartLayout (
     private val listener: Listener,
 ) : LinearLayout(context) {
 
-    fun updateOperatorView(operatorMap: Map<Int, Map<String, List<String>>>) {
+    fun updateOperatorView(operatorMap: List<Map<String, Any>>) {
         matchedOperatorLayout.removeAllViews()
 
-        operatorMap.toSortedMap(reverseOrder()).forEach { (grade, u) ->
-            u.forEach { v ->
-                val chip = Chip(themedContext).apply {
-                    text = v.key
-                    chipStrokeWidth = 5.0f
-                    chipBackgroundColor = ColorStateList.valueOf(Color.WHITE)
-                    chipStrokeColor = (
-                        when (grade) {
-                            1 -> ColorStateList.valueOf(rgb(234,234,234))
-                            2 -> ColorStateList.valueOf(rgb(234,234,234))
-                            3 -> ColorStateList.valueOf(rgb(234,234,234))
-                            4 -> ColorStateList.valueOf(rgb(191,141,240))
-                            5 -> ColorStateList.valueOf(rgb(238,238,1))
-                            6 -> ColorStateList.valueOf(rgb(252,194,120))
-                            else -> ColorStateList.valueOf(rgb(234,234,234))
-                        }
-                    )
-                    setOnClickListener {
-                        selectedChipDictionary.forEach { (t, u) ->
-                            if (v.value.contains(t)) {
-                                u.chipBackgroundColor =
-                                    ColorStateList.valueOf(rgb(220, 220, 220))
-                                u.chipStrokeWidth = 5.0f
-                                u.chipStrokeColor = ColorStateList.valueOf(Color.YELLOW)
-                            } else {
-                                u.chipBackgroundColor =
-                                    ColorStateList.valueOf(rgb(120, 120, 120))
-                                u.chipStrokeWidth = 0f
-                                u.chipStrokeColor = ColorStateList.valueOf(Color.WHITE)
-                            }
+        operatorMap.forEach { it ->
+            val name = it["name"] as String
+            val tags = it["tags"] as List<*>
+            val grade = it["grade"] as Int
+
+            val chip = Chip(themedContext).apply {
+                text = name
+                chipStrokeWidth = 5.0f
+                chipBackgroundColor = ColorStateList.valueOf(Color.WHITE)
+                chipStrokeColor = (
+                    when (grade) {
+                        1 -> ColorStateList.valueOf(rgb(234,234,234))
+                        2 -> ColorStateList.valueOf(rgb(234,234,234))
+                        3 -> ColorStateList.valueOf(rgb(234,234,234))
+                        4 -> ColorStateList.valueOf(rgb(191,141,240))
+                        5 -> ColorStateList.valueOf(rgb(238,238,1))
+                        6 -> ColorStateList.valueOf(rgb(252,194,120))
+                        else -> ColorStateList.valueOf(rgb(234,234,234))
+                    }
+                )
+                setOnClickListener {
+                    selectedChipDictionary.forEach { (t, u) ->
+                        if (tags.contains(t)) {
+                            u.chipBackgroundColor =
+                                ColorStateList.valueOf(rgb(220, 220, 220))
+                            u.chipStrokeWidth = 5.0f
+                            u.chipStrokeColor = ColorStateList.valueOf(Color.YELLOW)
+                        } else {
+                            u.chipBackgroundColor =
+                                ColorStateList.valueOf(rgb(120, 120, 120))
+                            u.chipStrokeWidth = 0f
+                            u.chipStrokeColor = ColorStateList.valueOf(Color.WHITE)
                         }
                     }
                 }
-                matchedOperatorLayout.addView(chip)
             }
+            matchedOperatorLayout.addView(chip)
         }
     }
 
