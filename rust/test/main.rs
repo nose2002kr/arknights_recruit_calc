@@ -46,7 +46,7 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
         core::types::Tag { name: "고급특별채용".to_string() },
     ];
     
-    let operators = core::map_operator::lookup_operator_reasonable(table, presented_tags.clone());
+    let operators = core::map_operator::lookup_operator_reasonable(table.as_ref(), presented_tags.clone());
     operators.iter().all(|oper| {
         print!("Operator: {} {}★ \t", oper.name, oper.grade);
         // print the tag with the green text color

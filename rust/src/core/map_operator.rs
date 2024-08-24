@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fs::File, io::{BufReader, Read}};
+use std::{fs::File, io::{BufReader, Read}};
 
 use scraper::{Html, Selector};
 use zip::read::ZipArchive;
@@ -147,7 +147,7 @@ pub fn build_combinations(tag_set: &Vec<Tag>, start: u8, combi: Vec<Tag>) -> Vec
     return result;
 }
 
-pub fn lookup_operator_reasonable(table: Table, tags : Vec<Tag>) -> Vec<Operator> {
+pub fn lookup_operator_reasonable(table: &Table, tags : Vec<Tag>) -> Vec<Operator> {
     let normalized_tags: Vec<Tag> = tags.iter().filter(|tag| list_all_tags().contains(*tag)).cloned().collect();
     if normalized_tags.is_empty() {
         return Vec::new();
@@ -182,7 +182,7 @@ pub fn lookup_operator_reasonable(table: Table, tags : Vec<Tag>) -> Vec<Operator
     for tag_combi in tag_combinations {
         // find all matched operator.
         // if matched operator grade is under 3, skip 4 to 6.
-        let mut i = 0;
+        let mut i;
         let mut lowest_grade = 6;
 
         //print!("searching by {:?}, ", tag_combi);
