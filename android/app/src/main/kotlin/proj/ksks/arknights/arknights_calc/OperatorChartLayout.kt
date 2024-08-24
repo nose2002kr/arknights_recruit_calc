@@ -6,11 +6,15 @@ import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.Color.rgb
 import android.graphics.drawable.GradientDrawable
+import android.util.Log
 import android.view.ContextThemeWrapper
+import android.view.MotionEvent
+import android.view.View
 import android.view.ViewGroup
 import android.widget.HorizontalScrollView
 import android.widget.LinearLayout
 import android.widget.ScrollView
+import androidx.core.view.marginEnd
 import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.material.R
@@ -26,7 +30,8 @@ class OperatorChartLayout (
 
     fun updateOperatorView(operatorMap: Map<Int, List<String>>) {
         matchedOperatorLayout.removeAllViews()
-        operatorMap.forEach { (grade, u) ->
+
+        operatorMap.toSortedMap(reverseOrder()).forEach { (grade, u) ->
             u.forEach { v ->
                 val chip = Chip(themedContext).apply {
                     text = v
@@ -40,7 +45,7 @@ class OperatorChartLayout (
                             4 -> ColorStateList.valueOf(rgb(191,141,240))
                             5 -> ColorStateList.valueOf(rgb(238,238,1))
                             6 -> ColorStateList.valueOf(rgb(252,194,120))
-                            else -> ColorStateList.valueOf(Color.rgb(234,234,234))
+                            else -> ColorStateList.valueOf(rgb(234,234,234))
                         }
                     )
                 }
@@ -106,18 +111,37 @@ class OperatorChartLayout (
     init {
 
         // Set background with rounded corners
-        val shape = GradientDrawable().apply {
+        val shapeGray = GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
             cornerRadius = 50f
             setColor(Color.GRAY)
         }
 
+        // Set background with rounded corners
+        val shapeWhite = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = 50f
+            setColor(rgb(244,244,244))
+        }
+
+        val container = LinearLayout(themedContext).apply {
+            layoutParams = LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            ).apply {
+                setMargins(10,10,10,10)
+            }
+            background = shapeWhite
+            orientation = VERTICAL
+        }
+
+        addView(container)
+
         layoutParams = LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.MATCH_PARENT
         )
-        orientation = VERTICAL
-        background = shape
+        background = shapeGray
 
         selectedTagLayout = LinearLayout(themedContext).apply {
             layoutParams = LayoutParams(
@@ -127,7 +151,7 @@ class OperatorChartLayout (
             orientation = HORIZONTAL
         }
 
-        addView(
+        container.addView(
             MaterialToolbar(themedContext).apply {
                 layoutParams = ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
@@ -191,7 +215,7 @@ class OperatorChartLayout (
             upperLayout.addView(chip)
         }
         upperScrollView.addView(upperLayout)
-        addView(upperScrollView)
+        container.addView(upperScrollView)
 
         val lowerScrollView = ScrollView(themedContext).apply {
             layoutParams = ViewGroup.LayoutParams(
@@ -208,7 +232,7 @@ class OperatorChartLayout (
             setBackgroundColor(Color.WHITE)
         }
         lowerScrollView.addView(matchedOperatorLayout)
-        addView(lowerScrollView)
+        container.addView(lowerScrollView)
 
         selectedTag.addAll(matchedTags)
         updateTags(selectedTag)
