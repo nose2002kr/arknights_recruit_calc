@@ -63,6 +63,14 @@ pub fn make_operator_table(zip_path : &str) -> Result<Table, Box<dyn std::error:
                         let tag = Tag { name: tag_name };
                         operator_tags.push(tag);
                     }
+
+                    if grade == 6 {
+                        let tag = Tag { name: "고급특별채용".to_string() };
+                        operator_tags.push(tag); 
+                    } else if grade == 5 {
+                        let tag = Tag { name: "특별채용".to_string() };
+                        operator_tags.push(tag); 
+                    }
     
                     let operator = Operator {
                         name: operator_name.clone(),
@@ -98,4 +106,117 @@ pub fn lookup_operator(table: Table, tags : Vec<Tag>) -> Vec<Operator> {
     matched_operator.sort_by_key(|operator| operator.grade);
     matched_operator.reverse();
     matched_operator
+}
+
+pub fn build_combinations_internal(tag_set: &Vec<Tag>, start: u8, combi: Vec<Tag>, counts: &mut Vec<usize>, result: &mut Vec<Vec<Tag>>) {
+    let mut index: usize = 0;
+    for i in (combi.len()..tag_set.len()).rev() {
+        index += counts[i];
+    }
+    //println!("index:{}, tag.len:{}, result.len:{}", index, combi.len(), result.len());
+    result.insert(index+1, combi.clone());
+    counts[combi.len()] = counts[combi.len()]+1;
+
+    for i in start..combi.len() as u8 {
+        let mut new_combi = combi.clone();
+        new_combi.remove(i.into());
+        if new_combi.len() > 0 {
+            build_combinations_internal(tag_set, i, new_combi, counts, result);
+        }
+    }
+}
+
+pub fn build_combinations(tag_set: &Vec<Tag>, start: u8, combi: Vec<Tag>) -> Vec<Vec<Tag>> {
+    let mut result: Vec<Vec<Tag>> = Vec::new();
+    let mut counts: Vec<usize> = vec![0; tag_set.len()];
+    result.push(combi.clone());
+    for i in start..combi.len() as u8 {
+        let mut new_combi = combi.clone();
+        new_combi.remove(i.into());
+        if new_combi.len() > 0 {
+            build_combinations_internal(tag_set, i, new_combi, &mut counts, &mut result);
+        }
+    }
+    return result;
+}
+
+pub fn lookup_operator_reasonable(table: Table, tags : Vec<Tag>) -> Vec<Operator> {
+    let normalized_tags: Vec<Tag> = tags.iter().filter(|tag| list_all_tags().contains(*tag)).cloned().collect();
+    if normalized_tags.is_empty() {
+        return Vec::new();
+    }
+
+    let tag_combinations: Vec<Vec<Tag>> = build_combinations(&normalized_tags, 0, normalized_tags.clone());
+    // tag_combinations.iter().for_each(
+    //     |vv| {
+    //         print!("#Tags:");
+    //         vv.iter().for_each(
+    //             |v| {print!("{} ", v.name);}
+    //         );
+    //         println!("");
+    //     }
+    // );
+
+    let mut matched_operator: Vec<Operator> = table.iter()
+        .filter(|(tags, _)| 
+            normalized_tags.iter().any(|tag| {
+                tags.contains(tag)
+            })
+        )
+        .map(|(_, operator)| operator.clone())
+        .collect();
+
+    matched_operator.sort_by_key(|operator| operator.grade);
+
+    let mut summarized_operator: Vec<Operator> = Vec::new();
+    let mut counts: Vec<usize> = vec![0;  7];
+
+    for tag_combi in tag_combinations {
+        // find all matched operator.
+        // if matched operator grade is under 3, skip 4 to 6.
+        let mut i = 0;
+        let mut lowest_grade = 6;
+
+        //print!("searching by {:?}, ", tag_combi);
+
+        i = summarized_operator.len();
+        while i > 0 {
+            let oper = &summarized_operator[i - 1];
+            if lowest_grade >= 3 && oper.grade > 3 && lowest_grade < oper.grade {
+                break;
+            }
+            tag_combi.iter().all(|t| oper.tag.contains(t)).then(|| {
+                lowest_grade = oper.grade;
+                //print!("lowest grade renewed by {}({}), ", oper.name, oper.grade);
+            });
+            i -= 1;
+        }
+        
+        i = 0;
+        while i < matched_operator.len() {
+            let oper = matched_operator[i].clone();
+            if lowest_grade >= 3 && oper.grade > 3 && lowest_grade < oper.grade {
+                break;
+            }
+
+            tag_combi.iter().all(|t| oper.tag.contains(t)).then(|| {
+                let mut index = 0;
+                for j  in (oper.grade as usize..counts.len()).rev() {
+                    index += counts[j];
+                }
+                //print!("and be inserted {}, ",oper.name);
+                summarized_operator.insert(index, oper.clone());
+                matched_operator.remove(i);
+                counts[oper.grade as usize] = counts[oper.grade as usize]+1;
+
+                lowest_grade = oper.grade;
+            }).or_else(|| {
+                i += 1;
+                Some(())
+            });
+        }
+        //println!("");
+    }
+    
+    summarized_operator
 }

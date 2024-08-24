@@ -1,4 +1,4 @@
-use crate::core::map_operator::{lookup_operator, make_operator_table};
+use crate::core::map_operator::{lookup_operator, lookup_operator_reasonable, make_operator_table};
 use crate::core::types::{Operator, Tag};
 use crate::core::list_tag::list_all_tags;
 
@@ -17,5 +17,5 @@ pub fn list_tags() -> Vec<Tag> {
 pub fn lookup_operator_by_tags(zip_path: String, tags: Vec<String>) -> Vec<Operator> {
     let table = make_operator_table(zip_path.as_str()).unwrap();
     let _tags: Vec<Tag> = tags.iter().map(|tag| Tag { name: tag.clone() }).collect();
-    lookup_operator(table, _tags)
+    lookup_operator_reasonable(table, _tags)
 }

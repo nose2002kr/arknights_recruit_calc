@@ -25,9 +25,15 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
         core::types::Tag { name: "폭발".to_string() },
         core::types::Tag { name: "근거리".to_string() },
         core::types::Tag { name: "뱅가드".to_string() },
-        //core::types::Tag { name: "신입".to_string() },
+        core::types::Tag { name: "신입".to_string() },
+        core::types::Tag { name: "서포터".to_string() },
+        core::types::Tag { name: "강제이동".to_string() },
+        core::types::Tag { name: "디펜더".to_string() },
+        core::types::Tag { name: "스페셜리스트".to_string() },
+        core::types::Tag { name: "고급특별채용".to_string() },
     ];
-    let operators = core::map_operator::lookup_operator(table, presented_tags.clone());
+    
+    let operators = core::map_operator::lookup_operator_reasonable(table, presented_tags.clone());
     operators.iter().all(|oper| {
         print!("Operator: {} {}★ \t", oper.name, oper.grade);
         // print the tag with the green text color
