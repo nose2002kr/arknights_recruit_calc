@@ -1,25 +1,24 @@
 package proj.ksks.arknights.arknights_calc
 
+import android.animation.ArgbEvaluator
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.Color.rgb
 import android.graphics.drawable.GradientDrawable
-import android.util.Log
 import android.view.ContextThemeWrapper
-import android.view.MotionEvent
-import android.view.View
 import android.view.ViewGroup
 import android.widget.HorizontalScrollView
 import android.widget.LinearLayout
 import android.widget.ScrollView
-import androidx.core.view.marginEnd
 import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.material.R
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.chip.Chip
+
 
 @SuppressLint("NewApi", "ViewConstructor")
 class OperatorChartLayout (
@@ -31,6 +30,7 @@ class OperatorChartLayout (
     fun updateOperatorView(operatorMap: List<Map<String, Any>>) {
         matchedOperatorLayout.removeAllViews()
 
+        var firstElement = true
         operatorMap.forEach { it ->
             val name = it["name"] as String
             val tags = it["tags"] as List<*>
@@ -55,9 +55,25 @@ class OperatorChartLayout (
                     selectedChipDictionary.forEach { (t, u) ->
                         if (tags.contains(t)) {
                             u.chipBackgroundColor =
-                                ColorStateList.valueOf(rgb(220, 220, 220))
+                                ColorStateList.valueOf(rgb(244, 244, 244))
                             u.chipStrokeWidth = 5.0f
-                            u.chipStrokeColor = ColorStateList.valueOf(Color.YELLOW)
+                            u.chipStrokeColor = ColorStateList.valueOf(rgb(233,243,215))
+
+
+                            val startColor = rgb(255,255,210)
+                            val endColor = rgb(244,244,244)
+
+                            val colorAnimation =
+                                ValueAnimator.ofObject(ArgbEvaluator(), startColor, endColor)
+                            colorAnimation.setDuration(200)
+
+                            colorAnimation.addUpdateListener { animator ->
+                                val animatedValue = animator.animatedValue as Int
+                                val animatedColor = ColorStateList.valueOf(animatedValue)
+                                u.chipBackgroundColor = animatedColor
+                            }
+                            colorAnimation.start()
+
                         } else {
                             u.chipBackgroundColor =
                                 ColorStateList.valueOf(rgb(120, 120, 120))
@@ -66,6 +82,12 @@ class OperatorChartLayout (
                         }
                     }
                 }
+            }
+            if (firstElement) {
+                if (grade > 3) {
+                    chip.performClick()
+                }
+                firstElement = false
             }
             matchedOperatorLayout.addView(chip)
         }
