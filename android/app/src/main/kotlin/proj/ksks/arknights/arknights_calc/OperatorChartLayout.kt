@@ -6,13 +6,13 @@ import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.view.ContextThemeWrapper
 import android.view.ViewGroup
-import android.widget.Button
+import android.widget.HorizontalScrollView
 import android.widget.LinearLayout
 import android.widget.ScrollView
-import android.widget.TextView
 import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.material.R
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.chip.Chip
 
 @SuppressLint("NewApi", "ViewConstructor")
@@ -44,13 +44,25 @@ class OperatorChartLayout (
 
     private val selectedTagLayout: LinearLayout
     private val selectedTag: ArrayList<String> = ArrayList()
+    private val chipDictionary: MutableMap<String, Chip> = mutableMapOf()
+
+    private fun selectTag(tag: String) {
+        selectedTag.add(tag)
+        chipDictionary[tag]?.isChecked = true
+        updateTags(selectedTag)
+    }
+
+    private fun unselectTag(tag: String) {
+        selectedTag.remove(tag)
+        chipDictionary[tag]?.isChecked = false
+        updateTags(selectedTag)
+    }
 
     private fun updateTags(tags: List<String>) {
         selectedTagLayout.removeAllViews()
 
         tags.forEach { v ->
             val chip = Chip(themedContext).apply {
-
                 text = v
                 isClickable = true
                 isCloseIconEnabled = true
@@ -58,8 +70,7 @@ class OperatorChartLayout (
                     when (isChecked) {
                         true -> {}
                         false -> {
-                            selectedTag.remove(text as String)
-                            updateTags(selectedTag)
+                            unselectTag(text as String)
                         }
                     }
                 }
@@ -67,7 +78,7 @@ class OperatorChartLayout (
                     MarginLayoutParams.WRAP_CONTENT,
                     MarginLayoutParams.WRAP_CONTENT
                     ).apply {
-                        marginEnd= 8
+                        marginEnd = 8
                         bottomMargin = 8
                     }
             }
@@ -77,13 +88,13 @@ class OperatorChartLayout (
         listener.requestUpdate(this@OperatorChartLayout, selectedTag)
     }
 
-
     init {
+
         // Set background with rounded corners
         val shape = GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
             cornerRadius = 50f
-            setColor(Color.BLACK)
+            setColor(Color.GRAY)
         }
 
         layoutParams = LayoutParams(
@@ -93,20 +104,6 @@ class OperatorChartLayout (
         orientation = VERTICAL
         background = shape
 
-        val topBar = LinearLayout(themedContext).apply {
-            layoutParams = LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-            setBackgroundColor(Color.GRAY)
-
-            addView(Button(themedContext).apply {
-                text = "Back"
-                setOnClickListener { listener.requestDismiss(this@OperatorChartLayout) }
-            })
-            orientation = VERTICAL
-        }
-
         selectedTagLayout = LinearLayout(themedContext).apply {
             layoutParams = LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -115,8 +112,27 @@ class OperatorChartLayout (
             orientation = HORIZONTAL
         }
 
-        topBar.addView(selectedTagLayout)
-        addView(topBar)
+        addView(
+            MaterialToolbar(themedContext).apply {
+                layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+                navigationIcon = themedContext.getDrawable(R.drawable.ic_m3_chip_close)
+                setNavigationOnClickListener {
+                    listener.requestDismiss(this@OperatorChartLayout)
+                }
+                addView(
+                    HorizontalScrollView(themedContext).apply {
+                        layoutParams = ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT
+                        )
+                        addView(selectedTagLayout)
+                    }
+                )
+            }
+        )
 
         val upperScrollView = ScrollView(themedContext).apply {
             layoutParams = ViewGroup.LayoutParams(
@@ -142,12 +158,12 @@ class OperatorChartLayout (
                 isCheckable = true
                 setOnClickListener {
                     when (isChecked) {
-                        true -> selectedTag.add(text as String)
-                        false -> selectedTag.remove(text as String)
+                        true -> selectTag(text as String)
+                        false -> unselectTag(text as String)
                     }
-                    updateTags(selectedTag)
                 }
             }
+            chipDictionary[tag] = chip
 
             val params = MarginLayoutParams(
                 MarginLayoutParams.WRAP_CONTENT,
