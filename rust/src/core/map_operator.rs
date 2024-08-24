@@ -7,12 +7,12 @@ use crate::core::types::{Operator, Tag};
 
 use super::list_tag::list_all_tags;
 
-type Table = HashMap<Vec<Tag>, Operator>;
+type Table = Vec<Operator>;
 
 pub fn make_operator_table(zip_path : &str) -> Result<Table, Box<dyn std::error::Error>> {
     let mut zip = ZipArchive::new(BufReader::new(File::open(zip_path)?))?;
 
-    let mut table: Table =  HashMap::new();
+    let mut table: Table =  Vec::new();
 
     let file_names: Vec<String> = zip.file_names().map(|name| name.to_string()).collect();
 
@@ -39,9 +39,16 @@ pub fn make_operator_table(zip_path : &str) -> Result<Table, Box<dyn std::error:
     
         // Iterate over the rows of the table
         for tbody in document.select(&tbody_selector) {
+            let mut first_line = true;
             for tr in tbody.select(&tr_selector) {
+                if first_line {
+                    first_line = false;
+                    continue;
+                }
+
                 let mut td_iter = tr.select(&td_selector);
-    
+
+                //println!("{}", tr.inner_html());
                 // The first column (td) is the operator name
                 if let Some(name_td) = td_iter.next() {
                     let operator_name = name_td.text().collect::<Vec<_>>().concat();
@@ -77,9 +84,9 @@ pub fn make_operator_table(zip_path : &str) -> Result<Table, Box<dyn std::error:
                         grade: grade,
                         tag: operator_tags.clone()
                     };
-
+                    //println!("operator: {:?}", operator);
                     // Add the operator to the list of operators
-                    table.insert(operator_tags, operator);
+                    table.push(operator);
                 }
             }
         }
@@ -95,12 +102,12 @@ pub fn lookup_operator(table: Table, tags : Vec<Tag>) -> Vec<Operator> {
     }
     
     let mut matched_operator: Vec<Operator> = table.iter()
-        .filter(|(tags, _)| 
+        .filter(|oper| 
             normalized_tags.iter().any(|tag| {
-                tags.contains(tag)
+                oper.tag.contains(tag)
             })
         )
-        .map(|(_, operator)| operator.clone())
+        .map(|oper| oper.clone())
         .collect();
 
     matched_operator.sort_by_key(|operator| operator.grade);
@@ -158,15 +165,16 @@ pub fn lookup_operator_reasonable(table: Table, tags : Vec<Tag>) -> Vec<Operator
     // );
 
     let mut matched_operator: Vec<Operator> = table.iter()
-        .filter(|(tags, _)| 
+        .filter(|oper| 
             normalized_tags.iter().any(|tag| {
-                tags.contains(tag)
+                oper.tag.contains(tag)
             })
         )
-        .map(|(_, operator)| operator.clone())
+        .map(|oper| oper.clone())
         .collect();
 
     matched_operator.sort_by_key(|operator| operator.grade);
+    //println!("candidates: {:?}", matched_operator);
 
     let mut summarized_operator: Vec<Operator> = Vec::new();
     let mut counts: Vec<usize> = vec![0;  7];

@@ -6,20 +6,33 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     let table = core::map_operator::make_operator_table(&(dir + "datasheets.zip"))?;
 
     // Print the parsed operators and their tags
+    let mut counts: Vec<usize> = vec![0;  7];
     for element in &table {
-        println!("Operator: {} {}★", element.1.name, element.1.grade);
-        for tag in element.0 {
-            println!("  Tag: '{}'", tag.name);
+        counts[element.grade as usize] += 1;
+        if element.grade == 2 {
+            println!("Operator: {} {}★", element.name, element.grade);
+            for tag in element.tag.iter() {
+                println!("  Tag: '{}'", tag.name);
+            }
         }
     }
 
+    // 2024.08.25
+    assert!(counts[0] == 0);
+    assert!(counts[1] == 5);
+    assert!(counts[2] == 5);
+    assert!(counts[3] == 16);
+    assert!(counts[4] == 31);
+    assert!(counts[5] == 37);
+    assert!(counts[6] == 23);
 
     let tags = core::list_tag::list_all_tags();
     print!("Tag: ");
-    for tag in tags {
+    for tag in tags.iter() {
         print!("{}, ", tag.name);
     }
     println!("");
+    assert!(tags.len() == 28);
 
     let presented_tags = vec![
         core::types::Tag { name: "폭발".to_string() },
