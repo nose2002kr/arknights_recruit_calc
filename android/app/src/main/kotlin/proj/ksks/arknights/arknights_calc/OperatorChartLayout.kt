@@ -2,7 +2,9 @@ package proj.ksks.arknights.arknights_calc
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.res.ColorStateList
 import android.graphics.Color
+import android.graphics.Color.rgb
 import android.graphics.drawable.GradientDrawable
 import android.view.ContextThemeWrapper
 import android.view.ViewGroup
@@ -24,10 +26,23 @@ class OperatorChartLayout (
 
     fun updateOperatorView(operatorMap: Map<Int, List<String>>) {
         matchedOperatorLayout.removeAllViews()
-        operatorMap.forEach { (_, u) ->
+        operatorMap.forEach { (grade, u) ->
             u.forEach { v ->
                 val chip = Chip(themedContext).apply {
                     text = v
+                    chipStrokeWidth = 5.0f
+                    chipBackgroundColor = ColorStateList.valueOf(Color.WHITE)
+                    chipStrokeColor = (
+                        when (grade) {
+                            1 -> ColorStateList.valueOf(rgb(234,234,234))
+                            2 -> ColorStateList.valueOf(rgb(234,234,234))
+                            3 -> ColorStateList.valueOf(rgb(234,234,234))
+                            4 -> ColorStateList.valueOf(rgb(191,141,240))
+                            5 -> ColorStateList.valueOf(rgb(238,238,1))
+                            6 -> ColorStateList.valueOf(rgb(252,194,120))
+                            else -> ColorStateList.valueOf(Color.rgb(234,234,234))
+                        }
+                    )
                 }
                 matchedOperatorLayout.addView(chip)
             }
