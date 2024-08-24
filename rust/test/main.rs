@@ -21,15 +21,25 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     println!("");
 
-    let operators = core::map_operator::lookup_operator(table,
-        vec![
-            core::types::Tag { name: "폭발".to_string() },
-            core::types::Tag { name: "근거리".to_string() },
-            core::types::Tag { name: "뱅가드".to_string() },
-            //core::types::Tag { name: "신입".to_string() },
-        ]);
+    let presented_tags = vec![
+        core::types::Tag { name: "폭발".to_string() },
+        core::types::Tag { name: "근거리".to_string() },
+        core::types::Tag { name: "뱅가드".to_string() },
+        //core::types::Tag { name: "신입".to_string() },
+    ];
+    let operators = core::map_operator::lookup_operator(table, presented_tags.clone());
     operators.iter().all(|oper| {
-        println!("Operator: {} {}★", oper.name, oper.grade);
+        print!("Operator: {} {}★ \t", oper.name, oper.grade);
+        // print the tag with the green text color
+        oper.tag.iter().for_each(|tag| {
+            if presented_tags.contains(tag) {
+                print!("\x1b[91m{}\x1b[0m ", tag.name);
+            } else {
+                print!("{} ", tag.name);
+            }
+        });
+
+        println!("");
         true
     });
 

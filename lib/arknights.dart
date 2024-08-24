@@ -15,18 +15,25 @@ class ArknightsService {
                   .toList();
 
               var operators = await lookupOperatorByTags(zipPath: zipPath, tags: tags);
-
-              Map<int, List<String>> operatorMap = {};
+              // grade   oper-name    oper-tags
+              //   |         |           |
+              Map<int, Map<String, List<String>>> operatorMap = {};
               operators.forEach((it) {
                 if (operatorMap[it.grade] == null) {
-                  operatorMap[it.grade] = [];
+                  operatorMap[it.grade] = {};
                 }
-                operatorMap[it.grade]!.add(it.name);
+                Map<String, List<String>> operator = operatorMap[it.grade]!;
+                List<String> tags = [];
+                it.tag.forEach((tag) {
+                  tags.add(tag.name);
+                });
+                operator[it.name] = tags;
+
+                operatorMap[it.grade] = operator;
               });
 
               return operatorMap;
           }
-
         }
     );
   }

@@ -45,10 +45,6 @@ pub fn make_operator_table(zip_path : &str) -> Result<Table, Box<dyn std::error:
                 // The first column (td) is the operator name
                 if let Some(name_td) = td_iter.next() {
                     let operator_name = name_td.text().collect::<Vec<_>>().concat();
-                    let operator = Operator {
-                        name: operator_name.clone(),
-                        grade: grade,
-                    };
     
                     // Create a vector to hold the tags for this operator
                     let mut operator_tags: Vec<Tag> = Vec::new();
@@ -68,6 +64,12 @@ pub fn make_operator_table(zip_path : &str) -> Result<Table, Box<dyn std::error:
                         operator_tags.push(tag);
                     }
     
+                    let operator = Operator {
+                        name: operator_name.clone(),
+                        grade: grade,
+                        tag: operator_tags.clone()
+                    };
+
                     // Add the operator to the list of operators
                     table.insert(operator_tags, operator);
                 }
@@ -86,7 +88,7 @@ pub fn lookup_operator(table: Table, tags : Vec<Tag>) -> Vec<Operator> {
     
     let mut matched_operator: Vec<Operator> = table.iter()
         .filter(|(tags, _)| 
-            normalized_tags.iter().all(|tag| {
+            normalized_tags.iter().any(|tag| {
                 tags.contains(tag)
             })
         )

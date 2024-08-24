@@ -28,13 +28,13 @@ class OperatorChartLayout (
     private val listener: Listener,
 ) : LinearLayout(context) {
 
-    fun updateOperatorView(operatorMap: Map<Int, List<String>>) {
+    fun updateOperatorView(operatorMap: Map<Int, Map<String, List<String>>>) {
         matchedOperatorLayout.removeAllViews()
 
         operatorMap.toSortedMap(reverseOrder()).forEach { (grade, u) ->
             u.forEach { v ->
                 val chip = Chip(themedContext).apply {
-                    text = v
+                    text = v.key
                     chipStrokeWidth = 5.0f
                     chipBackgroundColor = ColorStateList.valueOf(Color.WHITE)
                     chipStrokeColor = (
@@ -48,6 +48,21 @@ class OperatorChartLayout (
                             else -> ColorStateList.valueOf(rgb(234,234,234))
                         }
                     )
+                    setOnClickListener {
+                        selectedChipDictionary.forEach { (t, u) ->
+                            if (v.value.contains(t)) {
+                                u.chipBackgroundColor =
+                                    ColorStateList.valueOf(rgb(220, 220, 220))
+                                u.chipStrokeWidth = 5.0f
+                                u.chipStrokeColor = ColorStateList.valueOf(Color.YELLOW)
+                            } else {
+                                u.chipBackgroundColor =
+                                    ColorStateList.valueOf(rgb(120, 120, 120))
+                                u.chipStrokeWidth = 0f
+                                u.chipStrokeColor = ColorStateList.valueOf(Color.WHITE)
+                            }
+                        }
+                    }
                 }
                 matchedOperatorLayout.addView(chip)
             }
@@ -65,6 +80,7 @@ class OperatorChartLayout (
     private val selectedTagLayout: LinearLayout
     private val selectedTag: ArrayList<String> = ArrayList()
     private val chipDictionary: MutableMap<String, Chip> = mutableMapOf()
+    private val selectedChipDictionary: MutableMap<String, Chip> = mutableMapOf()
 
     private fun selectTag(tag: String) {
         selectedTag.add(tag)
@@ -102,6 +118,7 @@ class OperatorChartLayout (
                         bottomMargin = 8
                     }
             }
+            selectedChipDictionary[v] = chip
             selectedTagLayout.addView(chip)
         }
 
