@@ -178,6 +178,28 @@ pub fn lookup_operator_reasonable(table: &Table, tags : Vec<Tag>) -> Vec<Operato
 
     let mut summarized_operator: Vec<Operator> = Vec::new();
     let mut counts: Vec<usize> = vec![0;  7];
+    let have_special_ticket: bool = tags.iter().any(|t| t.name == "고급특별채용").then(|| true).or_else(|| Some(false)).unwrap();
+
+    fn are_there_any_more_candidates(
+        oper: &Operator,
+        explorered_grade: i8,
+        have_special_ticket: bool) -> bool
+    {
+        if explorered_grade > 1 &&        // Setting the recruitment time to 9 hours removes the 1-star from the lowest-picked agent,
+                                          //      which relaxes the checking conditions.
+           oper.grade > 3       &&        // From the 4-stars onwards, there is more chance of a 3-stars candidate.
+           explorered_grade < oper.grade  // Less likely to be higher than the lowest rating found so far. 
+        {
+            return false;
+        }
+        
+        if oper.grade == 6 && !have_special_ticket // The 6-Stars candidates do not appear unless they have a ticket.
+        {
+            return false;
+        }
+
+        return true;
+    }
 
     for tag_combi in tag_combinations {
         // find all matched operator.
@@ -190,7 +212,7 @@ pub fn lookup_operator_reasonable(table: &Table, tags : Vec<Tag>) -> Vec<Operato
         i = summarized_operator.len();
         while i > 0 {
             let oper = &summarized_operator[i - 1];
-            if lowest_grade >= 3 && oper.grade > 3 && lowest_grade < oper.grade {
+            if !are_there_any_more_candidates(&oper, lowest_grade, have_special_ticket) {
                 break;
             }
             tag_combi.iter().all(|t| oper.tag.contains(t)).then(|| {
@@ -199,11 +221,12 @@ pub fn lookup_operator_reasonable(table: &Table, tags : Vec<Tag>) -> Vec<Operato
             });
             i -= 1;
         }
-        
         i = 0;
         while i < matched_operator.len() {
             let oper = matched_operator[i].clone();
-            if lowest_grade >= 3 && oper.grade > 3 && lowest_grade < oper.grade {
+            
+            if !are_there_any_more_candidates(&oper, lowest_grade, have_special_ticket) {
+                //print!("skipped caused by lowest_grade {}, and oper.grade {}, ",lowest_grade, oper.grade);
                 break;
             }
 

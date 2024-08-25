@@ -35,15 +35,11 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     assert!(tags.len() == 28);
 
     let presented_tags = vec![
-        core::types::Tag { name: "폭발".to_string() },
-        core::types::Tag { name: "근거리".to_string() },
+        core::types::Tag { name: "스나이퍼".to_string() },
         core::types::Tag { name: "뱅가드".to_string() },
-        core::types::Tag { name: "신입".to_string() },
-        core::types::Tag { name: "서포터".to_string() },
-        core::types::Tag { name: "강제이동".to_string() },
-        core::types::Tag { name: "디펜더".to_string() },
-        core::types::Tag { name: "스페셜리스트".to_string() },
-        core::types::Tag { name: "고급특별채용".to_string() },
+        core::types::Tag { name: "코스트+".to_string() },
+        core::types::Tag { name: "범위공격".to_string() },
+        core::types::Tag { name: "힐링".to_string() },
     ];
     
     let operators = core::map_operator::lookup_operator_reasonable(table.as_ref(), presented_tags.clone());
