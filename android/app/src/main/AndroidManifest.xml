@@ -9,7 +9,7 @@
 
 
     <application
-        android:label="arknights_calc"
+        android:label="Recruit Calc"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
