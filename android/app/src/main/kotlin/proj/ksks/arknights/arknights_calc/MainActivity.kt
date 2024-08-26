@@ -23,6 +23,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.resume
+import kotlin.io.path.Path
+import kotlin.io.path.exists
 
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 class MainActivity: FlutterActivity() {
@@ -93,10 +95,19 @@ class MainActivity: FlutterActivity() {
                     val list = call.arguments as ArrayList<String>
                     tagDictionary = list
                     Log.d("MainActivity", "Debug tagDictionary: " + (tagDictionary.get(0)))
-                } else if (call.method.equals("getCacheDir")) {
-                    result.success(context.cacheDir.toString())
                 }
             }
+        ChannelManager.nativeChannel = MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), "native_channel");
+        ChannelManager.nativeChannel
+            .setMethodCallHandler { call, result ->
+                if (call.method.equals("getCacheDir")) {
+                    result.success(context.cacheDir.toString())
+                } else if (call.method.equals("isFileExists")) {
+                    Log.d("MainActivity", "isFileExists arg: " + call.arguments.toString())
+                    result.success(Path(call.arguments.toString()).exists())
+                }
+            }
+
     }
 
 

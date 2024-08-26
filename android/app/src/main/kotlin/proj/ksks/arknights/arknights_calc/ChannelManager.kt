@@ -6,5 +6,6 @@ object ChannelManager {
 
     lateinit var arknights: MethodChannel
     lateinit var screencapture: MethodChannel
+    lateinit var nativeChannel: MethodChannel
 
 }

@@ -4,7 +4,7 @@ import 'package:arknights_calc/src/rust/api/simple.dart';
 class ArknightsService {
   static const MethodChannel _channel = MethodChannel('arknights');
 
-  ArknightsService(zipPath) {
+  static Future<void> listenToCallLookupOperator(String zipPath) async {
     _channel.setMethodCallHandler(
         (methodCall) async {
           switch (methodCall.method) {
@@ -21,6 +21,7 @@ class ArknightsService {
               *        grade: [int]          grade
               *        [
               *          { "name": "라바", "tags": ["캐스터야"], "grade":3 }
+              *        ]
               */
               List<Map<String, Object>> result = [];
               operators.forEach((it) {
@@ -41,7 +42,6 @@ class ArknightsService {
     );
   }
 
-
   static Future<void> sendTagList() async {
     listTags().then((tags) {
       var list = tags.map((v) {
@@ -49,11 +49,5 @@ class ArknightsService {
       }).toList();
       _channel.invokeMethod('listTags', list);
     });
-  }
-
-  static Future<String> getAppCacheDirectory() async {
-    var result = await _channel.invokeMethod('getCacheDir');
-    print(result);
-    return result;
   }
 }
