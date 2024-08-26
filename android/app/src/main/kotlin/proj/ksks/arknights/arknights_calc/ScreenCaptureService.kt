@@ -26,14 +26,22 @@ import android.util.Log
 
 @TargetApi(Build.VERSION_CODES.TIRAMISU)
 class ScreenCaptureService : Service() {
+    /* Constant val */
+    private val TAG = "ScreenCaptureService"
+    private val NOTIFI_DESCRIPTION = "Tap to close."
+    private val NOTIFI_NAME = "Arknights calculator"
+    private val NOTIFI_CHANNEL_ID = "Arknights recruit calc"
+    private val NOTIFI_ID_RECORD = 1
+    private val NOTIFI_ID_AMIYA = 2
+
+
+    /* Member */
+
     private var mProjectionManager: MediaProjectionManager? = null
     private var mMediaProjection: MediaProjection? = null
     private var mVirtualDisplay: VirtualDisplay? = null
     private var mImageReader: ImageReader? = null
     private var mBitmapIcon : Bitmap? = null
-    private val notificationChannelId : String = "Arknights recruit calc"
-    private val notificationRecorderId = 1
-    private val notificationAmiyaId = 2
     private var image: Image? = null
 
     override fun onCreate() {
@@ -47,14 +55,14 @@ class ScreenCaptureService : Service() {
         intent.setAction("START")
         intent.putExtra("icon", bitmap)
         startService(intent)
-        Log.d("ScreenCaptureService", "Trying to run service.")
+        Log.d(TAG, "Trying to run service.")
     }
 
     private fun closeAmiya() {
         val intent = Intent(this, FloatingAmiya::class.java)
         intent.setAction("STOP")
         startService(intent)
-        Log.d("ScreenCaptureService", "Trying to stop service.")
+        Log.d(TAG, "Trying to stop service.")
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -71,27 +79,27 @@ class ScreenCaptureService : Service() {
             closeAmiya()
             stopSelf()
         } else if (intent != null && intent.action.equals("CAPTURE")) {
-            Log.d("ScreenCaptureService", "capture start")
+            Log.d(TAG, "capture start")
             val captureBitmap = image?.let { imageToBitmap(it) }
             captureBitmap?.let {
-                ocrBitmap(it, { visionText ->
+                ocrBitmap(it) { visionText ->
                     val matchedTag = ArrayList<String>()
                     for (block in visionText.textBlocks) {
-                        val blockText : String = block.text
+                        val blockText: String = block.text
                         if (tagDictionary.contains(blockText.trim())) {
                             matchedTag.add(blockText.trim())
                         }
                     }
-                    Log.d("ScreenCaptureService", "Complete detection.")
+                    Log.d(TAG, "Complete detection.")
                     startService(
                         Intent(this, FloatingAmiya::class.java).apply {
                             action = "SHOW_PANEL"
                             putExtra("tags", matchedTag)
-                    })
-                })
-                Log.d("ScreenCaptureService", "capture success")
+                        })
+                }
+                Log.d(TAG, "capture success")
             }
-            Log.d("ScreenCaptureService", "capture done")
+            Log.d(TAG, "capture done")
         }
 
         return START_STICKY
@@ -103,40 +111,36 @@ class ScreenCaptureService : Service() {
 
         if (SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
-                notificationChannelId, "Foreground notification",
+                NOTIFI_CHANNEL_ID, "Foreground notification",
                 NotificationManager.IMPORTANCE_DEFAULT
             )
 
             manager.createNotificationChannel(channel)
         }
 
-        val notification = Notification.Builder(this, notificationChannelId)
-            .build()
-
-        startForeground(notificationRecorderId, notification)
+        startForeground(NOTIFI_ID_RECORD, Notification.Builder(this, NOTIFI_CHANNEL_ID)
+            .build())
 
         val intent = Intent(this, ScreenCaptureService::class.java).apply {
             action = "STOP_SCREEN_CAPTURE"
         }
         val pendingIntent: PendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
 
-        val noti: Notification = Notification.Builder(this, notificationChannelId)
-            .setContentTitle("Arknights calculator")
-            .setContentText("Tap to close.")
+        manager.notify(NOTIFI_ID_AMIYA, Notification.Builder(this, NOTIFI_CHANNEL_ID)
+            .setContentTitle(NOTIFI_NAME)
+            .setContentText(NOTIFI_DESCRIPTION)
             .setContentIntent(pendingIntent)
             .setDeleteIntent(pendingIntent)
             .setAutoCancel(true)
             .setOngoing(true)
             .setSmallIcon(Icon.createWithBitmap(mBitmapIcon))
-            .build()
-
-        manager.notify(notificationAmiyaId, noti)
+            .build())
     }
 
     private fun removeNotification() {
         val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.cancel(notificationRecorderId)
-        manager.cancel(notificationAmiyaId)
+        manager.cancel(NOTIFI_ID_RECORD)
+        manager.cancel(NOTIFI_ID_AMIYA)
     }
 
     private fun startScreenCapture(intent: Intent) {
@@ -151,7 +155,7 @@ class ScreenCaptureService : Service() {
             override fun onStop() {
                 super.onStop()
                 stopScreenCapture()
-                Log.i("ScreenCaptureService", "MediaProjection stopped")
+                Log.i(TAG, "MediaProjection stopped")
             }
         }, null)
 
@@ -168,7 +172,7 @@ class ScreenCaptureService : Service() {
             image?.close()
             image = reader.acquireLatestImage()
         }, null)
-        Log.d("ScreenCaptureService", "started service");
+        Log.d(TAG, "started service");
     }
 
     private fun stopScreenCapture() {
@@ -183,7 +187,7 @@ class ScreenCaptureService : Service() {
 
     @Suppress("DEPRECATION")
     private inline fun <reified P : Parcelable> Intent.getParcelable(key: String): P? {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        return if (SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             getParcelableExtra(key, P::class.java)
         } else {
             getParcelableExtra(key)

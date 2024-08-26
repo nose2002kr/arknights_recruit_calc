@@ -32,10 +32,21 @@ import kotlin.coroutines.resumeWithException
 
 
 class FloatingAmiya : Service() {
+    /* Constant val */
+    private val TAG = "FloatingAmiya"
+    private val ICON_SIZE = 200
+    private val ICON_SHADOW_MARGIN = 20
+    private val ICON_ELEVATION = 10f
+    private val PANEL_WIDTH = 1200
+    private val PANEL_HEIGHT = 700
+
+
+    /* Member */
     private lateinit var mWindowManager : WindowManager
     private lateinit var mBitmap : Bitmap
     private var mOuterLayoutParams: WindowManager.LayoutParams? = null
     private val addedViews = mutableListOf<View>()
+
 
     override fun onCreate() {
         super.onCreate()
@@ -79,16 +90,16 @@ class FloatingAmiya : Service() {
 
     @TargetApi(Build.VERSION_CODES.TIRAMISU)
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        Log.d("FloatingAmiya", "Amiya, " + intent.action)
+        Log.d(TAG, "Amiya, " + intent.action)
         if (intent.action.equals("STOP")) {
-            Log.d("FloatingAmiya", "Hide amiya.")
+            Log.d(TAG, "Hide amiya.")
             removeAllViews()
         } else if (intent.action.equals("START")) {
-            Log.d("FloatingAmiya", "Show amiya.")
+            Log.d(TAG, "Show amiya.")
             mBitmap = intent.getParcelable("icon")!!
             showIcon()
         } else if (intent.action.equals("SHOW_PANEL")) {
-            Log.d("FloatingAmiya", "Show panel.")
+            Log.d(TAG, "Show panel.")
             val matchedTags : ArrayList<String> = intent.getStringArrayListExtra("tags")!!
             showPanel(matchedTags)
         }
@@ -98,8 +109,8 @@ class FloatingAmiya : Service() {
     @TargetApi(Build.VERSION_CODES.O)
     private fun showIcon() {
         val outerLayoutParams = WindowManager.LayoutParams(
-            300,
-            300,
+            ICON_SIZE,
+            ICON_SIZE,
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT
@@ -123,17 +134,31 @@ class FloatingAmiya : Service() {
             FrameLayout.LayoutParams.MATCH_PARENT,
             FrameLayout.LayoutParams.MATCH_PARENT
         ).apply {
-            setMargins(20,20,20,20)
+            setMargins(
+                ICON_SHADOW_MARGIN,
+                ICON_SHADOW_MARGIN,
+                ICON_SHADOW_MARGIN,
+                ICON_SHADOW_MARGIN)
         }
 
         backgroundView.background = ShapeDrawable(OvalShape()).apply {
             paint.color = Color.WHITE
         }
-        backgroundView.elevation = 10f
+        backgroundView.elevation = ICON_ELEVATION
 
         val imageView = ImageView(this)
         imageView.setImageBitmap(mBitmap)
-        imageView.elevation = 11f
+        imageView.elevation = ICON_ELEVATION+1
+        imageView.layoutParams = FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.MATCH_PARENT,
+            FrameLayout.LayoutParams.MATCH_PARENT
+        ).apply {
+            setMargins(
+                ICON_SHADOW_MARGIN,
+                ICON_SHADOW_MARGIN,
+                ICON_SHADOW_MARGIN,
+                ICON_SHADOW_MARGIN)
+        }
 
         frameLayout.setOnTouchListener(DragTouchListener())
         frameLayout.setOnClickListener(ClickListener())
@@ -141,7 +166,7 @@ class FloatingAmiya : Service() {
 
         frameLayout.addView(backgroundView)
         frameLayout.addView(imageView)
-        Log.i("FloatingAmiya", "showIcon")
+        Log.i(TAG, "showIcon")
         removeAllViews()
         addView(frameLayout, outerLayoutParams)
         mOuterLayoutParams = outerLayoutParams
@@ -149,7 +174,7 @@ class FloatingAmiya : Service() {
 
     private suspend fun requestLookingUpOperator(tags: List<String>): List<Map<String, Any>> {
         return suspendCancellableCoroutine { continuation ->
-            ChannelManager.arknights.invokeMethod(
+            ChannelManager.getChannelInstance(ChannelManager.ARKNIGHTS).invokeMethod(
                 "lookupOperator",
                 tags,
                 Callback(continuation)
@@ -159,7 +184,6 @@ class FloatingAmiya : Service() {
 
     @TargetApi(Build.VERSION_CODES.O)
     private fun showPanel(matchedTags : ArrayList<String>) {
-
         val layout = OperatorChartLayout(this, matchedTags, object : Listener {
             override fun requestDismiss(self: OperatorChartLayout) {
                 showIcon()
@@ -184,8 +208,8 @@ class FloatingAmiya : Service() {
         })
 
         val outerLayoutParams = WindowManager.LayoutParams(
-            1200,
-            700,
+            PANEL_WIDTH,
+            PANEL_HEIGHT,
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT
@@ -198,7 +222,7 @@ class FloatingAmiya : Service() {
         }
         layout.setOnTouchListener(DragTouchListener())
 
-        Log.i("FloatingAmiya", "showPanel")
+        Log.i(TAG, "showPanel")
         removeAllViews()
         addView(layout, outerLayoutParams)
         mOuterLayoutParams = outerLayoutParams
@@ -230,20 +254,15 @@ class FloatingAmiya : Service() {
         }
     }
 
-    var switch: Boolean = false
     private inner class ClickListener : View.OnClickListener, View.OnLongClickListener {
         @TargetApi(Build.VERSION_CODES.O)
         override fun onClick(v: View?) {
-            Log.i("FloatingAmiya", "Clicked")
-            if (!switch) {
-                removeAllViews()
-                startForegroundService(
-                    Intent(this@FloatingAmiya, ScreenCaptureService::class.java).apply {
-                        action = "CAPTURE"
-                    })
-            }
-            else         showIcon()
-            switch !=switch
+            removeAllViews()
+            startForegroundService(
+                Intent(this@FloatingAmiya, ScreenCaptureService::class.java).apply {
+                    action = "CAPTURE"
+                }
+            )
         }
 
         override fun onLongClick(v: View?): Boolean {

@@ -16,7 +16,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
-import io.flutter.plugin.common.MethodChannel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -28,11 +27,16 @@ import kotlin.io.path.exists
 
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 class MainActivity: FlutterActivity() {
-    private var data: Intent? = null
+    /* Constant val */
+    private val TAG = "MainActivity"
     private val REQUEST_CODE_PJM = 1
     private val REQUEST_CODE_OVL = 2
     private val REQUEST_CODE_NTF = 4
-    private val fullPermission = REQUEST_CODE_PJM or REQUEST_CODE_OVL or REQUEST_CODE_NTF
+    private val FULL_PERMISSION = REQUEST_CODE_PJM or REQUEST_CODE_OVL or REQUEST_CODE_NTF
+
+
+    /* Member */
+    private var data: Intent? = null
     private var permissionGranted = 0
     private var bitmap: Bitmap? = null
 
@@ -44,13 +48,12 @@ class MainActivity: FlutterActivity() {
         if (permissionGranted and REQUEST_CODE_NTF == 0)
             requestNotificationPerm()
 
-        if (permissionGranted != fullPermission) {
-            Log.w("ArknightsCalc", "Permission is not fully granted.")
+        if (permissionGranted != FULL_PERMISSION) {
+            Log.w(TAG, "Permission is not fully granted.")
             return
         }
 
         launchService(this.data)
-
     }
 
     private fun launchService(data: Intent?) {
@@ -58,7 +61,6 @@ class MainActivity: FlutterActivity() {
         intent.setAction("START_SCREEN_CAPTURE")
         intent.putExtra("data", data)
         intent.putExtra("icon", bitmap)
-
         startForegroundService(intent)
     }
 
@@ -70,44 +72,45 @@ class MainActivity: FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-        Log.d("ArknightsCalc", "synchronized the app2");
+        Log.d(TAG, "synchronized with the android native");
+        ChannelManager.installChannels(flutterEngine)
 
-        ChannelManager.screencapture = MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), "screen_capture")
-        ChannelManager.screencapture
-            .setMethodCallHandler { call, result ->
-                if (call.method.equals("stopScreenCapture")) {
-                    val intent: Intent = Intent(this, ScreenCaptureService::class.java)
-                    intent.setAction("STOP_SCREEN_CAPTURE")
-                    stopService()
-                } else if (call.method.equals("startProjectionRequest")) {
-                    val byteArray = call.arguments as ByteArray
-                    bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
-                    GlobalScope.launch {
-                        requestPermissions()
+        ChannelManager.getChannelInstance(ChannelManager.SCREENCAPTURE)
+            .setMethodCallHandler { call, _ ->
+                when(call.method) {
+                    "stopScreenCapture" -> {
+                        val intent = Intent(this, ScreenCaptureService::class.java)
+                        intent.setAction("STOP_SCREEN_CAPTURE")
+                        stopService()
+                    }
+                    "startProjectionRequest" -> {
+                        val byteArray = call.arguments as ByteArray
+                        bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+                        GlobalScope.launch {
+                            requestPermissions()
+                        }
                     }
                 }
             }
 
-        ChannelManager.arknights = MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), "arknights");
-        ChannelManager.arknights
-            .setMethodCallHandler { call, result ->
-                if (call.method.equals("listTags")) {
-                    val list = call.arguments as ArrayList<String>
-                    tagDictionary = list
-                    Log.d("MainActivity", "Debug tagDictionary: " + (tagDictionary.get(0)))
-                }
-            }
-        ChannelManager.nativeChannel = MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), "native_channel");
-        ChannelManager.nativeChannel
-            .setMethodCallHandler { call, result ->
-                if (call.method.equals("getCacheDir")) {
-                    result.success(context.cacheDir.toString())
-                } else if (call.method.equals("isFileExists")) {
-                    Log.d("MainActivity", "isFileExists arg: " + call.arguments.toString())
-                    result.success(Path(call.arguments.toString()).exists())
+        ChannelManager.getChannelInstance(ChannelManager.ARKNIGHTS)
+            .setMethodCallHandler { call, _ ->
+                when(call.method) {
+                    "listTags" -> {
+                        val list = call.arguments as ArrayList<String>
+                        tagDictionary = list
+                        Log.d(TAG, "Debug tagDictionary: " + (tagDictionary.get(0)))
+                    }
                 }
             }
 
+        ChannelManager.getChannelInstance(ChannelManager.NATIVE_CHANNEL)
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "getCacheDir" -> result.success(context.cacheDir.toString())
+                    "isFileExists" -> result.success(Path(call.arguments.toString()).exists())
+                }
+            }
     }
 
 
@@ -123,7 +126,7 @@ class MainActivity: FlutterActivity() {
         )
         startActivityForResult(intent, REQUEST_CODE_OVL)
 
-        suspendCancellableCoroutine<Unit> { cont ->
+        suspendCancellableCoroutine { cont ->
             onActivityResultListener = { requestCode, resultCode, _ ->
                 if (requestCode == REQUEST_CODE_OVL) {
                     if (resultCode == Activity.RESULT_OK) {
@@ -139,7 +142,7 @@ class MainActivity: FlutterActivity() {
         val projectionManager = getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
         val captureIntent = projectionManager.createScreenCaptureIntent()
         startActivityForResult(captureIntent, REQUEST_CODE_PJM)
-        suspendCancellableCoroutine<Unit> { cont ->
+        suspendCancellableCoroutine { cont ->
             onActivityResultListener = { requestCode, resultCode, data ->
                 if (requestCode == REQUEST_CODE_PJM) {
                     if (resultCode == Activity.RESULT_OK) {
@@ -166,7 +169,7 @@ class MainActivity: FlutterActivity() {
                 REQUEST_CODE_NTF
             )
 
-            suspendCancellableCoroutine<Unit> { cont ->
+            suspendCancellableCoroutine { cont ->
                 onRequestPermissionsResultListener = { requestCode, _, grantResults ->
                     if (requestCode == REQUEST_CODE_NTF) {
                         if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {

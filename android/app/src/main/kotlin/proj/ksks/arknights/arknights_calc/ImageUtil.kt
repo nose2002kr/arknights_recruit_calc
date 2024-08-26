@@ -77,7 +77,6 @@ fun imageToBitmap(image: Image): Bitmap? {
         val out = ByteArrayOutputStream()
         yuvImage.compressToJpeg(android.graphics.Rect(0, 0, image.width, image.height), 100, out)
         val imageBytes = out.toByteArray()
-        Log.d("ScreenCaptureService", "trying imageToBitmap")
         return BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
     } else {
         val width = image.width

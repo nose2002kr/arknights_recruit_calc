@@ -266,16 +266,17 @@ class OperatorChartLayout (
         val lowerScrollView = HorizontalScrollView(themedContext).apply {
             layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
+                ViewGroup.LayoutParams.WRAP_CONTENT
             )
+            setBackgroundColor(Color.WHITE)
         }
         matchedOperatorLayout = LinearLayout(themedContext).apply {
             layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
+                ViewGroup.LayoutParams.WRAP_CONTENT
             )
+            minimumHeight = 70
             orientation = HORIZONTAL
-            setBackgroundColor(Color.WHITE)
         }
         lowerScrollView.addView(matchedOperatorLayout)
         container.addView(lowerScrollView)
