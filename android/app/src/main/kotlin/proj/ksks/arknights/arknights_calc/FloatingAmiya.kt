@@ -5,7 +5,10 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.PixelFormat
+import android.graphics.drawable.ShapeDrawable
+import android.graphics.drawable.shapes.OvalShape
 import android.os.Build
 import android.os.IBinder
 import android.os.Parcelable
@@ -13,9 +16,10 @@ import android.util.Log
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup.LayoutParams
 import android.view.WindowManager
+import android.widget.FrameLayout
 import android.widget.ImageView
-import android.widget.LinearLayout
 import io.flutter.plugin.common.MethodChannel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -107,15 +111,39 @@ class FloatingAmiya : Service() {
             outerLayoutParams.y = param.y
         }
 
+        val frameLayout = FrameLayout(this).apply {
+            layoutParams = FrameLayout.LayoutParams (
+                LayoutParams.MATCH_PARENT,
+                LayoutParams.MATCH_PARENT
+            )
+        }
+
+        val backgroundView = View(this)
+        backgroundView.layoutParams = FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.MATCH_PARENT,
+            FrameLayout.LayoutParams.MATCH_PARENT
+        ).apply {
+            setMargins(20,20,20,20)
+        }
+
+        backgroundView.background = ShapeDrawable(OvalShape()).apply {
+            paint.color = Color.WHITE
+        }
+        backgroundView.elevation = 10f
+
         val imageView = ImageView(this)
         imageView.setImageBitmap(mBitmap)
+        imageView.elevation = 11f
 
-        imageView.setOnTouchListener(DragTouchListener())
-        imageView.setOnClickListener(ClickListener())
+        frameLayout.setOnTouchListener(DragTouchListener())
+        frameLayout.setOnClickListener(ClickListener())
+        frameLayout.setOnLongClickListener(ClickListener())
 
+        frameLayout.addView(backgroundView)
+        frameLayout.addView(imageView)
         Log.i("FloatingAmiya", "showIcon")
         removeAllViews()
-        addView(imageView, outerLayoutParams)
+        addView(frameLayout, outerLayoutParams)
         mOuterLayoutParams = outerLayoutParams
     }
 
@@ -203,7 +231,7 @@ class FloatingAmiya : Service() {
     }
 
     var switch: Boolean = false
-    private inner class ClickListener : View.OnClickListener {
+    private inner class ClickListener : View.OnClickListener, View.OnLongClickListener {
         @TargetApi(Build.VERSION_CODES.O)
         override fun onClick(v: View?) {
             Log.i("FloatingAmiya", "Clicked")
@@ -216,6 +244,11 @@ class FloatingAmiya : Service() {
             }
             else         showIcon()
             switch !=switch
+        }
+
+        override fun onLongClick(v: View?): Boolean {
+            // Consume the event.
+            return true
         }
     }
 
