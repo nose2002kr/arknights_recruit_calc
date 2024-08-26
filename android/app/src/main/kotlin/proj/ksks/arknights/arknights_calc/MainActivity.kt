@@ -66,8 +66,8 @@ class MainActivity: FlutterActivity() {
         startForegroundService(intent)
     }
 
-    @TargetApi(Build.VERSION_CODES.O)
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
+        super.configureFlutterEngine(flutterEngine)
         Log.d("ArknightsCalc", "synchronized the app2");
 
         ChannelManager.screencapture = MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), "screen_capture")
@@ -97,7 +97,6 @@ class MainActivity: FlutterActivity() {
                     result.success(context.cacheDir.toString())
                 }
             }
-
     }
 
 
