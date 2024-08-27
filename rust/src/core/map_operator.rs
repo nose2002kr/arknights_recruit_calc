@@ -5,7 +5,7 @@ use zip::read::ZipArchive;
 
 use crate::core::types::{Operator, Tag};
 
-use super::list_tag::list_all_tags;
+use super::list_tag::{advanced_special_recruitment, list_all_tags, special_recruitment};
 
 type Table = Vec<Operator>;
 
@@ -72,11 +72,9 @@ pub fn make_operator_table(zip_path : &str) -> Result<Table, Box<dyn std::error:
                     }
 
                     if grade == 6 {
-                        let tag = Tag { name: "고급특별채용".to_string() };
-                        operator_tags.push(tag); 
+                        operator_tags.push(advanced_special_recruitment());
                     } else if grade == 5 {
-                        let tag = Tag { name: "특별채용".to_string() };
-                        operator_tags.push(tag); 
+                        operator_tags.push(special_recruitment());
                     }
     
                     let operator = Operator {
@@ -178,7 +176,8 @@ pub fn lookup_operator_reasonable(table: &Table, tags : Vec<Tag>) -> Vec<Operato
 
     let mut summarized_operator: Vec<Operator> = Vec::new();
     let mut counts: Vec<usize> = vec![0;  7];
-    let have_special_ticket: bool = tags.iter().any(|t| t.name == "고급특별채용").then(|| true).or_else(|| Some(false)).unwrap();
+    let have_special_ticket: bool = tags.iter().any(|t| *t == advanced_special_recruitment()).then(|| true).or_else(|| Some(false)).unwrap();
+    println!("have_special_ticket: {}", have_special_ticket);
 
     fn are_there_any_more_candidates(
         oper: &Operator,

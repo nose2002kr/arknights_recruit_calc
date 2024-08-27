@@ -23,17 +23,20 @@ import android.os.Build.VERSION.SDK_INT
 import android.os.IBinder
 import android.os.Parcelable
 import android.util.Log
+import android.widget.Toast
 
 @TargetApi(Build.VERSION_CODES.TIRAMISU)
 class ScreenCaptureService : Service() {
     /* Constant val */
     private val TAG = "ScreenCaptureService"
-    private val NOTIFI_DESCRIPTION = "Tap to close."
-    private val NOTIFI_NAME = "Arknights calculator"
-    private val NOTIFI_CHANNEL_ID = "Arknights recruit calc"
+    private val NOTIFI_DESCRIPTION = "종료하려면 누르세요." // NEED TO TRANSLATE
+    private val NOTIFI_NAME = "공개모집 계산기" // NEED TO TRANSLATE
+    private val NOTIFI_CHANNEL_ID = "ArknightsRecruitCalc"
     private val NOTIFI_ID_RECORD = 1
     private val NOTIFI_ID_AMIYA = 2
-
+    private val TOAST_MESSAGE_NOT_FOUND_TAGS = "인식된 태그가 없어요. 명일방주에서\n" +
+            "\"공개모집\"을 진행 중일 때 저를 불러주세요." // NEED TO TRANSLATE
+    private val TOAST_MESSAGE_CHECK_NOTIICATION = "푸쉬알림에서 저를 종료할 수 있어요." // NEED TO TRANSLATE
 
     /* Member */
 
@@ -91,6 +94,9 @@ class ScreenCaptureService : Service() {
                         }
                     }
                     Log.d(TAG, "Complete detection.")
+                    if (matchedTag.isEmpty()) {
+                        Toast.makeText(this, TOAST_MESSAGE_NOT_FOUND_TAGS, Toast.LENGTH_SHORT).show()
+                    }
                     startService(
                         Intent(this, FloatingAmiya::class.java).apply {
                             action = "SHOW_PANEL"
@@ -135,6 +141,8 @@ class ScreenCaptureService : Service() {
             .setOngoing(true)
             .setSmallIcon(Icon.createWithBitmap(mBitmapIcon))
             .build())
+
+        Toast.makeText(this, TOAST_MESSAGE_CHECK_NOTIICATION, Toast.LENGTH_SHORT).show()
     }
 
     private fun removeNotification() {

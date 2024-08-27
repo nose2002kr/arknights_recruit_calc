@@ -1,5 +1,6 @@
 use crate::core::types::Tag;
 
+// NEED TO TRANSLATE
 pub fn list_all_tags() -> Vec<Tag> {
     let tag_dictionary: Vec<Tag> = Vec::from(
         ["신입", "특별채용", "고급특별채용",
@@ -11,4 +12,12 @@ pub fn list_all_tags() -> Vec<Tag> {
         .collect();
 
     tag_dictionary
+}
+
+pub fn advanced_special_recruitment() -> Tag {
+    list_all_tags()[2].clone()
+}
+
+pub fn special_recruitment() -> Tag {
+    list_all_tags()[1].clone()
 }
