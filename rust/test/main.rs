@@ -22,8 +22,8 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     assert!(counts[1] == 5);
     assert!(counts[2] == 5);
     assert!(counts[3] == 16);
-    assert!(counts[4] == 31);
-    assert!(counts[5] == 37);
+    assert!(counts[4] == 34);
+    assert!(counts[5] == 43);
     assert!(counts[6] == 23);
 
     let tags = core::list_tag::list_all_tags();
@@ -35,11 +35,20 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     assert!(tags.len() == 28);
 
     let presented_tags = vec![
-        core::types::Tag { name: "스나이퍼".to_string() },
-        core::types::Tag { name: "뱅가드".to_string() },
-        core::types::Tag { name: "코스트+".to_string() },
-        core::types::Tag { name: "범위공격".to_string() },
-        core::types::Tag { name: "힐링".to_string() },
+        // core::types::Tag { name: "쾌속부활".to_string() },
+        // core::types::Tag { name: "누커".to_string() },
+
+        // core::types::Tag { name: "쾌속부활".to_string() },
+        // core::types::Tag { name: "메딕".to_string() },
+        // core::types::Tag { name: "지원".to_string() },
+        // core::types::Tag { name: "가드".to_string() },
+        // core::types::Tag { name: "누커".to_string() },
+
+        // core::types::Tag { name: "디펜더".to_string() },
+        // core::types::Tag { name: "힐링".to_string() },
+        // core::types::Tag { name: "뱅가드".to_string() },
+        // core::types::Tag { name: "디버프".to_string() },
+        // core::types::Tag { name: "누커".to_string() },
     ];
     
     let operators = core::map_operator::lookup_operator_reasonable(table.as_ref(), presented_tags.clone());

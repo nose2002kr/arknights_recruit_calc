@@ -206,7 +206,6 @@ pub fn lookup_operator_reasonable(table: &Table, tags : Vec<Tag>) -> Vec<Operato
         // if matched operator grade is under 3, skip 4 to 6.
         let mut i;
         let mut lowest_grade = 6;
-
         //print!("searching by {:?}, ", tag_combi);
 
         i = summarized_operator.len();
@@ -216,8 +215,9 @@ pub fn lookup_operator_reasonable(table: &Table, tags : Vec<Tag>) -> Vec<Operato
                 break;
             }
             tag_combi.iter().all(|t| oper.tag.contains(t)).then(|| {
-                lowest_grade = oper.grade;
                 //print!("lowest grade renewed by {}({}), ", oper.name, oper.grade);
+                if oper.grade != 1 { lowest_grade = std::cmp::min(lowest_grade, oper.grade); }
+                
             });
             i -= 1;
         }
@@ -240,7 +240,7 @@ pub fn lookup_operator_reasonable(table: &Table, tags : Vec<Tag>) -> Vec<Operato
                 matched_operator.remove(i);
                 counts[oper.grade as usize] = counts[oper.grade as usize]+1;
 
-                lowest_grade = oper.grade;
+                if oper.grade != 1 { lowest_grade = std::cmp::min(lowest_grade, oper.grade); }
             }).or_else(|| {
                 i += 1;
                 Some(())
