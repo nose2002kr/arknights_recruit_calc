@@ -29,14 +29,13 @@ import android.widget.Toast
 class ScreenCaptureService : Service() {
     /* Constant val */
     private val TAG = "ScreenCaptureService"
-    private val NOTIFI_DESCRIPTION = "종료하려면 누르세요." // NEED TO TRANSLATE
-    private val NOTIFI_NAME = "공개모집 계산기" // NEED TO TRANSLATE
+    private val NOTIFI_DESCRIPTION = Tr.NOTIFICATION_DESCRIPTION
+    private val NOTIFI_NAME = Tr.TITLE;
     private val NOTIFI_CHANNEL_ID = "ArknightsRecruitCalc"
     private val NOTIFI_ID_RECORD = 1
     private val NOTIFI_ID_AMIYA = 2
-    private val TOAST_MESSAGE_NOT_FOUND_TAGS = "인식된 태그가 없어요. 명일방주에서\n" +
-            "\"공개모집\"을 진행 중일 때 저를 불러주세요." // NEED TO TRANSLATE
-    private val TOAST_MESSAGE_CHECK_NOTIICATION = "푸쉬알림에서 저를 종료할 수 있어요." // NEED TO TRANSLATE
+    private val TOAST_MESSAGE_NOT_FOUND_TAGS = Tr.NOT_FOUND_TAGS
+    private val TOAST_MESSAGE_CHECK_NOTIICATION = Tr.CHECK_NOTIICATION
 
     /* Member */
 

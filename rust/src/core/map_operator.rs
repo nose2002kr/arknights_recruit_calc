@@ -19,12 +19,12 @@ pub fn make_operator_table(zip_path : &str) -> Result<Table, Box<dyn std::error:
     for file_name in file_names {
         let grade: i8 = 
             match file_name.as_str() {
-                "6성.html" => 6,
-                "5성.html" => 5,
-                "4성.html" => 4,
-                "3성.html" => 3,
-                "2성.html" => 2,
-                "1성.html" => 1,
+                "6★.html" => 6,
+                "5★.html" => 5,
+                "4★.html" => 4,
+                "3★.html" => 3,
+                "2★.html" => 2,
+                "1★.html" => 1,
                 _ => 0,
             };
 

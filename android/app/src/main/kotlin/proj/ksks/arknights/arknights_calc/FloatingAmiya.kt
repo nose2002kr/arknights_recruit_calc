@@ -65,29 +65,6 @@ class FloatingAmiya : Service() {
         addedViews.clear()
     }
 
-    inner class Callback(
-        private val continuation: kotlinx.coroutines.CancellableContinuation<List<Map<String, Any>>>
-    ) : MethodChannel.Result {
-
-        override fun success(var1: Any?) {
-            val operator = var1 as? List<Map<String, Any>>
-            if (operator != null) {
-                continuation.resume(operator)
-            } else {
-                continuation.resumeWithException(IllegalArgumentException("Unexpected result type"))
-            }
-        }
-
-        override fun error(var1: String, var2: String?, var3: Any?) {
-            continuation.resumeWithException(Exception("Error: $var1, $var2, $var3"))
-        }
-
-        override fun notImplemented() {
-            continuation.resumeWithException(NotImplementedError("Method not implemented"))
-        }
-    }
-
-
     @TargetApi(Build.VERSION_CODES.TIRAMISU)
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         Log.d(TAG, "Amiya, " + intent.action)
@@ -173,13 +150,10 @@ class FloatingAmiya : Service() {
     }
 
     private suspend fun requestLookingUpOperator(tags: List<String>): List<Map<String, Any>> {
-        return suspendCancellableCoroutine { continuation ->
-            ChannelManager.getChannelInstance(ChannelManager.ARKNIGHTS).invokeMethod(
+        return ChannelManager.callFunction(
+            ChannelManager.getChannelInstance(ChannelManager.ARKNIGHTS),
                 "lookupOperator",
-                tags,
-                Callback(continuation)
-            )
-        }
+                tags) as List<Map<String, Any>>
     }
 
     @TargetApi(Build.VERSION_CODES.O)

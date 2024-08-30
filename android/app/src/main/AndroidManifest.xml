@@ -9,7 +9,7 @@
 
 
     <application
-        android:label="공개모집 계산기"
+        android:label="@string/app_name"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

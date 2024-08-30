@@ -3,10 +3,12 @@ import 'package:arknights_calc/floating_view.dart';
 import 'package:arknights_calc/arknights.dart';
 import 'package:arknights_calc/native_channel.dart';
 import 'package:arknights_calc/src/rust/frb_generated.dart';
+import 'package:arknights_calc/translation.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:arknights_calc/capture.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'dart:io';
 
 // For flutter view. not using as implement ui in native code for now.
 /*void redirect_recruit_calc_view() {
@@ -43,16 +45,33 @@ Future<void> main() async {
   runApp(MainApp());
 
   ArknightsService.sendTagList();
-  var zipPath = await downloadFileToCache(
-      "https://docs.google.com/spreadsheets/d/1bEbqM1mo0FFttwlw9_hOBdnzeLZhCVQJ83oR8LOYyTs/export?format=zip",
+  final String defaultLocale = Platform.localeName; // Returns locale string in the form 'en_US'
+  print('Current locale: ${defaultLocale}');
+
+  String zipUrl;
+  if (defaultLocale == "ko_KR") {
+    zipUrl =
+    "https://docs.google.com/spreadsheets/d/1RW1hc7P_EuskKgL8OndhlgmZX-sYcsuha_tuSCJ59VY/export?format=zip";
+  } else {
+    zipUrl =
+    "https://docs.google.com/spreadsheets/d/1xpoQFVunGD4MHxaFj4A8MVqAu59OB2SXAzRLs3mWA38/export?format=zip";
+  }
+
+  String zipPath = await downloadFileToCache(
+      zipUrl,
       await NativeChannelService.getAppCacheDirectory() + "/datasheets.zip");
   ArknightsService.listenToCallLookupOperator(zipPath);
+  TranslationService.loadTranslatedMessage(defaultLocale).then((_) {
+      TranslationService.installTranslation();
+  });
+
 }
 
 class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     print("build main app");
 
     return MaterialApp(

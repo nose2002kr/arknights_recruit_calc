@@ -111,6 +111,13 @@ class MainActivity: FlutterActivity() {
                     "isFileExists" -> result.success(Path(call.arguments.toString()).exists())
                 }
             }
+
+        ChannelManager.getChannelInstance(ChannelManager.TRANSLATION)
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "installTranslation" -> Tr.installTranslation(call.arguments as Map<String, Any?>)
+                }
+            }
     }
 
 
