@@ -166,7 +166,7 @@ class _HomePage extends State<HomePage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('version:0.0.5'),
+                  Text('version:0.0.6'),
                   HoldableIconButton(
                       normalStateIcon: Image.asset('assets/sticker-10.png', fit: BoxFit.cover),
                       holdingStateIcon: Image.asset('assets/sticker-07-1.png', fit: BoxFit.cover),
