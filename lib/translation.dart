@@ -8,7 +8,10 @@ class TranslationService {
     final yamlMap = loadYaml(yamlString);
 
     // Convert the YamlMap to a standard Map<String, dynamic>
-    return Map<String, dynamic>.from(yamlMap);
+    return Map<String, dynamic>.from(yamlMap).map((key, value) {
+      value = value.toString().replaceAll("\\n", "\n").trim();
+      return MapEntry(key,value.toString());
+    });
   }
 
   static var _translatedMessage = {};
