@@ -71,25 +71,38 @@ private fun yuv420888ToNv21(image: Image): ByteArray {
 
 @TargetApi(Build.VERSION_CODES.KITKAT)
 fun imageToBitmap(image: Image): Bitmap? {
-    if (image.format == ImageFormat.YUV_420_888) {
-        val nv21 = yuv420888ToNv21(image)
-        val yuvImage = YuvImage(nv21, ImageFormat.NV21, image.width, image.height, null)
-        val out = ByteArrayOutputStream()
-        yuvImage.compressToJpeg(android.graphics.Rect(0, 0, image.width, image.height), 100, out)
-        val imageBytes = out.toByteArray()
-        return BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-    } else {
-        val width = image.width
-        val height = image.height
-        val planes = image.planes
-        val buffer: ByteBuffer = planes[0].buffer
-        val pixelStride: Int = planes[0].pixelStride
-        val rowStride: Int = planes[0].rowStride
-        val rowPadding = rowStride - pixelStride * width
+    try {
+        if (image.format == ImageFormat.YUV_420_888) {
+            val nv21 = yuv420888ToNv21(image)
+            val yuvImage = YuvImage(nv21, ImageFormat.NV21, image.width, image.height, null)
+            val out = ByteArrayOutputStream()
+            yuvImage.compressToJpeg(
+                android.graphics.Rect(0, 0, image.width, image.height),
+                100,
+                out
+            )
+            val imageBytes = out.toByteArray()
+            return BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+        } else {
+            val width = image.width
+            val height = image.height
+            val planes = image.planes
+            val buffer: ByteBuffer = planes[0].buffer
+            val pixelStride: Int = planes[0].pixelStride
+            val rowStride: Int = planes[0].rowStride
+            val rowPadding = rowStride - pixelStride * width
 
-        val bitmap = Bitmap.createBitmap(width + rowPadding / pixelStride, height, Bitmap.Config.ARGB_8888)
-        bitmap.copyPixelsFromBuffer(buffer)
-        return Bitmap.createBitmap(bitmap, 0, 0, width, height) // Crop to remove padding
+            val bitmap = Bitmap.createBitmap(
+                width + rowPadding / pixelStride,
+                height,
+                Bitmap.Config.ARGB_8888
+            )
+            bitmap.copyPixelsFromBuffer(buffer)
+            return Bitmap.createBitmap(bitmap, 0, 0, width, height) // Crop to remove padding
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+        return null;
     }
 }
 

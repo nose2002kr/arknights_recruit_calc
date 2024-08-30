@@ -16,8 +16,8 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
@@ -39,8 +39,15 @@ class MainActivity: FlutterActivity() {
     private var data: Intent? = null
     private var permissionGranted = 0
     private var bitmap: Bitmap? = null
-
+    private var alreadyProgressInRequest = false
     private suspend fun requestPermissions() {
+        synchronized(this) {
+            if (alreadyProgressInRequest) {
+                return
+            }
+            alreadyProgressInRequest = true
+        }
+
         permissionGranted = 0
         requestProjectionManagerPerm()
         if (permissionGranted and REQUEST_CODE_OVL == 0)
@@ -48,11 +55,13 @@ class MainActivity: FlutterActivity() {
         if (permissionGranted and REQUEST_CODE_NTF == 0)
             requestNotificationPerm()
 
+        alreadyProgressInRequest = false
         if (permissionGranted != FULL_PERMISSION) {
             Log.w(TAG, "Permission is not fully granted.")
             return
         }
 
+        Log.w(TAG, "Permission is not fully granted.")
         launchService(this.data)
     }
 
@@ -86,7 +95,7 @@ class MainActivity: FlutterActivity() {
                     "startProjectionRequest" -> {
                         val byteArray = call.arguments as ByteArray
                         bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
-                        GlobalScope.launch {
+                        CoroutineScope(Dispatchers.Main).launch {
                             requestPermissions()
                         }
                     }
