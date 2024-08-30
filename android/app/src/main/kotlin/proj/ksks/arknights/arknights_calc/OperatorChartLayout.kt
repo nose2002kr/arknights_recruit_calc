@@ -8,6 +8,9 @@ import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.Color.rgb
 import android.graphics.drawable.GradientDrawable
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
 import android.view.ContextThemeWrapper
 import android.view.ViewGroup
 import android.widget.HorizontalScrollView
@@ -28,6 +31,7 @@ class OperatorChartLayout (
 ) : LinearLayout(context) {
 
     var lastClickedChip: Chip? = null
+    @SuppressLint("SetTextI18n")
     fun updateOperatorView(operatorMap: List<Map<String, Any>>) {
         matchedOperatorLayout.removeAllViews()
 
@@ -36,22 +40,34 @@ class OperatorChartLayout (
             val name = it["name"] as String
             val tags = it["tags"] as List<*>
             val grade = it["grade"] as Int
-
-            val chip = Chip(themedContext).apply {
-                text = name
-                chipStrokeWidth = 5.0f
-                chipBackgroundColor = ColorStateList.valueOf(Color.WHITE)
-                chipStrokeColor = (
+            val color = (
                     when (grade) {
-                        1 -> ColorStateList.valueOf(rgb(234,234,234))
-                        2 -> ColorStateList.valueOf(rgb(234,234,234))
-                        3 -> ColorStateList.valueOf(rgb(234,234,234))
-                        4 -> ColorStateList.valueOf(rgb(191,141,240))
-                        5 -> ColorStateList.valueOf(rgb(238,238,1))
-                        6 -> ColorStateList.valueOf(rgb(252,194,120))
-                        else -> ColorStateList.valueOf(rgb(234,234,234))
+                        1 -> rgb(234,234,234)
+                        2 -> rgb(234,234,234)
+                        3 -> rgb(188,188,188)
+                        4 -> rgb(191,141,240)
+                        5 -> rgb(238,238,1)
+                        6 -> rgb(252,194,120)
+                        else -> rgb(234,234,234)
                     }
                 )
+            val spannableString = SpannableString("${grade}★ ${name}")
+            spannableString.setSpan(
+                ForegroundColorSpan(color),
+                0, 2,
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+            spannableString.setSpan(
+                ForegroundColorSpan(Color.BLACK),
+                2, spannableString.length,
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+
+            val chip = Chip(themedContext).apply {
+                text = spannableString
+                chipStrokeWidth = 5.0f
+                chipBackgroundColor = ColorStateList.valueOf(Color.WHITE)
+                chipStrokeColor = ColorStateList.valueOf(color)
                 setOnClickListener { v ->
                     (v as Chip).chipBackgroundColor = ColorStateList.valueOf(rgb(200, 200, 200))
                     lastClickedChip?.chipBackgroundColor = ColorStateList.valueOf(Color.WHITE)
