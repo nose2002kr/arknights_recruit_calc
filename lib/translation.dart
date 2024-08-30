@@ -3,6 +3,7 @@ import 'package:yaml/yaml.dart';
 
 class TranslationService {
   static const MethodChannel _channel = MethodChannel('translation');
+  static bool _isInstalled = false;
   static Future<Map<String, dynamic>> _loadYamlAsset(String path) async {
     final yamlString = await rootBundle.loadString(path);
     final yamlMap = loadYaml(yamlString);
@@ -24,5 +25,13 @@ class TranslationService {
 
   static Future<void> installTranslation() async {
     await _channel.invokeMethod("installTranslation", _translatedMessage);
+    _isInstalled = true;
+  }
+
+  static Future<bool> untilInstalled() async {
+    while (!_isInstalled) {
+      await Future.delayed(Duration(milliseconds: 100));
+    }
+    return _isInstalled;
   }
 }

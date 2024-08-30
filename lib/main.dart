@@ -96,6 +96,7 @@ class HomePage extends StatefulWidget {
 class _HomePage extends State<HomePage> {
   BannerAd? _ad;
   bool datasheetIsReady = false;
+  bool translationIsInstalled = false;
 
   @override 
   void initState() {
@@ -129,6 +130,12 @@ class _HomePage extends State<HomePage> {
         }
       );
     });
+
+    TranslationService.untilInstalled().then(
+            (installed) => setState(() {
+              translationIsInstalled = installed;
+            }));
+
   }
 
   @override
@@ -163,8 +170,12 @@ class _HomePage extends State<HomePage> {
                   HoldableIconButton(
                       normalStateIcon: Image.asset('assets/sticker-10.png', fit: BoxFit.cover),
                       holdingStateIcon: Image.asset('assets/sticker-07-1.png', fit: BoxFit.cover),
+                      onPressed: () {
+                        if (datasheetIsReady && translationIsInstalled)
+                          ScreenCaptureService.startProjectionRequest();
+                      },
                   ),
-                  datasheetIsReady ? Text('Ready to work!') : Text(''),
+                  datasheetIsReady && translationIsInstalled ? Text('Ready to work!') : Text(''),
                 ],
               )
             ),
@@ -179,12 +190,14 @@ class HoldableIconButton extends StatefulWidget {
 
   Image normalStateIcon;
   Image holdingStateIcon;
+  dynamic onPressed;
 
   HoldableIconButton(
       {
         super.key,
         required this.normalStateIcon,
-        required this.holdingStateIcon
+        required this.holdingStateIcon,
+        required void Function() this.onPressed
       });
 
   @override
@@ -207,9 +220,7 @@ class _HoldableIconButton extends State<HoldableIconButton> {
         isHolding = false;
       });},
       child: IconButton(
-          onPressed: (){
-            ScreenCaptureService.startProjectionRequest();
-          },
+          onPressed: widget.onPressed,
           icon: isHolding ? widget.holdingStateIcon : widget.normalStateIcon,
 
           color: Colors.red

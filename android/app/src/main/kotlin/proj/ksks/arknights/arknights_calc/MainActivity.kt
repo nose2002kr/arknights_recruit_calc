@@ -124,7 +124,10 @@ class MainActivity: FlutterActivity() {
         ChannelManager.getChannelInstance(ChannelManager.TRANSLATION)
             .setMethodCallHandler { call, result ->
                 when (call.method) {
-                    "installTranslation" -> Tr.installTranslation(call.arguments as Map<String, Any?>)
+                    "installTranslation" -> {
+                        Tr.installTranslation(call.arguments as Map<String, Any?>)
+                        result.success(null)
+                    }
                 }
             }
     }
