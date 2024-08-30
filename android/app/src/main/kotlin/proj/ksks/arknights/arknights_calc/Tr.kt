@@ -1,13 +1,6 @@
 package proj.ksks.arknights.arknights_calc
 
 import android.util.Log
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
-import kotlin.reflect.full.memberProperties
-import kotlin.reflect.jvm.isAccessible
-import kotlin.reflect.KMutableProperty
 
 object Tr {
     /* Constant value */
@@ -21,10 +14,12 @@ object Tr {
 
     fun installTranslation(translations: Map<String, Any?>) {
         translations.forEach { (key, value) ->
-            val property = Tr::class.memberProperties.find { it.name == key }
-            if (property is KMutableProperty<*> && value is String) {
-                property.isAccessible = true
-                property.setter.call(Tr, value)
+            when (key) {
+                "TITLE"                    -> TITLE = value.toString()
+                "NOTIFICATION_DESCRIPTION" -> NOTIFICATION_DESCRIPTION = value.toString()
+                "NOT_FOUND_TAGS"           -> NOT_FOUND_TAGS = value.toString()
+                "CHECK_NOTIICATION"        -> CHECK_NOTIICATION = value.toString()
+                else -> Log.d(TAG, "Unknown key is found ${key}")
             }
         }
         Log.d(TAG, "install Done.")
