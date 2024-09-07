@@ -90,13 +90,15 @@ fun imageToBitmap(image: Image): Bitmap? {
             val buffer: ByteBuffer = planes[0].buffer
             val pixelStride: Int = planes[0].pixelStride
             val rowStride: Int = planes[0].rowStride
-            val rowPadding = rowStride - pixelStride * width
 
             val bitmap = Bitmap.createBitmap(
-                width + rowPadding / pixelStride,
+                rowStride / pixelStride,
                 height,
                 Bitmap.Config.ARGB_8888
             )
+            if (buffer.capacity() < bitmap.allocationByteCount) {
+                throw RuntimeException("Buffer not large enough for pixels")
+            }
             bitmap.copyPixelsFromBuffer(buffer)
             return Bitmap.createBitmap(bitmap, 0, 0, width, height) // Crop to remove padding
         }

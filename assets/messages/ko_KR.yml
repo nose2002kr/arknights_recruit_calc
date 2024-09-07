@@ -3,4 +3,5 @@ NOTIFICATION_DESCRIPTION: 종료하려면 누르세요.
 NOT_FOUND_TAGS: >
     인식된 태그가 없어요. 명일방주에서\n
     "공개모집"을 진행 중일 때 저를 불러주세요.
-CHECK_NOTIICATION: 푸쉬알림에서 저를 종료할 수 있어요.
+CHECK_NOTIFICATION: 푸쉬알림에서 저를 종료할 수 있어요.
+FAILED_TO_CONVERT_CAPTURE: 차트를 보는 중에 잠깐 졸았어요. 다시 불러주세요.

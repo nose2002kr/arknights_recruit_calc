@@ -3,4 +3,5 @@ NOTIFICATION_DESCRIPTION: Press to quit.
 NOT_FOUND_TAGS: >
     There are no recognized tags. Please call me when\n
     "Recruit Now" is in progress at Arknights.
-CHECK_NOTIICATION: You can send me away in the push notification.
+CHECK_NOTIFICATION: You can send me away in the push notification.
+FAILED_TO_CONVERT_CAPTURE: I fell asleep while looking at the chart, please call me back.

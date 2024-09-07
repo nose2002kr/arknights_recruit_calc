@@ -35,7 +35,9 @@ class ScreenCaptureService : Service() {
     private val NOTIFI_ID_RECORD = 1
     private val NOTIFI_ID_AMIYA = 2
     private val TOAST_MESSAGE_NOT_FOUND_TAGS = Tr.NOT_FOUND_TAGS
-    private val TOAST_MESSAGE_CHECK_NOTIICATION = Tr.CHECK_NOTIICATION
+    private val TOAST_MESSAGE_CHECK_NOTIICATION = Tr.CHECK_NOTIFICATION
+    private val TOAST_MESSAGE_FAILED_TO_CONVERT_CAPTURE = Tr.FAILED_TO_CONVERT_CAPTURE
+
 
     /* Member */
 
@@ -82,7 +84,15 @@ class ScreenCaptureService : Service() {
             stopSelf()
         } else if (intent != null && intent.action.equals("CAPTURE")) {
             Log.d(TAG, "capture start")
-            val captureBitmap = image?.let { imageToBitmap(it) }
+            var captureBitmap = image?.let { imageToBitmap(it) }
+            if (captureBitmap == null) {
+                Log.i(TAG,"caught the error. try one more again.")
+                captureBitmap = image?.let { imageToBitmap(it) }
+            }
+            if (captureBitmap == null) {
+                Toast.makeText(this, TOAST_MESSAGE_FAILED_TO_CONVERT_CAPTURE, Toast.LENGTH_SHORT).show()
+                launchAmiya(mBitmapIcon)
+            }
             captureBitmap?.let {
                 ocrBitmap(it) { visionText ->
                     val matchedTag = ArrayList<String>()
