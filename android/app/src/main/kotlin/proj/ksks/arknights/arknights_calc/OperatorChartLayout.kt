@@ -69,8 +69,8 @@ class OperatorChartLayout (
                 chipBackgroundColor = ColorStateList.valueOf(Color.WHITE)
                 chipStrokeColor = ColorStateList.valueOf(color)
                 setOnClickListener { v ->
-                    (v as Chip).chipBackgroundColor = ColorStateList.valueOf(rgb(200, 200, 200))
                     lastClickedChip?.chipBackgroundColor = ColorStateList.valueOf(Color.WHITE)
+                    (v as Chip).chipBackgroundColor = ColorStateList.valueOf(rgb(200, 200, 200))
                     lastClickedChip = v
 
                     selectedTag.sortWith { first, second ->
@@ -87,8 +87,8 @@ class OperatorChartLayout (
                         if (tags.contains(t)) {
                             u.chipBackgroundColor =
                                 ColorStateList.valueOf(rgb(244, 244, 244))
-                            u.chipStrokeWidth = 5.0f
-                            u.chipStrokeColor = ColorStateList.valueOf(rgb(233,243,215))
+                            u.chipStrokeWidth = 7.0f
+                            u.chipStrokeColor = ColorStateList.valueOf(rgb(200,200,200))
 
 
                             val startColor = rgb(255,255,210)
@@ -107,7 +107,8 @@ class OperatorChartLayout (
 
                         } else {
                             u.chipBackgroundColor =
-                                ColorStateList.valueOf(rgb(120, 120, 120))
+                                ColorStateList.valueOf(rgb(190, 190, 190))
+                            u.setTextColor(ColorStateList.valueOf(rgb(100, 100, 100)))
                             u.chipStrokeWidth = 0f
                             u.chipStrokeColor = ColorStateList.valueOf(Color.WHITE)
                         }
