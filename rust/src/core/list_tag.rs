@@ -1,23 +1,38 @@
+use std::collections::HashSet;
+
 use crate::core::types::Tag;
 
+pub static mut TAG_DICTIONARY: Option<HashSet<Tag>> = None;
+
 // NEED TO TRANSLATE
-pub fn list_all_tags() -> Vec<Tag> {
-    let tag_dictionary: Vec<Tag> = Vec::from(
-        ["신입", "특별채용", "고급특별채용",
-        "근거리", "원거리",
-        "가드", "디펜더", "메딕", "뱅가드", "서포터", "스나이퍼", "스페셜리스트", "캐스터",
-        "감속", "강제이동", "누커", "디버프", "딜러", "로봇", "방어형", "범위공격", "생존형", "소환", "제어형", "지원", "코스트+", "쾌속부활", "힐링"])
-        .iter()
-        .map(|x| Tag { name: x.to_string() })
-        .collect();
-
-    tag_dictionary
+pub fn list_all_tags() -> HashSet<Tag> {
+    if unsafe { TAG_DICTIONARY.is_none() } {
+        panic!("Must call 'make_operator_table' first");
+    }
+    return unsafe { TAG_DICTIONARY.clone().unwrap() };
 }
 
-pub fn advanced_special_recruitment() -> Tag {
-    list_all_tags()[2].clone()
+pub fn find_advanced_special_recruitment() -> Tag {
+    list_all_tags().iter().find(|tag| tag.name == "고급특별채용" || tag.name == "Top Operator").unwrap().clone()
 }
 
-pub fn special_recruitment() -> Tag {
-    list_all_tags()[1].clone()
+#[allow(dead_code)]
+pub fn find_special_recruitment() -> Tag {
+    list_all_tags().iter().find(|tag| tag.name == "특별채용" || tag.name == "Senior Operator").unwrap().clone()
+}
+
+pub fn advanced_special_recruitment(kr: bool) -> Tag {
+    if kr {
+        Tag { name: "고급특별채용".to_string() }
+    } else {
+        Tag { name: "Top Operator".to_string() }
+    }
+}
+
+pub fn special_recruitment(kr: bool) -> Tag {
+    if kr {
+        Tag { name: "특별채용".to_string() }
+    } else {
+        Tag { name: "Senior Operator".to_string() }
+    }
 }

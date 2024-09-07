@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use crate::core::map_operator::{lookup_operator_reasonable, make_operator_table};
 use crate::core::types::{Operator, Tag};
 use crate::core::list_tag::list_all_tags;
@@ -8,8 +10,8 @@ pub fn init_app() {
     flutter_rust_bridge::setup_default_user_utils();
 }
 
-#[flutter_rust_bridge::frb(mirror(Vec<Tag>))]
-pub fn list_tags() -> Vec<Tag> {
+#[flutter_rust_bridge::frb(mirror(HashSet<Tag>))]
+pub fn list_tags() -> HashSet<Tag> {
     list_all_tags()
 }
 

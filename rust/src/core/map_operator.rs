@@ -1,11 +1,11 @@
-use std::{fs::File, io::{BufReader, Read}};
+use std::{collections::HashSet, fs::File, io::{BufReader, Read}};
 
 use scraper::{Html, Selector};
 use zip::read::ZipArchive;
 
-use crate::core::types::{Operator, Tag};
+use crate::core::{list_tag::find_advanced_special_recruitment, types::{Operator, Tag}};
 
-use super::list_tag::{advanced_special_recruitment, list_all_tags, special_recruitment};
+use super::list_tag::{advanced_special_recruitment, list_all_tags, special_recruitment, TAG_DICTIONARY};
 
 type Table = Vec<Operator>;
 
@@ -13,6 +13,7 @@ pub fn make_operator_table(zip_path : &str) -> Result<Table, Box<dyn std::error:
     let mut zip = ZipArchive::new(BufReader::new(File::open(zip_path)?))?;
 
     let mut table: Table =  Vec::new();
+    let mut tags: HashSet<Tag> = HashSet::new();
 
     let file_names: Vec<String> = zip.file_names().map(|name| name.to_string()).collect();
 
@@ -40,9 +41,17 @@ pub fn make_operator_table(zip_path : &str) -> Result<Table, Box<dyn std::error:
         // Iterate over the rows of the table
         for tbody in document.select(&tbody_selector) {
             let mut first_line = true;
+            let mut kr = false;
             for tr in tbody.select(&tr_selector) {
                 if first_line {
                     first_line = false;
+                    let mut td_iter = tr.select(&td_selector);
+                    if let Some(td) = td_iter.next() {
+                        let text = td.text().collect::<Vec<_>>().concat();
+                        if text.contains("이름") {
+                            kr = true;
+                        }
+                    }
                     continue;
                 }
 
@@ -59,22 +68,20 @@ pub fn make_operator_table(zip_path : &str) -> Result<Table, Box<dyn std::error:
                     // The remaining columns (tds) are the tags
                     for tag_td in td_iter {
                         let tag_name = tag_td.text().collect::<Vec<_>>().concat();
-                        if tag_name.contains(",") {
-                            let tag_names: Vec<&str> = tag_name.split(",").collect();
-                            for tag_name in tag_names {
-                                let tag = Tag { name: tag_name.trim().to_string() };
-                                operator_tags.push(tag);
-                            }
-                            continue;
+                        let tag_names: Vec<&str> = tag_name.split(",").collect();
+                        for tag_name in tag_names {
+                            let tag = Tag { name: tag_name.trim().to_string() };
+                            tags.insert(tag.clone());
+                            operator_tags.push(tag);
                         }
-                        let tag = Tag { name: tag_name };
-                        operator_tags.push(tag);
                     }
 
                     if grade == 6 {
-                        operator_tags.push(advanced_special_recruitment());
+                        operator_tags.push(advanced_special_recruitment(kr));
+                        tags.insert(advanced_special_recruitment(kr));
                     } else if grade == 5 {
-                        operator_tags.push(special_recruitment());
+                        operator_tags.push(special_recruitment(kr));
+                        tags.insert(special_recruitment(kr));
                     }
     
                     let operator = Operator {
@@ -90,9 +97,16 @@ pub fn make_operator_table(zip_path : &str) -> Result<Table, Box<dyn std::error:
         }
     };
     
+    unsafe { 
+        if TAG_DICTIONARY.is_none() {
+            TAG_DICTIONARY = Some(tags)
+        };
+    }
+
     return Ok(table);
 }
 
+#[allow(dead_code)]
 pub fn lookup_operator(table: Table, tags : Vec<Tag>) -> Vec<Operator> {
     let normalized_tags: Vec<Tag> = tags.iter().filter(|tag| list_all_tags().contains(*tag)).cloned().collect();
     if normalized_tags.is_empty() {
@@ -176,8 +190,8 @@ pub fn lookup_operator_reasonable(table: &Table, tags : Vec<Tag>) -> Vec<Operato
 
     let mut summarized_operator: Vec<Operator> = Vec::new();
     let mut counts: Vec<usize> = vec![0;  7];
-    let have_special_ticket: bool = tags.iter().any(|t| *t == advanced_special_recruitment()).then(|| true).or_else(|| Some(false)).unwrap();
-    println!("have_special_ticket: {}", have_special_ticket);
+    let have_special_ticket: bool = tags.iter().any(|t| *t == find_advanced_special_recruitment()).then(|| true).or_else(|| Some(false)).unwrap();
+    //println!("have_special_ticket: {}", have_special_ticket);
 
     fn are_there_any_more_candidates(
         oper: &Operator,

@@ -44,11 +44,11 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
         // core::types::Tag { name: "가드".to_string() },
         // core::types::Tag { name: "누커".to_string() },
 
-        // core::types::Tag { name: "디펜더".to_string() },
-        // core::types::Tag { name: "힐링".to_string() },
-        // core::types::Tag { name: "뱅가드".to_string() },
-        // core::types::Tag { name: "디버프".to_string() },
-        // core::types::Tag { name: "누커".to_string() },
+        core::types::Tag { name: "디펜더".to_string() },
+        core::types::Tag { name: "힐링".to_string() },
+        core::types::Tag { name: "뱅가드".to_string() },
+        core::types::Tag { name: "디버프".to_string() },
+        core::types::Tag { name: "누커".to_string() },
     ];
     
     let operators = core::map_operator::lookup_operator_reasonable(table.as_ref(), presented_tags.clone());
