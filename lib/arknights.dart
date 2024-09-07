@@ -14,7 +14,7 @@ class ArknightsService {
                   .map<String>((element) => element.toString()) // Convert each element to a string
                   .toList();
 
-              var operators = await lookupOperatorByTags(zipPath: zipPath, tags: tags);
+              var operators = await lookupOperatorByTags(tags: tags);
               /* operatorMap:
               *        name : [String]       operator name
               *        tags : [List<String>] operator tags

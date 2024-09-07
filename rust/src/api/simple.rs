@@ -10,23 +10,37 @@ pub fn init_app() {
     flutter_rust_bridge::setup_default_user_utils();
 }
 
-#[flutter_rust_bridge::frb(mirror(HashSet<Tag>))]
-pub fn list_tags() -> HashSet<Tag> {
-    list_all_tags()
-}
+static mut TABLE: Option<Vec<Operator>> = None;
 
-#[flutter_rust_bridge::frb(mirror(Vec<Operator>))]
-pub fn lookup_operator_by_tags(zip_path: String, tags: Vec<String>) -> Vec<Operator> {
-    // keep global memory and reuse it
-    let table;
-    static mut TABLE: Option<Vec<Operator>> = None;
+#[flutter_rust_bridge::frb(dart_async)]
+pub fn install(zip_path: String) {
     unsafe {
         if TABLE.is_none() {
             TABLE = Some(make_operator_table(zip_path.as_str()).unwrap());
         }
+    }
+}
+
+#[flutter_rust_bridge::frb(mirror(HashSet<Tag>))]
+pub fn list_tags() -> HashSet<Tag> {
+    unsafe {
+        if TABLE.is_none() {
+            panic!("Operator table is not initialized");
+        }
+    }
+    list_all_tags()
+}
+
+#[flutter_rust_bridge::frb(mirror(Vec<Operator>))]
+pub fn lookup_operator_by_tags(tags: Vec<String>) -> Vec<Operator> {
+    // keep global memory and reuse it
+    let table;
+    unsafe {
+        if TABLE.is_none() {
+            panic!("Operator table is not initialized");
+        }
         table = TABLE.as_ref().unwrap();
     }
-    
     let _tags: Vec<Tag> = tags.iter().map(|tag| Tag { name: tag.clone() }).collect();
     lookup_operator_reasonable(table, _tags)
 }

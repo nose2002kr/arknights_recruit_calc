@@ -2,6 +2,7 @@ import 'package:arknights_calc/ad_helper.dart';
 import 'package:arknights_calc/floating_view.dart';
 import 'package:arknights_calc/arknights.dart';
 import 'package:arknights_calc/native_channel.dart';
+import 'package:arknights_calc/src/rust/api/simple.dart';
 import 'package:arknights_calc/src/rust/frb_generated.dart';
 import 'package:arknights_calc/translation.dart';
 import 'package:dio/dio.dart';
@@ -44,7 +45,6 @@ Future<void> main() async {
 
   runApp(MainApp());
 
-  ArknightsService.sendTagList();
   final String defaultLocale = Platform.localeName; // Returns locale string in the form 'en_US'
   print('Current locale: ${defaultLocale}');
 
@@ -60,6 +60,7 @@ Future<void> main() async {
   String zipPath = await downloadFileToCache(
       zipUrl,
       await NativeChannelService.getAppCacheDirectory() + "/datasheets.zip");
+  install(zipPath: zipPath).then((_) => ArknightsService.sendTagList());
   ArknightsService.listenToCallLookupOperator(zipPath);
   TranslationService.loadTranslatedMessage(defaultLocale).then((_) {
       TranslationService.installTranslation();
