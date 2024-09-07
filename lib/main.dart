@@ -1,4 +1,5 @@
 import 'package:arknights_calc/ad_helper.dart';
+import 'package:arknights_calc/config.dart';
 import 'package:arknights_calc/floating_view.dart';
 import 'package:arknights_calc/arknights.dart';
 import 'package:arknights_calc/native_channel.dart';
@@ -45,8 +46,10 @@ Future<void> main() async {
 
   runApp(MainApp());
 
-  final String defaultLocale = Platform.localeName; // Returns locale string in the form 'en_US'
-  print('Current locale: ${defaultLocale}');
+  await Config.loadConfig();
+
+  // Returns locale string in the form 'en_US'
+  final String defaultLocale = Config().locale ?? Platform.localeName;
 
   String zipUrl;
   if (defaultLocale == "ko_KR") {
