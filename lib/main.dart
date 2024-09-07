@@ -3,6 +3,7 @@ import 'package:arknights_calc/config.dart';
 import 'package:arknights_calc/floating_view.dart';
 import 'package:arknights_calc/arknights.dart';
 import 'package:arknights_calc/native_channel.dart';
+import 'package:arknights_calc/settings_dialog.dart';
 import 'package:arknights_calc/src/rust/api/simple.dart';
 import 'package:arknights_calc/src/rust/frb_generated.dart';
 import 'package:arknights_calc/translation.dart';
@@ -170,7 +171,18 @@ class _HomePage extends State<HomePage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('version:0.0.6'),
+                  Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('version:0.0.8'),
+                        IconButton(onPressed: () =>
+                           showDialog<String>(
+                              context: context,
+                              builder: (BuildContext context) => Settings(context: context)
+                           ),
+                           icon: Icon(Icons.settings))
+                      ]
+                  ),
                   HoldableIconButton(
                       normalStateIcon: Image.asset('assets/sticker-10.png', fit: BoxFit.cover),
                       holdingStateIcon: Image.asset('assets/sticker-07-1.png', fit: BoxFit.cover),

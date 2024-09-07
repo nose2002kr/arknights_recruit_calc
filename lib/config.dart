@@ -36,6 +36,10 @@ class Config {
   static Future<void> loadConfig() async {
     var filePath = "${await NativeChannelService.getAppCacheDirectory()}/config.json";
     final file = File(filePath);
+    if (!await file.exists()) {
+      return;
+    }
+
     final jsonString = await file.readAsString();
     final jsonMap = jsonDecode(jsonString);
     Config().fromJson(jsonMap);
