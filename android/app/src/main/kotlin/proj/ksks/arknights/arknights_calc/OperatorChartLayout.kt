@@ -72,8 +72,18 @@ class OperatorChartLayout (
                     (v as Chip).chipBackgroundColor = ColorStateList.valueOf(rgb(200, 200, 200))
                     lastClickedChip?.chipBackgroundColor = ColorStateList.valueOf(Color.WHITE)
                     lastClickedChip = v
-                    selectedChipDictionary.forEach { (t, u) ->
 
+                    selectedTag.sortWith { first, second ->
+                        if (tags.contains(first))
+                            -1
+                        else if (tags.contains(second))
+                            0
+                        else
+                            1
+                    }
+                    updateTags(selectedTag, true)
+
+                    selectedChipDictionary.forEach { (t, u) ->
                         if (tags.contains(t)) {
                             u.chipBackgroundColor =
                                 ColorStateList.valueOf(rgb(244, 244, 244))
@@ -133,13 +143,21 @@ class OperatorChartLayout (
         updateTags(selectedTag)
     }
 
+    private fun selectTag(tags: List<String>) {
+        tags.forEach {
+            selectedTag.add(it)
+            chipDictionary[it]?.isChecked = true
+        }
+        updateTags(selectedTag)
+    }
+
     private fun unselectTag(tag: String) {
         selectedTag.remove(tag)
         chipDictionary[tag]?.isChecked = false
         updateTags(selectedTag)
     }
 
-    private fun updateTags(tags: List<String>) {
+    private fun updateTags(tags: List<String>, doNotRequestUpdate: Boolean = false) {
         selectedTagLayout.removeAllViews()
 
         tags.forEach { v ->
@@ -167,7 +185,8 @@ class OperatorChartLayout (
             selectedTagLayout.addView(chip)
         }
 
-        listener.requestUpdate(this@OperatorChartLayout, selectedTag)
+        if (!doNotRequestUpdate)
+            listener.requestUpdate(this@OperatorChartLayout, selectedTag)
     }
 
     init {
@@ -297,7 +316,7 @@ class OperatorChartLayout (
         lowerScrollView.addView(matchedOperatorLayout)
         container.addView(lowerScrollView)
 
-        selectedTag.addAll(matchedTags)
+        selectTag(matchedTags)
         updateTags(selectedTag)
     }
 }
