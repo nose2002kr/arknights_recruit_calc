@@ -64,7 +64,7 @@ Future<void> main() async {
       zipUrl,
       await NativeChannelService.getAppCacheDirectory() + "/datasheets.zip");
   install(zipPath: zipPath).then((_) => ArknightsService.sendTagList());
-  ArknightsService.listenToCallLookupOperator(zipPath);
+  ArknightsService.listenToCall(zipPath);
   TranslationService.loadTranslatedMessage(defaultLocale).then((_) {
       TranslationService.installTranslation();
   });

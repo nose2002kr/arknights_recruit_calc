@@ -20,15 +20,11 @@ import android.view.ViewGroup.LayoutParams
 import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.ImageView
-import io.flutter.plugin.common.MethodChannel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
 import proj.ksks.arknights.arknights_calc.OperatorChartLayout.Listener
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 
 
 class FloatingAmiya : Service() {
@@ -94,16 +90,31 @@ class FloatingAmiya : Service() {
         )
 
         outerLayoutParams.gravity = Gravity.CENTER
-        mOuterLayoutParams?.let { param ->
-            outerLayoutParams.x = param.x
-            outerLayoutParams.y = param.y
-        }
-
         val frameLayout = FrameLayout(this).apply {
             layoutParams = FrameLayout.LayoutParams (
                 LayoutParams.MATCH_PARENT,
                 LayoutParams.MATCH_PARENT
             )
+        }
+
+        if (mOuterLayoutParams != null) {
+            outerLayoutParams.x = mOuterLayoutParams!!.x
+            outerLayoutParams.y = mOuterLayoutParams!!.y
+        } else {
+            CoroutineScope(Dispatchers.Main).launch {
+                with(
+                    ChannelManager.callFunction(
+                        ChannelManager.getChannelInstance(ChannelManager.ARKNIGHTS),
+                        "getAmiyaPosition",
+                        null
+                    ) as List<Int>
+                ) {
+                    outerLayoutParams.x = this[0]
+                    outerLayoutParams.y = this[1]
+                    mOuterLayoutParams = outerLayoutParams;
+                    mWindowManager.updateViewLayout(frameLayout, outerLayoutParams)
+                }
+            }
         }
 
         val backgroundView = View(this)
@@ -222,6 +233,15 @@ class FloatingAmiya : Service() {
                     mOuterLayoutParams!!.y = initialY + (event.rawY - initialTouchY).toInt()
                     mWindowManager.updateViewLayout(view, mOuterLayoutParams)
                     return false
+                }
+                MotionEvent.ACTION_UP -> {
+                    CoroutineScope(Dispatchers.Main).launch {
+                        ChannelManager.callFunction(
+                            ChannelManager.getChannelInstance(ChannelManager.ARKNIGHTS),
+                            "amiyaPositionIsChanged",
+                            listOf(mOuterLayoutParams!!.x, mOuterLayoutParams!!.y)
+                        )
+                    }
                 }
             }
             return false

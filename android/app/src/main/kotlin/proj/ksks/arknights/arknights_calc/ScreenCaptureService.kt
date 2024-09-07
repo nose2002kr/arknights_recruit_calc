@@ -88,6 +88,7 @@ class ScreenCaptureService : Service() {
                     val matchedTag = ArrayList<String>()
                     for (block in visionText.textBlocks) {
                         val blockText: String = block.text
+                        //Log.d(TAG, "recognized text: ${blockText}")
                         if (tagDictionary.contains(blockText.trim())) {
                             matchedTag.add(blockText.trim())
                         }

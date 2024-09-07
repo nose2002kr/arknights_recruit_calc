@@ -51,10 +51,8 @@ class Callback<T>(
         val result = var1 as? T
         Log.d("ChannelManager", "success")
         if (result != null) {
-            Log.d("ChannelManager", "call resume & ${result.toString()}")
+            Log.d("ChannelManager", "call resume & $result")
             continuation.resume(result)
-        } else {
-            continuation.resumeWithException(IllegalArgumentException("Unexpected result type"))
         }
     }
 
