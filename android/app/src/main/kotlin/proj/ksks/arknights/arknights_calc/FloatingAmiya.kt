@@ -107,10 +107,10 @@ class FloatingAmiya : Service() {
                         ChannelManager.getChannelInstance(ChannelManager.ARKNIGHTS),
                         "getAmiyaPosition",
                         null
-                    ) as List<Int>
+                    ) as List<Int?>
                 ) {
-                    outerLayoutParams.x = this[0]
-                    outerLayoutParams.y = this[1]
+                    this[0]?.let { outerLayoutParams.x = it }
+                    this[1]?.let { outerLayoutParams.y = it }
                     mOuterLayoutParams = outerLayoutParams;
                     mWindowManager.updateViewLayout(frameLayout, outerLayoutParams)
                 }
