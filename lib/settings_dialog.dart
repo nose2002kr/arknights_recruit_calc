@@ -43,18 +43,19 @@ class Settings extends Dialog {
                 1: FixedColumnWidth(10),
                 2: IntrinsicColumnWidth(),
               },
-              children: [
+              children: <TableRow>[
                 TableRow(
+
                     children: [
                       const Text('Language:', textAlign: TextAlign.right),
-                      const Spacer(),
+                      Container(width: 10),
                       languageDropDown
                     ]
                 ),
                 TableRow(
                     children: [
-                      Text('${Tr('HIDE_LOW_GRADE_OPERATOR')}:', textAlign: TextAlign.right), // need to translate
-                      Spacer(),
+                      Text('${Tr('HIDE_LOW_GRADE_OPERATOR')}:', textAlign: TextAlign.right),
+                      Container(width: 10),
                       hideLowOperatorsSwitch
                     ]
                 )
@@ -64,7 +65,7 @@ class Settings extends Dialog {
               onPressed: () {
                 Navigator.pop(context, makeDialogResult());
               },
-              child: Text(Tr('CLOSE')),  // need to translate
+              child: Text(Tr('CLOSE')),
             ),
           ],
         ),

@@ -4,7 +4,6 @@ use crate::core::types::Tag;
 
 pub static mut TAG_DICTIONARY: Option<HashSet<Tag>> = None;
 
-// NEED TO TRANSLATE
 pub fn list_all_tags() -> HashSet<Tag> {
     if unsafe { TAG_DICTIONARY.is_none() } {
         panic!("Must call 'make_operator_table' first");
