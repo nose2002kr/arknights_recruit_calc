@@ -61,11 +61,13 @@ Future<void> main() async {
     "https://docs.google.com/spreadsheets/d/1xpoQFVunGD4MHxaFj4A8MVqAu59OB2SXAzRLs3mWA38/export?format=zip";
   }
 
-  String zipPath = await downloadFileToCache(
+  downloadFileToCache(
       zipUrl,
-      await NativeChannelService.getAppCacheDirectory() + "/datasheets.zip");
-  install(zipPath: zipPath).then((_) => ArknightsService.sendTagList());
-  ArknightsService.listenToCall(zipPath);
+      await NativeChannelService.getAppCacheDirectory() + "/datasheets.zip")
+  .then((zipPath) {
+    install(zipPath: zipPath).then((_) => ArknightsService.sendTagList());
+    ArknightsService.listenToCall(zipPath);
+  });
   TranslationService.loadTranslatedMessage(defaultLocale).then((_) {
       TranslationService.installTranslation();
   });
