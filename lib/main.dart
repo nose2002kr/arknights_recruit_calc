@@ -176,10 +176,14 @@ class _HomePage extends State<HomePage> {
                       children: [
                         Text('version:0.0.8'),
                         IconButton(onPressed: () =>
-                           showDialog<String>(
+                           showDialog<Map<String,Object>>(
                               context: context,
-                              builder: (BuildContext context) => Settings(context: context)
-                           ),
+                              builder: (BuildContext context) => Settings(context: context),
+                           ).then((result) {
+                             Config().hideLowTag = result?['hideLowTag'] as bool;
+                             Config().locale = result?['locale'] as String;
+                             Config.saveConfig();
+                           }),
                            icon: Icon(Icons.settings))
                       ]
                   ),

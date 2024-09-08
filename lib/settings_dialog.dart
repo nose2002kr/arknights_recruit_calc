@@ -1,67 +1,87 @@
 
+import 'package:arknights_calc/config.dart';
+import 'package:arknights_calc/translation.dart';
 import 'package:flutter/material.dart';
 
 class Settings extends Dialog {
   BuildContext context;
+  SmallDropdownButton languageDropDown = SmallDropdownButton();
+  SwitchButton hideLowTagSwitch = SwitchButton();
+
   Settings(
       {super.key, required this.context}
       );
 
+  Map<String, Object> makeDialogResult() {
+    return {
+      'locale': languageDropDown.selectedValue,
+      'hideLowTag': hideLowTagSwitch.value
+    };
+  }
+
   @override
   Widget? get child {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          const Text('SETTINGS'), // need to translate
-          Table(
-            defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-            columnWidths: const <int, TableColumnWidth>{
-              0: IntrinsicColumnWidth(),
-              1: FixedColumnWidth(10),
-              2: IntrinsicColumnWidth(),
-            },
-            children: const [
-              TableRow(
-                  children: [
-                    Text('Language', textAlign: TextAlign.right),
-                    Spacer(),
-                    DropdownMenuLanguage()
-                  ]
-              ),
-              TableRow(
-                  children: [
-                    Text('HIDE_LOW_GRADE_OPERATOR', textAlign: TextAlign.right), // need to translate
-                    Spacer(),
-                    SwitchButton()
-                  ]
-              )
-            ],
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: const Text('CLOSE'),  // need to translate
-          ),
-        ],
-      ),
+    return PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (bool didPop, result) {
+          if (didPop) {
+            return;
+          }
+          Navigator.pop(context, makeDialogResult());
+        },
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(Tr('SETTINGS'), style: const TextStyle(fontSize: 24)),
+            Table(
+              defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+              columnWidths: const <int, TableColumnWidth>{
+                0: IntrinsicColumnWidth(),
+                1: FixedColumnWidth(10),
+                2: IntrinsicColumnWidth(),
+              },
+              children: [
+                TableRow(
+                    children: [
+                      const Text('Language:', textAlign: TextAlign.right),
+                      const Spacer(),
+                      languageDropDown
+                    ]
+                ),
+                TableRow(
+                    children: [
+                      Text('${Tr('HIDE_LOW_GRADE_OPERATOR')}:', textAlign: TextAlign.right), // need to translate
+                      Spacer(),
+                      hideLowTagSwitch
+                    ]
+                )
+              ],
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context, makeDialogResult());
+              },
+              child: Text(Tr('CLOSE')),  // need to translate
+            ),
+          ],
+        ),
+      )
     );
   }
 }
 
 
 class SwitchButton extends StatefulWidget {
-  const SwitchButton({super.key});
+  bool value = Config().hideLowTag?? false;
 
   @override
   State<SwitchButton> createState() => _SwitchButtonState();
 }
 
 class _SwitchButtonState extends State<SwitchButton> {
-  bool light = true;
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +89,16 @@ class _SwitchButtonState extends State<SwitchButton> {
     WidgetStateProperty.resolveWith<Color?>(
           (Set<WidgetState> states) {
         if (states.contains(WidgetState.selected)) {
-          return Colors.blueAccent.shade100;
+          return const Color(0xFFE8F5FF);
+        }
+        return null;
+      },
+    );
+    final WidgetStateProperty<Color?> trackOutlineColor =
+    WidgetStateProperty.resolveWith<Color?>(
+          (Set<WidgetState> states) {
+        if (states.contains(WidgetState.selected)) {
+          return const Color(0xFF6E9FED);
         }
         return null;
       },
@@ -78,7 +107,7 @@ class _SwitchButtonState extends State<SwitchButton> {
     WidgetStateProperty.resolveWith<Color?>(
           (Set<WidgetState> states) {
         if (states.contains(WidgetState.selected)) {
-          return Colors.blueAccent.shade100.withOpacity(0.54);
+          return const Color(0xFFE8F5FF).withOpacity(0.54);
         }
         if (states.contains(WidgetState.disabled)) {
           return Colors.grey.shade400;
@@ -88,49 +117,67 @@ class _SwitchButtonState extends State<SwitchButton> {
     );
 
     return Switch(
-      value: light,
+      value: widget.value,
       overlayColor: overlayColor,
       trackColor: trackColor,
+      trackOutlineColor: trackOutlineColor,
       thumbColor: WidgetStatePropertyAll<Color>(Colors.black87),
       onChanged: (bool value) {
         setState(() {
-          light = value;
+          widget.value = value;
         });
       },
     );
   }
 }
 
-
-class DropdownMenuLanguage extends StatefulWidget {
-  const DropdownMenuLanguage({super.key});
-
-  @override
-  State<DropdownMenuLanguage> createState() => _DropdownMenuLanguageState();
-}
-
-const List<String> list = <String>['en_US','ko_KR'];
+const List<String> list = <String>['en_US', 'ko_KR'];
 const Map<String, String> valueMap = {'en_US':'English', 'ko_KR':'한국어'};
 
-class _DropdownMenuLanguageState extends State<DropdownMenuLanguage> {
-  String dropdownValue = list.first;
+class SmallDropdownButton extends StatefulWidget {
+  //String selectedValue = Config().locale != null ? valueMap[Config().locale]! : list[0];
+  String selectedValue = Config().locale ?? list[0];
+
+  @override
+  _SmallDropdownButtonState createState() => _SmallDropdownButtonState();
+}
+
+class _SmallDropdownButtonState extends State<SmallDropdownButton> {
 
   @override
   Widget build(BuildContext context) {
-    return DropdownMenu<String>(
-      initialSelection: list.first,
-      onSelected: (String? value) {
-        // This is called when the user selects an item.
-        setState(() {
-          dropdownValue = value!;
-        });
-      },
-      dropdownMenuEntries: list.map<DropdownMenuEntry<String>>((String value) {
-        return DropdownMenuEntry<String>(
-          value: value,
-          label: valueMap[value]!,
-        );
-      }).toList(),
+    return Container(
+      width: 90, // Set width to make it smaller
+      height: 40, // Set height to make it smaller
+      padding: EdgeInsets.symmetric(horizontal: 10), // Add padding if needed
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: widget.selectedValue,
+          iconSize: 16, // Make the icon smaller
+          isDense: true,
+          onChanged: (String? newValue) {
+            if (newValue != null) {
+              setState(() {
+                widget.selectedValue = newValue;
+              });
+            }
+          },
+          items: list
+              .map<DropdownMenuItem<String>>((String value) {
+            return DropdownMenuItem<String>(
+              value: value,
+              child: Text(
+                valueMap[value]!,
+                style: TextStyle(fontSize: 12), // Make the text smaller
+              ),
+            );
+          }).toList(),
+        ),
+      ),
     );
   }
 }
