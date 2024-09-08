@@ -252,7 +252,7 @@ class FloatingAmiya : Service() {
             }
 
             private val activeStateBackgroundColor = GradientDrawable().apply {
-                setColor(Color.parseColor("#FFFF6961"))
+                setColor(Color.parseColor("#AAD63A31"))
                 cornerRadius = 34f
             }
 
@@ -309,7 +309,7 @@ class FloatingAmiya : Service() {
                     duration = 200
                     addUpdateListener {
                         animator ->
-                            terminateIndicator.background = animator.animatedValue as Drawable
+                            this@TerminateIndicator.background = animator.animatedValue as Drawable
                     }
                 }.start()
             }
@@ -327,34 +327,41 @@ class FloatingAmiya : Service() {
                 ).apply {
                     duration = 200
                     addUpdateListener {
-                            animator ->
-                        terminateIndicator.background = animator.animatedValue as Drawable
+                        animator ->
+                            this@TerminateIndicator.background = animator.animatedValue as Drawable
                     }
                 }.start()
+            }
+
+            fun show() {
+                hide()
+                // do not insert `addedViews`
+                mWindowManager.addView(this, WindowManager.LayoutParams(
+                    LayoutParams.WRAP_CONTENT,
+                    LayoutParams.WRAP_CONTENT,
+                    WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                    PixelFormat.TRANSLUCENT
+                ).apply {
+                    this.y = mWindowManager.currentWindowMetrics.bounds.height() / 4
+                })
+            }
+
+            fun hide() {
+                this.parent?.let {
+                    mWindowManager.removeView(this)
+                }
             }
         }
 
         @RequiresApi(Build.VERSION_CODES.R)
         fun buildTextView() {
             terminateIndicator = TerminateIndicator(this@FloatingAmiya)
-            terminateIndicator.visibility = View.INVISIBLE
-
-            // do not insert `addedViews`
-            mWindowManager.addView(terminateIndicator, WindowManager.LayoutParams(
-                LayoutParams.WRAP_CONTENT,
-                LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-                PixelFormat.TRANSLUCENT
-            ).apply {
-                this.y = mWindowManager.currentWindowMetrics.bounds.height() / 4
-            })
         }
-
 
         private val mLongPressed = Runnable {
             Log.d(TAG, "onLongPressed")
-            terminateIndicator.visibility = View.VISIBLE
+            terminateIndicator.show()
         }
 
         @RequiresApi(Build.VERSION_CODES.R)
@@ -404,7 +411,7 @@ class FloatingAmiya : Service() {
                         dragged = true
                     }
                     Log.d(TAG, "distance: $distance, dragged: $dragged")
-                    terminateIndicator.visibility = View.INVISIBLE
+                    terminateIndicator.hide()
 
                     CoroutineScope(Dispatchers.Main).launch {
                         ChannelManager.callFunction(
