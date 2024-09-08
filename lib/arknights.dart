@@ -17,8 +17,15 @@ class ArknightsService {
               *          { "name": "라바", "tags": ["캐스터야"], "grade":3 }
               *        ]
               */
+
     List<Map<String, Object>> result = [];
+    bool hideLowOperators = Config().hideLowOperators ?? false;
+
     operators.forEach((it) {
+      if (hideLowOperators && it.grade < 4) {
+        return;
+      }
+
       Map<String, Object> operator = {};
       operator["name"] = it.name;
       operator["grade"] = it.grade;

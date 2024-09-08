@@ -180,7 +180,7 @@ class _HomePage extends State<HomePage> {
                               context: context,
                               builder: (BuildContext context) => Settings(context: context),
                            ).then((result) {
-                             Config().hideLowTag = result?['hideLowTag'] as bool;
+                             Config().hideLowOperators = result?['hideLowOperators'] as bool;
                              Config().locale = result?['locale'] as String;
                              Config.saveConfig();
                            }),

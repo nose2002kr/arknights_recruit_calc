@@ -10,20 +10,20 @@ class Config {
   int? iconXPos;
   int? iconYPos;
 
-  bool? hideLowTag;
+  bool? hideLowOperators;
 
   Map<String, dynamic> toJson() => {
     'locale': locale,
     'iconXPos': iconXPos,
     'iconYPos': iconYPos,
-    'hideLowTag': hideLowTag,
+    'hideLowOperators': hideLowOperators,
   };
 
   void fromJson(Map<String, dynamic> json) {
     locale = json['locale'];
     iconXPos = json['iconXPos'];
     iconYPos = json['iconYPos'];
-    hideLowTag = json['hideLowTag'];
+    hideLowOperators = json['hideLowOperators'];
   }
 
   static Future<void> saveConfig() async {

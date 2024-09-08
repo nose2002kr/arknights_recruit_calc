@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 class Settings extends Dialog {
   BuildContext context;
   SmallDropdownButton languageDropDown = SmallDropdownButton();
-  SwitchButton hideLowTagSwitch = SwitchButton();
+  SwitchButton hideLowOperatorsSwitch = SwitchButton();
 
   Settings(
       {super.key, required this.context}
@@ -15,7 +15,7 @@ class Settings extends Dialog {
   Map<String, Object> makeDialogResult() {
     return {
       'locale': languageDropDown.selectedValue,
-      'hideLowTag': hideLowTagSwitch.value
+      'hideLowOperators': hideLowOperatorsSwitch.value
     };
   }
 
@@ -55,7 +55,7 @@ class Settings extends Dialog {
                     children: [
                       Text('${Tr('HIDE_LOW_GRADE_OPERATOR')}:', textAlign: TextAlign.right), // need to translate
                       Spacer(),
-                      hideLowTagSwitch
+                      hideLowOperatorsSwitch
                     ]
                 )
               ],
@@ -75,7 +75,7 @@ class Settings extends Dialog {
 
 
 class SwitchButton extends StatefulWidget {
-  bool value = Config().hideLowTag?? false;
+  bool value = Config().hideLowOperators?? false;
 
   @override
   State<SwitchButton> createState() => _SwitchButtonState();
