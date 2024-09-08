@@ -25,6 +25,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import proj.ksks.arknights.arknights_calc.OperatorChartLayout.Listener
+import kotlin.math.hypot
 
 
 class FloatingAmiya : Service() {
@@ -148,9 +149,10 @@ class FloatingAmiya : Service() {
                 ICON_SHADOW_MARGIN)
         }
 
-        frameLayout.setOnTouchListener(GestureHandler())
-        frameLayout.setOnClickListener(GestureHandler())
-        frameLayout.setOnLongClickListener(GestureHandler())
+        
+        frameLayout.setOnTouchListener(gestureHandler)
+        frameLayout.setOnClickListener(gestureHandler)
+        frameLayout.setOnLongClickListener(gestureHandler)
 
         frameLayout.addView(backgroundView)
         frameLayout.addView(imageView)
@@ -205,7 +207,7 @@ class FloatingAmiya : Service() {
             outerLayoutParams.x = param.x
             outerLayoutParams.y = param.y
         }
-        layout.setOnTouchListener(GestureHandler())
+        layout.setOnTouchListener(gestureHandler)
 
         Log.i(TAG, "showPanel")
         removeAllViews()
@@ -213,11 +215,12 @@ class FloatingAmiya : Service() {
         mOuterLayoutParams = outerLayoutParams
     }
 
-    private inner class GestureHandler :  View.OnTouchListener, View.OnClickListener, View.OnLongClickListener {
+    private inner class GestureHandler : View.OnTouchListener, View.OnClickListener, View.OnLongClickListener {
         private var initialX = 0
         private var initialY = 0
         private var initialTouchX = 0f
         private var initialTouchY = 0f
+        private var dragged = false
 
         override fun onTouch(view: View, event: MotionEvent): Boolean {
             when (event.action) {
@@ -226,6 +229,8 @@ class FloatingAmiya : Service() {
                     initialY = mOuterLayoutParams!!.y
                     initialTouchX = event.rawX
                     initialTouchY = event.rawY
+                    dragged = false
+
                     return false
                 }
                 MotionEvent.ACTION_MOVE -> {
@@ -235,6 +240,11 @@ class FloatingAmiya : Service() {
                     return false
                 }
                 MotionEvent.ACTION_UP -> {
+                    val distance = hypot((initialTouchX - event.rawX).toDouble(), (initialTouchY - event.rawY).toDouble())
+                    if (distance > ICON_SIZE / 4) {
+                        dragged = true
+                    }
+                    Log.d(TAG, "distance: $distance, dragged: $dragged")
                     CoroutineScope(Dispatchers.Main).launch {
                         ChannelManager.callFunction(
                             ChannelManager.getChannelInstance(ChannelManager.ARKNIGHTS),
@@ -249,6 +259,10 @@ class FloatingAmiya : Service() {
 
         @TargetApi(Build.VERSION_CODES.O)
         override fun onClick(v: View?) {
+            if (dragged) {
+                return
+            }
+
             removeAllViews()
             startForegroundService(
                 Intent(this@FloatingAmiya, ScreenCaptureService::class.java).apply {
