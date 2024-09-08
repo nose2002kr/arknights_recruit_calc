@@ -35,3 +35,5 @@ class TranslationService {
     return _isInstalled;
   }
 }
+
+String Tr(String script) => TranslationService._translatedMessage[script];

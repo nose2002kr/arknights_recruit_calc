@@ -5,3 +5,6 @@ NOT_FOUND_TAGS: >
     "공개모집"을 진행 중일 때 저를 불러주세요.
 CHECK_NOTIFICATION: 푸쉬알림에서 저를 종료할 수 있어요.
 FAILED_TO_CONVERT_CAPTURE: 차트를 보는 중에 잠깐 졸았어요. 다시 불러주세요.
+SETTINGS: 설정
+HIDE_LOW_GRADE_OPERATOR: 낮은 등급 오퍼레이터 숨기기
+CLOSE: 닫기
