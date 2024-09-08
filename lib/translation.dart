@@ -36,4 +36,4 @@ class TranslationService {
   }
 }
 
-String Tr(String script) => TranslationService._translatedMessage[script];
+String Tr(String script) => TranslationService._translatedMessage[script] ?? script;
