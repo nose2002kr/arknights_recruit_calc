@@ -7,11 +7,11 @@ object Tr {
     val TAG = "Tr"
 
     /* Constant Member */
-    lateinit var TITLE: String
-    lateinit var NOTIFICATION_DESCRIPTION: String
-    lateinit var NOT_FOUND_TAGS: String
-    lateinit var CHECK_NOTIFICATION: String
-    lateinit var FAILED_TO_CONVERT_CAPTURE: String
+    var TITLE = "TITLE"
+    var NOTIFICATION_DESCRIPTION = "NOTIFICATION_DESCRIPTION"
+    var NOT_FOUND_TAGS = "NOT_FOUND_TAGS"
+    var CHECK_NOTIFICATION = "CHECK_NOTIFICATION"
+    var FAILED_TO_CONVERT_CAPTURE = "FAILED_TO_CONVERT_CAPTURE"
 
     fun installTranslation(translations: Map<String, Any?>) {
         translations.forEach { (key, value) ->
