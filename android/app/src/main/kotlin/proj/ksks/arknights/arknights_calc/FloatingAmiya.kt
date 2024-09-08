@@ -148,9 +148,9 @@ class FloatingAmiya : Service() {
                 ICON_SHADOW_MARGIN)
         }
 
-        frameLayout.setOnTouchListener(DragTouchListener())
-        frameLayout.setOnClickListener(ClickListener())
-        frameLayout.setOnLongClickListener(ClickListener())
+        frameLayout.setOnTouchListener(GestureHandler())
+        frameLayout.setOnClickListener(GestureHandler())
+        frameLayout.setOnLongClickListener(GestureHandler())
 
         frameLayout.addView(backgroundView)
         frameLayout.addView(imageView)
@@ -205,7 +205,7 @@ class FloatingAmiya : Service() {
             outerLayoutParams.x = param.x
             outerLayoutParams.y = param.y
         }
-        layout.setOnTouchListener(DragTouchListener())
+        layout.setOnTouchListener(GestureHandler())
 
         Log.i(TAG, "showPanel")
         removeAllViews()
@@ -213,7 +213,7 @@ class FloatingAmiya : Service() {
         mOuterLayoutParams = outerLayoutParams
     }
 
-    private inner class DragTouchListener : View.OnTouchListener {
+    private inner class GestureHandler :  View.OnTouchListener, View.OnClickListener, View.OnLongClickListener {
         private var initialX = 0
         private var initialY = 0
         private var initialTouchX = 0f
@@ -246,9 +246,7 @@ class FloatingAmiya : Service() {
             }
             return false
         }
-    }
 
-    private inner class ClickListener : View.OnClickListener, View.OnLongClickListener {
         @TargetApi(Build.VERSION_CODES.O)
         override fun onClick(v: View?) {
             removeAllViews()
