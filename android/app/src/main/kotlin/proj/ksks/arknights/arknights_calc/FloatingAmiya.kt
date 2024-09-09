@@ -12,6 +12,7 @@ import android.content.res.ColorStateList
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.PixelFormat
+import android.graphics.Point
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
 import android.graphics.Rect
@@ -22,6 +23,7 @@ import android.graphics.drawable.shapes.OvalShape
 import android.os.Build
 import android.os.IBinder
 import android.os.Parcelable
+import android.util.DisplayMetrics
 import android.util.Log
 import android.view.Gravity
 import android.view.MotionEvent
@@ -343,7 +345,17 @@ class FloatingAmiya : Service() {
                     WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                     PixelFormat.TRANSLUCENT
                 ).apply {
-                    this.y = mWindowManager.currentWindowMetrics.bounds.height() / 4
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                        this.y = mWindowManager.currentWindowMetrics.bounds.height() / 4
+                    } else {
+                        @Suppress("DEPRECATION")
+                        with (mWindowManager.defaultDisplay) {
+                            this.getMetrics(DisplayMetrics())
+                            val size = Point()
+                            this.getRealSize(size)
+                            this@apply.y = size.y / 3
+                        }
+                    }
                 })
             }
 
