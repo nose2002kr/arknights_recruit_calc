@@ -12,6 +12,7 @@ import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.view.ContextThemeWrapper
+import android.view.MotionEvent
 import android.view.ViewGroup
 import android.widget.HorizontalScrollView
 import android.widget.LinearLayout
@@ -190,6 +191,14 @@ class OperatorChartLayout (
             listener.requestUpdate(this@OperatorChartLayout, selectedTag)
     }
 
+
+    inner class AllowTouchToolbar(context: Context) : MaterialToolbar(context) {
+        override fun onTouchEvent(ev: MotionEvent?): Boolean {
+            return false
+        }
+    }
+
+
     init {
 
         // Set background with rounded corners
@@ -234,7 +243,7 @@ class OperatorChartLayout (
         }
 
         container.addView(
-            MaterialToolbar(themedContext).apply {
+            AllowTouchToolbar(themedContext).apply {
                 layoutParams = ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT
