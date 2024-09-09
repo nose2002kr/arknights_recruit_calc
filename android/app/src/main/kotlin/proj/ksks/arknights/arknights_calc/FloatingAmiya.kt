@@ -1,12 +1,22 @@
 package proj.ksks.arknights.arknights_calc
 
+import android.animation.ArgbEvaluator
+import android.animation.TypeEvaluator
+import android.animation.ValueAnimator
+import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.PixelFormat
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffColorFilter
+import android.graphics.Rect
+import android.graphics.drawable.Drawable
+import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.ShapeDrawable
 import android.graphics.drawable.shapes.OvalShape
 import android.os.Build
@@ -16,18 +26,25 @@ import android.util.Log
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewConfiguration
 import android.view.ViewGroup.LayoutParams
 import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.ImageView
+import android.widget.TextView
+import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import proj.ksks.arknights.arknights_calc.OperatorChartLayout.Listener
+import kotlin.math.hypot
 
 
 class FloatingAmiya : Service() {
+    private val gestureHandler = GestureHandler()
+
     /* Constant val */
     private val TAG = "FloatingAmiya"
     private val ICON_SIZE = 200
@@ -44,9 +61,11 @@ class FloatingAmiya : Service() {
     private val addedViews = mutableListOf<View>()
 
 
+    @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate() {
         super.onCreate()
         mWindowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        gestureHandler.buildTextView()
     }
 
     private fun addView(view: View, params: WindowManager.LayoutParams) {
@@ -148,9 +167,10 @@ class FloatingAmiya : Service() {
                 ICON_SHADOW_MARGIN)
         }
 
-        frameLayout.setOnTouchListener(DragTouchListener())
-        frameLayout.setOnClickListener(ClickListener())
-        frameLayout.setOnLongClickListener(ClickListener())
+        
+        frameLayout.setOnTouchListener(gestureHandler)
+        frameLayout.setOnClickListener(gestureHandler)
+        frameLayout.setOnLongClickListener(gestureHandler)
 
         frameLayout.addView(backgroundView)
         frameLayout.addView(imageView)
@@ -205,7 +225,7 @@ class FloatingAmiya : Service() {
             outerLayoutParams.x = param.x
             outerLayoutParams.y = param.y
         }
-        layout.setOnTouchListener(DragTouchListener())
+        layout.setOnTouchListener(gestureHandler)
 
         Log.i(TAG, "showPanel")
         removeAllViews()
@@ -213,28 +233,186 @@ class FloatingAmiya : Service() {
         mOuterLayoutParams = outerLayoutParams
     }
 
-    private inner class DragTouchListener : View.OnTouchListener {
+    private inner class GestureHandler : View.OnTouchListener, View.OnClickListener, View.OnLongClickListener {
         private var initialX = 0
         private var initialY = 0
         private var initialTouchX = 0f
         private var initialTouchY = 0f
+        private var dragged = false
+        private lateinit var terminateIndicator: TerminateIndicator
 
+        @SuppressLint("AppCompatCustomView")
+        @RequiresApi(Build.VERSION_CODES.R)
+        private inner class TerminateIndicator(context: Context) : TextView(context) {
+            @JvmField
+            var activated = false
+            private val normalStateBackgroundColor = GradientDrawable().apply {
+                setColor(Color.parseColor("#FF444444"))
+                cornerRadius = 34f
+            }
+
+            private val activeStateBackgroundColor = GradientDrawable().apply {
+                setColor(Color.parseColor("#AAD63A31"))
+                cornerRadius = 34f
+            }
+
+            inner class GradientDrawableEvaluator : TypeEvaluator<GradientDrawable> {
+                override fun evaluate(
+                    fraction: Float,
+                    startValue: GradientDrawable,
+                    endValue: GradientDrawable
+                ): GradientDrawable {
+
+                    return GradientDrawable().apply {
+                        setColor(ArgbEvaluator().evaluate(
+                            fraction,
+                            startValue.color!!.defaultColor,
+                            endValue.color!!.defaultColor) as Int
+                        )
+                        cornerRadius = 34f
+                    }
+                }
+            }
+
+            init {
+                text = "종료" // NEED TO TRANSLATE
+                textSize = 22F
+                background = normalStateBackgroundColor
+                setPadding(26, 16, 46, 26)
+
+                setCompoundDrawables(
+                    ContextCompat.getDrawable(this@FloatingAmiya, android.R.drawable.ic_delete)
+                        ?.apply { setBounds(0, 0, 60, 60)
+                            colorFilter = PorterDuffColorFilter(
+                                Color.WHITE, PorterDuff.Mode.SRC_ATOP
+                            )
+                        }
+                    ,null, null, null) // Set icon to the left
+
+                compoundDrawablePadding = 16 // Padding between the text and the drawable
+
+                setTextColor(ColorStateList.valueOf(Color.WHITE))
+            }
+
+            fun active() {
+                if (activated) {
+                    return
+                }
+
+                activated = true
+
+                ValueAnimator.ofObject(
+                    GradientDrawableEvaluator(),
+                    normalStateBackgroundColor,
+                    activeStateBackgroundColor
+                ).apply {
+                    duration = 200
+                    addUpdateListener {
+                        animator ->
+                            this@TerminateIndicator.background = animator.animatedValue as Drawable
+                    }
+                }.start()
+            }
+
+            fun inactive() {
+                if (!activated) {
+                    return
+                }
+                activated = false
+
+                ValueAnimator.ofObject(
+                    GradientDrawableEvaluator(),
+                    activeStateBackgroundColor,
+                    normalStateBackgroundColor
+                ).apply {
+                    duration = 200
+                    addUpdateListener {
+                        animator ->
+                            this@TerminateIndicator.background = animator.animatedValue as Drawable
+                    }
+                }.start()
+            }
+
+            fun show() {
+                hide()
+                // do not insert `addedViews`
+                mWindowManager.addView(this, WindowManager.LayoutParams(
+                    LayoutParams.WRAP_CONTENT,
+                    LayoutParams.WRAP_CONTENT,
+                    WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                    PixelFormat.TRANSLUCENT
+                ).apply {
+                    this.y = mWindowManager.currentWindowMetrics.bounds.height() / 4
+                })
+            }
+
+            fun hide() {
+                this.parent?.let {
+                    mWindowManager.removeView(this)
+                }
+            }
+        }
+
+        @RequiresApi(Build.VERSION_CODES.R)
+        fun buildTextView() {
+            terminateIndicator = TerminateIndicator(this@FloatingAmiya)
+        }
+
+        private val mLongPressed = Runnable {
+            Log.d(TAG, "onLongPressed")
+            terminateIndicator.show()
+        }
+
+        @RequiresApi(Build.VERSION_CODES.R)
         override fun onTouch(view: View, event: MotionEvent): Boolean {
             when (event.action) {
+
                 MotionEvent.ACTION_DOWN -> {
+                    view.handler.postDelayed(mLongPressed, ViewConfiguration.getLongPressTimeout().toLong())
+
                     initialX = mOuterLayoutParams!!.x
                     initialY = mOuterLayoutParams!!.y
                     initialTouchX = event.rawX
                     initialTouchY = event.rawY
+                    dragged = false
+
                     return false
                 }
                 MotionEvent.ACTION_MOVE -> {
                     mOuterLayoutParams!!.x = initialX + (event.rawX - initialTouchX).toInt()
                     mOuterLayoutParams!!.y = initialY + (event.rawY - initialTouchY).toInt()
                     mWindowManager.updateViewLayout(view, mOuterLayoutParams)
+
+
+                    val pos = IntArray(2)
+                    terminateIndicator.getLocationOnScreen(pos)
+                    if (Rect(pos[0], pos[1],
+                        pos[0] + terminateIndicator.width,
+                        pos[1] + terminateIndicator.height
+                    ).contains(event.rawX.toInt(), event.rawY.toInt())) {
+                        terminateIndicator.active()
+                    } else {
+                        terminateIndicator.inactive()
+                    }
                     return false
                 }
                 MotionEvent.ACTION_UP -> {
+                    view.handler.removeCallbacks(mLongPressed)
+
+                    if (terminateIndicator.activated) {
+                        val intent = Intent(this@FloatingAmiya, ScreenCaptureService::class.java)
+                        intent.setAction("STOP_SCREEN_CAPTURE")
+                        startForegroundService(intent)
+                    }
+
+                    val distance = hypot((initialTouchX - event.rawX).toDouble(), (initialTouchY - event.rawY).toDouble())
+                    if (distance > ICON_SIZE / 4) {
+                        dragged = true
+                    }
+                    Log.d(TAG, "distance: $distance, dragged: $dragged")
+                    terminateIndicator.hide()
+
                     CoroutineScope(Dispatchers.Main).launch {
                         ChannelManager.callFunction(
                             ChannelManager.getChannelInstance(ChannelManager.ARKNIGHTS),
@@ -246,11 +424,13 @@ class FloatingAmiya : Service() {
             }
             return false
         }
-    }
 
-    private inner class ClickListener : View.OnClickListener, View.OnLongClickListener {
         @TargetApi(Build.VERSION_CODES.O)
         override fun onClick(v: View?) {
+            if (dragged) {
+                return
+            }
+
             removeAllViews()
             startForegroundService(
                 Intent(this@FloatingAmiya, ScreenCaptureService::class.java).apply {

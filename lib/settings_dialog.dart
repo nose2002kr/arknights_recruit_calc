@@ -1,4 +1,6 @@
 
+import 'dart:io';
+
 import 'package:arknights_calc/config.dart';
 import 'package:arknights_calc/translation.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +12,7 @@ class Settings extends Dialog {
 
   Settings(
       {super.key, required this.context}
-      );
+  );
 
   Map<String, Object> makeDialogResult() {
     return {
@@ -136,8 +138,15 @@ const List<String> list = <String>['en_US', 'ko_KR'];
 const Map<String, String> valueMap = {'en_US':'English', 'ko_KR':'한국어'};
 
 class SmallDropdownButton extends StatefulWidget {
-  //String selectedValue = Config().locale != null ? valueMap[Config().locale]! : list[0];
-  String selectedValue = Config().locale ?? list[0];
+  String selectedValue = _initializeLocaleValue();
+
+  static String _initializeLocaleValue() {
+    var locale = Config().locale ?? Platform.localeName;
+    if (!list.contains(locale)) {
+      locale = list[0];
+    }
+    return locale;
+  }
 
   @override
   _SmallDropdownButtonState createState() => _SmallDropdownButtonState();
