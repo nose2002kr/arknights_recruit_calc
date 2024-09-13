@@ -27,3 +27,6 @@ You can install them as follows.
    You need to be able to run `flutter_rust_bridge_codegen --version`.
    To update function symbol `flutter_rust_bridge_codegen generate -r rust/src/api/**/*.rs -d lib/src/rust/`
 
+# When Release.
+Run to bundle project
+`flutter build appbundle`

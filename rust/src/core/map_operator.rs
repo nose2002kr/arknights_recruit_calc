@@ -98,9 +98,7 @@ pub fn make_operator_table(zip_path : &str) -> Result<Table, Box<dyn std::error:
     };
     
     unsafe { 
-        if TAG_DICTIONARY.is_none() {
-            TAG_DICTIONARY = Some(tags)
-        };
+        TAG_DICTIONARY = Some(tags)
     }
 
     return Ok(table);

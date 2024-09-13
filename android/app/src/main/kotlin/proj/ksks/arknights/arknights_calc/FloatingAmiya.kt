@@ -277,7 +277,7 @@ class FloatingAmiya : Service() {
             }
 
             init {
-                text = "종료" // NEED TO TRANSLATE
+                text = Tr.QUIT
                 textSize = 22F
                 background = normalStateBackgroundColor
                 setPadding(26, 16, 46, 26)

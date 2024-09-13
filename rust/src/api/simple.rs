@@ -15,9 +15,7 @@ static mut TABLE: Option<Vec<Operator>> = None;
 #[flutter_rust_bridge::frb(dart_async)]
 pub fn install(zip_path: String) {
     unsafe {
-        if TABLE.is_none() {
-            TABLE = Some(make_operator_table(zip_path.as_str()).unwrap());
-        }
+        TABLE = Some(make_operator_table(zip_path.as_str()).unwrap());
     }
 }
 

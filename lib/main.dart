@@ -42,6 +42,25 @@ Future<String> downloadFileToCache(String url, String savePath) async {
   }
 }
 
+Future<void> applyLocale(String locale) async {
+  String zipUrl = "https://docs.google.com/spreadsheets/d/{FILE_ID}/export?format=zip";
+  switch (locale) {
+    case "ko_KR": zipUrl = zipUrl.replaceAll("{FILE_ID}", "1RW1hc7P_EuskKgL8OndhlgmZX-sYcsuha_tuSCJ59VY"); break;
+    default: zipUrl = zipUrl.replaceAll("{FILE_ID}", "1xpoQFVunGD4MHxaFj4A8MVqAu59OB2SXAzRLs3mWA38"); break;
+  }
+
+  downloadFileToCache(zipUrl,
+      await NativeChannelService.getAppCacheDirectory() + "/datasheets.zip"
+  ).then((zipPath) {
+    install(zipPath: zipPath).then((_) => ArknightsService.sendTagList());
+    ArknightsService.listenToCall(zipPath);
+  });
+
+  TranslationService.loadTranslatedMessage(locale).then((_) {
+    TranslationService.installTranslation();
+  });
+}
+
 Future<void> main() async {
   await RustLib.init();
 
@@ -52,26 +71,7 @@ Future<void> main() async {
   // Returns locale string in the form 'en_US'
   final String defaultLocale = Config().locale ?? Platform.localeName;
 
-  String zipUrl;
-  if (defaultLocale == "ko_KR") {
-    zipUrl =
-    "https://docs.google.com/spreadsheets/d/1RW1hc7P_EuskKgL8OndhlgmZX-sYcsuha_tuSCJ59VY/export?format=zip";
-  } else {
-    zipUrl =
-    "https://docs.google.com/spreadsheets/d/1xpoQFVunGD4MHxaFj4A8MVqAu59OB2SXAzRLs3mWA38/export?format=zip";
-  }
-
-  downloadFileToCache(
-      zipUrl,
-      await NativeChannelService.getAppCacheDirectory() + "/datasheets.zip")
-  .then((zipPath) {
-    install(zipPath: zipPath).then((_) => ArknightsService.sendTagList());
-    ArknightsService.listenToCall(zipPath);
-  });
-  TranslationService.loadTranslatedMessage(defaultLocale).then((_) {
-      TranslationService.installTranslation();
-  });
-
+  await applyLocale(defaultLocale);
 }
 
 class MainApp extends StatelessWidget {
@@ -183,7 +183,10 @@ class _HomePage extends State<HomePage> {
                               builder: (BuildContext context) => Settings(context: context),
                            ).then((result) {
                              Config().hideLowOperators = result?['hideLowOperators'] as bool;
-                             Config().locale = result?['locale'] as String;
+                             var newLocale = result?['locale'] as String;
+                             if (Config().locale != newLocale) {
+                               applyLocale(Config().locale = newLocale);
+                             }
                              Config.saveConfig();
                            }),
                            icon: Icon(Icons.settings))
