@@ -62,12 +62,29 @@ class FloatingAmiya : Service() {
     private var mOuterLayoutParams: WindowManager.LayoutParams? = null
     private val addedViews = mutableListOf<View>()
 
+    private var screenWidth: Int = 0
+    private var screenHeight: Int = 0
 
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate() {
         super.onCreate()
         mWindowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         gestureHandler.buildTextView()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            screenWidth = mWindowManager.currentWindowMetrics.bounds.width()
+            screenHeight = mWindowManager.currentWindowMetrics.bounds.height()
+        } else {
+            @Suppress("DEPRECATION")
+            with (mWindowManager.defaultDisplay) {
+                getMetrics(DisplayMetrics())
+                with (Point()) {
+                    getRealSize(this)
+                    screenWidth = this.x
+                    screenHeight = this.y
+                }
+            }
+        }
     }
 
     private fun addView(view: View, params: WindowManager.LayoutParams) {
@@ -385,6 +402,16 @@ class FloatingAmiya : Service() {
 
                     initialX = mOuterLayoutParams!!.x
                     initialY = mOuterLayoutParams!!.y
+
+                    initialX.coerceIn(
+                        -screenWidth / 2 + (mOuterLayoutParams!!.width / 2),
+                         screenWidth / 2 - (mOuterLayoutParams!!.width / 2)
+                    )
+                    initialY.coerceIn(
+                        -screenHeight / 2 + (mOuterLayoutParams!!.height / 2),
+                         screenHeight / 2 - (mOuterLayoutParams!!.height / 2)
+                    )
+
                     initialTouchX = event.rawX
                     initialTouchY = event.rawY
                     dragged = false
