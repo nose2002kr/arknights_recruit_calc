@@ -5,7 +5,7 @@ import kotlin.properties.ReadOnlyProperty
 
 object Tr {
     /* Constant value */
-    val TAG = "Tr"
+    private const val TAG = "Tr"
 
     val TITLE: String by translate()
     val NOTIFICATION_DESCRIPTION: String by translate()
