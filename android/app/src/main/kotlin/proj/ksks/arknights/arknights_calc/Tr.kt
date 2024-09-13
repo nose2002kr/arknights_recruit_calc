@@ -1,31 +1,29 @@
 package proj.ksks.arknights.arknights_calc
 
 import android.util.Log
+import kotlin.properties.ReadOnlyProperty
 
 object Tr {
     /* Constant value */
     val TAG = "Tr"
 
-    /* Constant Member */
-    var TITLE = "TITLE"
-    var NOTIFICATION_DESCRIPTION = "NOTIFICATION_DESCRIPTION"
-    var NOT_FOUND_TAGS = "NOT_FOUND_TAGS"
-    var CHECK_NOTIFICATION = "CHECK_NOTIFICATION"
-    var FAILED_TO_CONVERT_CAPTURE = "FAILED_TO_CONVERT_CAPTURE"
-    var QUIT = "QUIT"
+    val TITLE: String by translate()
+    val NOTIFICATION_DESCRIPTION: String by translate()
+    val NOT_FOUND_TAGS: String by translate()
+    val CHECK_NOTIFICATION: String by translate()
+    val FAILED_TO_CONVERT_CAPTURE: String by translate()
+    val QUIT : String by translate()
 
-    fun installTranslation(translations: Map<String, Any?>) {
-        translations.forEach { (key, value) ->
-            when (key) {
-                "TITLE"                    -> TITLE = value.toString()
-                "NOTIFICATION_DESCRIPTION" -> NOTIFICATION_DESCRIPTION = value.toString()
-                "NOT_FOUND_TAGS"           -> NOT_FOUND_TAGS = value.toString()
-                "CHECK_NOTIFICATION"       -> CHECK_NOTIFICATION = value.toString()
-                "FAILED_TO_CONVERT_CAPTURE"-> FAILED_TO_CONVERT_CAPTURE = value.toString()
-                "QUIT"                     -> QUIT = value.toString()
-                else -> Log.d(TAG, "Unknown key is found ${key}")
-            }
+
+    private fun translate(): ReadOnlyProperty<Any?, String> {
+        return ReadOnlyProperty { _, property ->
+            translations[property.name]?.toString() ?: property.name
         }
+    }
+
+    private lateinit var translations: Map<String, Any?>
+    fun installTranslation(translations: Map<String, Any?>) {
+        this.translations = translations
         Log.d(TAG, "install Done.")
     }
 }
