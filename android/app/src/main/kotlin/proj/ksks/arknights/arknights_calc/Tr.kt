@@ -17,11 +17,11 @@ object Tr {
 
     private fun translate(): ReadOnlyProperty<Any?, String> {
         return ReadOnlyProperty { _, property ->
-            translations[property.name]?.toString() ?: property.name
+            translations?.get(property.name)?.toString() ?: property.name
         }
     }
 
-    private lateinit var translations: Map<String, Any?>
+    private var translations: Map<String, Any?>? = null
     fun installTranslation(translations: Map<String, Any?>) {
         this.translations = translations
         Log.d(TAG, "install Done.")

@@ -111,7 +111,7 @@ class FloatingAmiya : Service() {
             showIcon()
         } else if (intent.action.equals("SHOW_PANEL")) {
             Log.d(TAG, "Show panel.")
-            val matchedTags : ArrayList<String> = intent.getStringArrayListExtra("tags")!!
+            val matchedTags : ArrayList<String> = intent.getStringArrayListExtra("tags")?: arrayListOf()
             showPanel(matchedTags)
         }
         return START_STICKY
