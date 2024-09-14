@@ -386,43 +386,44 @@ class FloatingAmiya : Service() {
             terminateIndicator.show()
         }
 
-        inner class Touched {
+        inner class EdgeTouched {
             var left: Boolean = false
             var right: Boolean = false
             var top: Boolean = false
             var bottom: Boolean = false
             fun it(): Boolean = left or right or top or bottom
         }
-        private lateinit var touched: Touched
-
+        private lateinit var edgeTouched: EdgeTouched
+        
         override fun onTouch(view: View, event: MotionEvent): Boolean {
 
-            fun isTouchedEdge(view: View): Touched {
+            fun isEdgeTouched(view: View): EdgeTouched {
                 val pos = IntArray(2)
                 view.getLocationOnScreen(pos)
 
-                val gap = 10
+                val x = event.rawX.toInt()
+                val y = event.rawY.toInt()
 
-                val touched = Touched()
-                if (view is OperatorChartLayout) {
-                    if (pos[0] - gap < event.rawX && event.rawX < pos[0] + gap) {
-                        Log.d(TAG,"touched left edge")
-                        touched.left = true
-                    }
-                    if (pos[1] - gap < event.rawY && event.rawY < pos[1] + gap) {
-                        Log.d(TAG,"touched top edge")
-                        touched.top = true
-                    }
-                    if (pos[0]+ (mOuterLayoutParams!!.width) - gap < event.rawX && event.rawX < pos[0] + (mOuterLayoutParams!!.width) + gap) {
-                        Log.d(TAG,"touched right edge")
-                        touched.right = true
-                    }
-                    if (pos[1]+ (mOuterLayoutParams!!.height) - gap < event.rawY && event.rawY < pos[1] + (mOuterLayoutParams!!.height) + gap) {
-                        Log.d(TAG,"touched bottom edge")
-                        touched.bottom = true
-                    }
-                    Log.d(TAG, "touchedEdge: ${touched.it()}")
+                val viewRect = Rect(
+                    pos[0], pos[1],
+                    pos[0] + mOuterLayoutParams!!.width,
+                    pos[1] + mOuterLayoutParams!!.height
+                )
+
+                fun isTouchedAt(at: Int, what: Int): Boolean {
+                    val gap = 10
+                    return (at - gap..at + gap).contains(what)
                 }
+
+                val touched = EdgeTouched()
+                touched.apply {
+                    left = isTouchedAt(viewRect.left, x)
+                    top = isTouchedAt(viewRect.top, y)
+                    right = isTouchedAt(viewRect.right, x)
+                    bottom = isTouchedAt(viewRect.bottom, y)
+                }
+
+                Log.d(TAG, "touchedEdge: ${touched.it()}")
                 return touched
             }
             /*
@@ -444,8 +445,9 @@ class FloatingAmiya : Service() {
 
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
-                    touched = isTouchedEdge(view)
-                    if (!touched.it() || touched.top) {
+                    edgeTouched = isEdgeTouched(view)
+                    if ((!edgeTouched.it() || edgeTouched.top) &&
+                        view is OperatorChartLayout) {
                         view.handler.postDelayed(
                             mLongPressed,
                             ViewConfiguration.getLongPressTimeout().toLong()
@@ -471,7 +473,8 @@ class FloatingAmiya : Service() {
                     return false
                 }
                 MotionEvent.ACTION_MOVE -> {
-                    if (touched.it() && !touched.top) {
+                    if ((edgeTouched.it() && !edgeTouched.top) &&
+                        view is OperatorChartLayout) {
 
                     } else {
                         mOuterLayoutParams!!.x = initialX + (event.rawX - initialTouchX).toInt()
@@ -495,16 +498,17 @@ class FloatingAmiya : Service() {
                     return false
                 }
                 MotionEvent.ACTION_UP -> {
-                    if (touched.it() && !touched.top) {
-                        if (touched.left) {
+                    if ((edgeTouched.it() && !edgeTouched.top) &&
+                        view is OperatorChartLayout) {
+                        if (edgeTouched.left) {
                             mOuterLayoutParams!!.x += (event.rawX - initialTouchX).toInt()
                             mOuterLayoutParams!!.width += (initialTouchX - event.rawX).toInt()
                             mWindowManager.updateViewLayout(view, mOuterLayoutParams)
                         }
-                        if (touched.right) {
+                        if (edgeTouched.right) {
                             mOuterLayoutParams!!.width += (event.rawX - initialTouchX).toInt()
                         }
-                        if (touched.bottom) {
+                        if (edgeTouched.bottom) {
                             mOuterLayoutParams!!.height += (event.rawY - initialTouchY).toInt()
                         }
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
