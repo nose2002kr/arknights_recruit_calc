@@ -127,7 +127,7 @@ class FloatingAmiya : Service() {
             PixelFormat.TRANSLUCENT
         )
 
-        outerLayoutParams.gravity = Gravity.CENTER
+        outerLayoutParams.gravity = Gravity.TOP or Gravity.LEFT;
         val frameLayout = FrameLayout(this).apply {
             layoutParams = FrameLayout.LayoutParams (
                 LayoutParams.MATCH_PARENT,
@@ -239,7 +239,7 @@ class FloatingAmiya : Service() {
             PixelFormat.TRANSLUCENT
         )
 
-        outerLayoutParams.gravity = Gravity.CENTER
+        outerLayoutParams.gravity = Gravity.TOP or Gravity.LEFT;
         mOuterLayoutParams?.let { param ->
             outerLayoutParams.x = param.x
             outerLayoutParams.y = param.y
@@ -404,12 +404,12 @@ class FloatingAmiya : Service() {
                     initialY = mOuterLayoutParams!!.y
 
                     initialX = initialX.coerceIn(
-                        -screenWidth / 2 + (mOuterLayoutParams!!.width / 2),
-                         screenWidth / 2 - (mOuterLayoutParams!!.width / 2)
+                        0,
+                        screenWidth - (mOuterLayoutParams!!.width)
                     )
                     initialY = initialY.coerceIn(
-                        -screenHeight / 2 + (mOuterLayoutParams!!.height / 2),
-                         screenHeight / 2 - (mOuterLayoutParams!!.height / 2)
+                        0,
+                        screenHeight - (mOuterLayoutParams!!.height)
                     )
 
                     initialTouchX = event.rawX
