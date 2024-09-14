@@ -51,8 +51,6 @@ class FloatingAmiya : Service() {
     private val ICON_SIZE = 200
     private val ICON_SHADOW_MARGIN = 20
     private val ICON_ELEVATION = 10f
-    private val PANEL_WIDTH = 1200
-    private val PANEL_HEIGHT = 700
 
 
     /* Member */
@@ -61,8 +59,10 @@ class FloatingAmiya : Service() {
     private var mOuterLayoutParams: WindowManager.LayoutParams? = null
     private val addedViews = mutableListOf<View>()
 
-    private var screenWidth: Int = 0
-    private var screenHeight: Int = 0
+    private var screenWidth = 0
+    private var screenHeight = 0
+    private var panelWidth = 1200
+    private var panelHeight = 700
 
     override fun onCreate() {
         super.onCreate()
@@ -144,12 +144,14 @@ class FloatingAmiya : Service() {
                 with(
                     ChannelManager.callFunction(
                         ChannelManager.getChannelInstance(ChannelManager.ARKNIGHTS),
-                        "getAmiyaPosition",
+                        "getAmiyaLayout",
                         null
                     ) as List<Int?>
                 ) {
                     this[0]?.let { outerLayoutParams.x = it }
                     this[1]?.let { outerLayoutParams.y = it }
+                    this[2]?.let { panelWidth = it }
+                    this[3]?.let { panelHeight = it }
                     mOuterLayoutParams = outerLayoutParams;
                     mWindowManager.updateViewLayout(frameLayout, outerLayoutParams)
                 }
@@ -232,8 +234,8 @@ class FloatingAmiya : Service() {
         })
 
         val outerLayoutParams = WindowManager.LayoutParams(
-            min(PANEL_WIDTH, screenWidth),
-            min(PANEL_HEIGHT, screenHeight),
+            min(panelWidth, screenWidth),
+            min(panelHeight, screenHeight),
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT
@@ -243,6 +245,20 @@ class FloatingAmiya : Service() {
         mOuterLayoutParams?.let { param ->
             outerLayoutParams.x = param.x
             outerLayoutParams.y = param.y
+        }
+        CoroutineScope(Dispatchers.Main).launch {
+            with(
+                ChannelManager.callFunction(
+                    ChannelManager.getChannelInstance(ChannelManager.ARKNIGHTS),
+                    "getAmiyaLayout",
+                    null
+                ) as List<Int?>
+            ) {
+                this[2]?.let { outerLayoutParams.width = it }
+                this[3]?.let { outerLayoutParams.height = it }
+                mOuterLayoutParams = outerLayoutParams;
+                mWindowManager.updateViewLayout(layout, outerLayoutParams)
+            }
         }
         layout.setOnTouchListener(gestureHandler)
 
@@ -258,6 +274,7 @@ class FloatingAmiya : Service() {
         private var initialTouchX = 0f
         private var initialTouchY = 0f
         private var dragged = false
+        private var resizing = false
         private lateinit var terminateIndicator: TerminateIndicator
 
         @SuppressLint("AppCompatCustomView")
@@ -456,7 +473,10 @@ class FloatingAmiya : Service() {
                 MotionEvent.ACTION_DOWN -> {
                     retakeScreenSize()
                     edgeTouched = isEdgeTouched(view)
-                    if ((!edgeTouched.it() || edgeTouched.top)) {
+                    resizing = edgeTouched.it() && !edgeTouched.top &&
+                            view is OperatorChartLayout // FIXME: should check as `view.isResizeable()`
+
+                    if (!resizing) {
                         view.handler.postDelayed(
                             mLongPressed,
                             ViewConfiguration.getLongPressTimeout().toLong()
@@ -482,8 +502,7 @@ class FloatingAmiya : Service() {
                     return false
                 }
                 MotionEvent.ACTION_MOVE -> {
-                    if ((edgeTouched.it() && !edgeTouched.top) &&
-                        view is OperatorChartLayout) {
+                    if (resizing) {
 
                     } else {
                         mOuterLayoutParams!!.x = initialX + (event.rawX - initialTouchX).toInt()
@@ -507,24 +526,22 @@ class FloatingAmiya : Service() {
                     return false
                 }
                 MotionEvent.ACTION_UP -> {
-                    if ((edgeTouched.it() && !edgeTouched.top)) {
-                        if (view is OperatorChartLayout) {
-                            if (edgeTouched.left) {
-                                mOuterLayoutParams!!.x += (event.rawX - initialTouchX).toInt()
-                                mOuterLayoutParams!!.width += (initialTouchX - event.rawX).toInt()
-                                mWindowManager.updateViewLayout(view, mOuterLayoutParams)
-                            }
-                            if (edgeTouched.right) {
-                                mOuterLayoutParams!!.width += (event.rawX - initialTouchX).toInt()
-                            }
-                            if (edgeTouched.bottom) {
-                                mOuterLayoutParams!!.height += (event.rawY - initialTouchY).toInt()
-                            }
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                                mOuterLayoutParams!!.setCanPlayMoveAnimation(false)
-                            }
+                    if (resizing) {
+                        if (edgeTouched.left) {
+                            mOuterLayoutParams!!.x += (event.rawX - initialTouchX).toInt()
+                            mOuterLayoutParams!!.width += (initialTouchX - event.rawX).toInt()
                             mWindowManager.updateViewLayout(view, mOuterLayoutParams)
                         }
+                        if (edgeTouched.right) {
+                            mOuterLayoutParams!!.width += (event.rawX - initialTouchX).toInt()
+                        }
+                        if (edgeTouched.bottom) {
+                            mOuterLayoutParams!!.height += (event.rawY - initialTouchY).toInt()
+                        }
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                            mOuterLayoutParams!!.setCanPlayMoveAnimation(false)
+                        }
+                        mWindowManager.updateViewLayout(view, mOuterLayoutParams)
                     } else {
                         view.handler.removeCallbacks(mLongPressed)
 
@@ -544,8 +561,12 @@ class FloatingAmiya : Service() {
                     CoroutineScope(Dispatchers.Main).launch {
                         ChannelManager.callFunction(
                             ChannelManager.getChannelInstance(ChannelManager.ARKNIGHTS),
-                            "amiyaPositionIsChanged",
+                            "amiyaLayoutIsChanged",
                             listOf(mOuterLayoutParams!!.x, mOuterLayoutParams!!.y)
+                                    + if (resizing) listOf(
+                                            mOuterLayoutParams!!.width,
+                                            mOuterLayoutParams!!.height
+                                    ) else listOf()
                         )
                     }
                 }

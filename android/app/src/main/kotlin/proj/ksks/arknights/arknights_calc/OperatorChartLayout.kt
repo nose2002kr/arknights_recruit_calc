@@ -341,7 +341,7 @@ class OperatorChartLayout (
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
-        //Log.d(TAG, "re-size $w, $h [$oldw, $oldh]")
+        Log.d(TAG, "re-size $w, $h [$oldw, $oldh]")
 
         upperView.post {
             upperView.layoutParams.apply {
