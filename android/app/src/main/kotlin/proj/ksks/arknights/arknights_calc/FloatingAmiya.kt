@@ -40,6 +40,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import proj.ksks.arknights.arknights_calc.OperatorChartLayout.Listener
 import kotlin.math.hypot
+import kotlin.math.min
 
 
 class FloatingAmiya : Service() {
@@ -68,6 +69,10 @@ class FloatingAmiya : Service() {
         mWindowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         gestureHandler.buildTextView()
 
+        retakeScreenSize()
+    }
+
+    private fun retakeScreenSize() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             screenWidth = mWindowManager.currentWindowMetrics.bounds.width()
             screenHeight = mWindowManager.currentWindowMetrics.bounds.height()
@@ -227,8 +232,8 @@ class FloatingAmiya : Service() {
         })
 
         val outerLayoutParams = WindowManager.LayoutParams(
-            PANEL_WIDTH,
-            PANEL_HEIGHT,
+            min(PANEL_WIDTH, screenWidth),
+            min(PANEL_HEIGHT, screenHeight),
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT
@@ -449,6 +454,7 @@ class FloatingAmiya : Service() {
 
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
+                    retakeScreenSize()
                     edgeTouched = isEdgeTouched(view)
                     if ((!edgeTouched.it() || edgeTouched.top)) {
                         view.handler.postDelayed(
@@ -501,24 +507,24 @@ class FloatingAmiya : Service() {
                     return false
                 }
                 MotionEvent.ACTION_UP -> {
-                    if ((edgeTouched.it() && !edgeTouched.top) &&
-                        view is OperatorChartLayout) {
-                        if (edgeTouched.left) {
-                            mOuterLayoutParams!!.x += (event.rawX - initialTouchX).toInt()
-                            mOuterLayoutParams!!.width += (initialTouchX - event.rawX).toInt()
+                    if ((edgeTouched.it() && !edgeTouched.top)) {
+                        if (view is OperatorChartLayout) {
+                            if (edgeTouched.left) {
+                                mOuterLayoutParams!!.x += (event.rawX - initialTouchX).toInt()
+                                mOuterLayoutParams!!.width += (initialTouchX - event.rawX).toInt()
+                                mWindowManager.updateViewLayout(view, mOuterLayoutParams)
+                            }
+                            if (edgeTouched.right) {
+                                mOuterLayoutParams!!.width += (event.rawX - initialTouchX).toInt()
+                            }
+                            if (edgeTouched.bottom) {
+                                mOuterLayoutParams!!.height += (event.rawY - initialTouchY).toInt()
+                            }
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                                mOuterLayoutParams!!.setCanPlayMoveAnimation(false)
+                            }
                             mWindowManager.updateViewLayout(view, mOuterLayoutParams)
                         }
-                        if (edgeTouched.right) {
-                            mOuterLayoutParams!!.width += (event.rawX - initialTouchX).toInt()
-                        }
-                        if (edgeTouched.bottom) {
-                            mOuterLayoutParams!!.height += (event.rawY - initialTouchY).toInt()
-                        }
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                            mOuterLayoutParams!!.setCanPlayMoveAnimation(false)
-                        }
-                        mWindowManager.updateViewLayout(view, mOuterLayoutParams)
-
                     } else {
                         view.handler.removeCallbacks(mLongPressed)
 
