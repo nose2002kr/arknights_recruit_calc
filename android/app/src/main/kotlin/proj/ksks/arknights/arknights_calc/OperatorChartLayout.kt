@@ -231,7 +231,9 @@ class OperatorChartLayout (
         layoutParams = LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.MATCH_PARENT
-        )
+        ).apply {
+            setMargins(40, 40, 40, 40)
+        }
         background = shapeGray
 
         selectedTagLayout = LinearLayout(themedContext).apply {

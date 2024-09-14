@@ -411,7 +411,7 @@ class FloatingAmiya : Service() {
                 )
 
                 fun isTouchedAt(at: Int, what: Int): Boolean {
-                    val gap = 10
+                    val gap = 40
                     return (at - gap..at + gap).contains(what)
                 }
 
@@ -427,6 +427,10 @@ class FloatingAmiya : Service() {
                 return touched
             }
             /*
+
+            val pos = IntArray(2)
+            view.getLocationOnScreen(pos)
+
             Log.d(TAG, "event: [${event.rawX}, ${event.rawY}], " +
 
                     "frame: [" +
