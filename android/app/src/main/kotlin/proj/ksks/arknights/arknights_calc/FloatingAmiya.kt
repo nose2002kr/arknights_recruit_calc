@@ -450,8 +450,7 @@ class FloatingAmiya : Service() {
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     edgeTouched = isEdgeTouched(view)
-                    if ((!edgeTouched.it() || edgeTouched.top) &&
-                        view is OperatorChartLayout) {
+                    if ((!edgeTouched.it() || edgeTouched.top)) {
                         view.handler.postDelayed(
                             mLongPressed,
                             ViewConfiguration.getLongPressTimeout().toLong()
