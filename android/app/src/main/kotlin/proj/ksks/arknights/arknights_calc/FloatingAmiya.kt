@@ -386,11 +386,71 @@ class FloatingAmiya : Service() {
             terminateIndicator.show()
         }
 
-        override fun onTouch(view: View, event: MotionEvent): Boolean {
-            when (event.action) {
+        inner class Touched {
+            var left: Boolean = false
+            var right: Boolean = false
+            var top: Boolean = false
+            var bottom: Boolean = false
+            fun it(): Boolean = left or right or top or bottom
+        }
+        private lateinit var touched: Touched
 
+        override fun onTouch(view: View, event: MotionEvent): Boolean {
+
+            fun isTouchedEdge(view: View): Touched {
+                val pos = IntArray(2)
+                view.getLocationOnScreen(pos)
+
+                val gap = 10
+
+                val touched = Touched()
+                if (view is OperatorChartLayout) {
+                    if (pos[0] - gap < event.rawX && event.rawX < pos[0] + gap) {
+                        Log.d(TAG,"touched left edge")
+                        touched.left = true
+                    }
+                    if (pos[1] - gap < event.rawY && event.rawY < pos[1] + gap) {
+                        Log.d(TAG,"touched top edge")
+                        touched.top = true
+                    }
+                    if (pos[0]+ (mOuterLayoutParams!!.width) - gap < event.rawX && event.rawX < pos[0] + (mOuterLayoutParams!!.width) + gap) {
+                        Log.d(TAG,"touched right edge")
+                        touched.right = true
+                    }
+                    if (pos[1]+ (mOuterLayoutParams!!.height) - gap < event.rawY && event.rawY < pos[1] + (mOuterLayoutParams!!.height) + gap) {
+                        Log.d(TAG,"touched bottom edge")
+                        touched.bottom = true
+                    }
+                    Log.d(TAG, "touchedEdge: ${touched.it()}")
+                }
+                return touched
+            }
+            /*
+            Log.d(TAG, "event: [${event.rawX}, ${event.rawY}], " +
+
+                    "frame: [" +
+                    "${mOuterLayoutParams!!.x}, " +
+                    "${mOuterLayoutParams!!.y} - " +
+                    "${mOuterLayoutParams!!.x + mOuterLayoutParams!!.width}, " +
+                    "${mOuterLayoutParams!!.y + mOuterLayoutParams!!.height}], " +
+
+                    "frame-on-the-screen: [" +
+                    "${pos[0]}, " +
+                    "${pos[1]} - " +
+                    "${pos[0] + (mOuterLayoutParams!!.width)}, " +
+                    "${pos[1] + (mOuterLayoutParams!!.height)}]")
+            */
+
+
+            when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
-                    view.handler.postDelayed(mLongPressed, ViewConfiguration.getLongPressTimeout().toLong())
+                    touched = isTouchedEdge(view)
+                    if (!touched.it() || touched.top) {
+                        view.handler.postDelayed(
+                            mLongPressed,
+                            ViewConfiguration.getLongPressTimeout().toLong()
+                        )
+                    }
 
                     initialX = mOuterLayoutParams!!.x
                     initialY = mOuterLayoutParams!!.y
@@ -411,32 +471,56 @@ class FloatingAmiya : Service() {
                     return false
                 }
                 MotionEvent.ACTION_MOVE -> {
-                    mOuterLayoutParams!!.x = initialX + (event.rawX - initialTouchX).toInt()
-                    mOuterLayoutParams!!.y = initialY + (event.rawY - initialTouchY).toInt()
-                    mWindowManager.updateViewLayout(view, mOuterLayoutParams)
+                    if (touched.it() && !touched.top) {
 
-
-                    val pos = IntArray(2)
-                    terminateIndicator.getLocationOnScreen(pos)
-                    if (Rect(pos[0], pos[1],
-                        pos[0] + terminateIndicator.width,
-                        pos[1] + terminateIndicator.height
-                    ).contains(event.rawX.toInt(), event.rawY.toInt())) {
-                        terminateIndicator.active()
                     } else {
-                        terminateIndicator.inactive()
+                        mOuterLayoutParams!!.x = initialX + (event.rawX - initialTouchX).toInt()
+                        mOuterLayoutParams!!.y = initialY + (event.rawY - initialTouchY).toInt()
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                            mOuterLayoutParams!!.setCanPlayMoveAnimation(true)
+                        }
+                        mWindowManager.updateViewLayout(view, mOuterLayoutParams)
+
+                        val pos = IntArray(2)
+                        terminateIndicator.getLocationOnScreen(pos)
+                        if (Rect(pos[0], pos[1],
+                            pos[0] + terminateIndicator.width,
+                            pos[1] + terminateIndicator.height
+                        ).contains(event.rawX.toInt(), event.rawY.toInt())) {
+                            terminateIndicator.active()
+                        } else {
+                            terminateIndicator.inactive()
+                        }
                     }
                     return false
                 }
                 MotionEvent.ACTION_UP -> {
-                    view.handler.removeCallbacks(mLongPressed)
+                    if (touched.it() && !touched.top) {
+                        if (touched.left) {
+                            mOuterLayoutParams!!.x += (event.rawX - initialTouchX).toInt()
+                            mOuterLayoutParams!!.width += (initialTouchX - event.rawX).toInt()
+                            mWindowManager.updateViewLayout(view, mOuterLayoutParams)
+                        }
+                        if (touched.right) {
+                            mOuterLayoutParams!!.width += (event.rawX - initialTouchX).toInt()
+                        }
+                        if (touched.bottom) {
+                            mOuterLayoutParams!!.height += (event.rawY - initialTouchY).toInt()
+                        }
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                            mOuterLayoutParams!!.setCanPlayMoveAnimation(false)
+                        }
+                        mWindowManager.updateViewLayout(view, mOuterLayoutParams)
 
-                    if (terminateIndicator.activated) {
-                        val intent = Intent(this@FloatingAmiya, ScreenCaptureService::class.java)
-                        intent.setAction("STOP_SCREEN_CAPTURE")
-                        startForegroundService(intent)
+                    } else {
+                        view.handler.removeCallbacks(mLongPressed)
+
+                        if (terminateIndicator.activated) {
+                            val intent = Intent(this@FloatingAmiya, ScreenCaptureService::class.java)
+                            intent.setAction("STOP_SCREEN_CAPTURE")
+                            startForegroundService(intent)
+                        }
                     }
-
                     val distance = hypot((initialTouchX - event.rawX).toDouble(), (initialTouchY - event.rawY).toDouble())
                     if (distance > ICON_SIZE / 4) {
                         dragged = true
