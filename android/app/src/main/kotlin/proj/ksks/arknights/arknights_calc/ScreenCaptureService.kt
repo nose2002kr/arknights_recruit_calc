@@ -26,6 +26,7 @@ import android.util.Log
 import android.widget.Toast
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
 
@@ -102,6 +103,7 @@ class ScreenCaptureService : Service() {
                     CoroutineScope(Dispatchers.Main).launch {
                         while (tagDictionary == null) {
                             Log.d(TAG, "yield until load tagDictionary")
+                            delay(10)
                             yield()
                         }
                         val matchedTag = ArrayList<String>()
