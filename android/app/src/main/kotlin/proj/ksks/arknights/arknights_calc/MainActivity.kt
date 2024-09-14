@@ -108,7 +108,7 @@ class MainActivity: FlutterActivity() {
                     "listTags" -> {
                         val list = call.arguments as ArrayList<String>
                         tagDictionary = list
-                        Log.d(TAG, "Debug tagDictionary: " + (tagDictionary.get(0)))
+                        Log.d(TAG, "Debug tagDictionary: " + (tagDictionary!!.get(0)))
                     }
                 }
             }

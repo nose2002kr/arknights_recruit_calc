@@ -1,3 +1,3 @@
 package proj.ksks.arknights.arknights_calc
 
-lateinit var tagDictionary : ArrayList<String> // init by configureFlutterEngine
+var tagDictionary : ArrayList<String>? = null // init by configureFlutterEngine

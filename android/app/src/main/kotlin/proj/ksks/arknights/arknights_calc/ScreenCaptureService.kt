@@ -24,6 +24,10 @@ import android.os.IBinder
 import android.os.Parcelable
 import android.util.Log
 import android.widget.Toast
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
 
 @TargetApi(Build.VERSION_CODES.TIRAMISU)
 class ScreenCaptureService : Service() {
@@ -95,23 +99,30 @@ class ScreenCaptureService : Service() {
             }
             captureBitmap?.let {
                 ocrBitmap(it) { visionText ->
-                    val matchedTag = ArrayList<String>()
-                    for (block in visionText.textBlocks) {
-                        val blockText: String = block.text
-                        //Log.d(TAG, "recognized text: ${blockText}")
-                        if (tagDictionary.contains(blockText.trim())) {
-                            matchedTag.add(blockText.trim())
+                    CoroutineScope(Dispatchers.Main).launch {
+                        while (tagDictionary == null) {
+                            Log.d(TAG, "yield until load tagDictionary")
+                            yield()
                         }
+                        val matchedTag = ArrayList<String>()
+                        for (block in visionText.textBlocks) {
+                            val blockText: String = block.text
+                            //Log.d(TAG, "recognized text: ${blockText}")
+                            if (tagDictionary!!.contains(blockText.trim())) {
+                                matchedTag.add(blockText.trim())
+                            }
+                        }
+                        Log.d(TAG, "Complete detection.")
+                        if (matchedTag.isEmpty()) {
+                            Toast.makeText(this@ScreenCaptureService, TOAST_MESSAGE_NOT_FOUND_TAGS, Toast.LENGTH_SHORT).show()
+                        }
+                        startService(
+                            Intent(this@ScreenCaptureService, FloatingAmiya::class.java).apply {
+                                action = "SHOW_PANEL"
+                                putExtra("tags", matchedTag)
+                            }
+                        )
                     }
-                    Log.d(TAG, "Complete detection.")
-                    if (matchedTag.isEmpty()) {
-                        Toast.makeText(this, TOAST_MESSAGE_NOT_FOUND_TAGS, Toast.LENGTH_SHORT).show()
-                    }
-                    startService(
-                        Intent(this, FloatingAmiya::class.java).apply {
-                            action = "SHOW_PANEL"
-                            putExtra("tags", matchedTag)
-                        })
                 }
                 Log.d(TAG, "capture success")
             }

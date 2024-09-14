@@ -281,7 +281,7 @@ class OperatorChartLayout (
             setBackgroundColor(Color.WHITE)
         }
 
-        for (tag in tagDictionary) {
+        for (tag in tagDictionary!!) {
             val chip = Chip(themedContext).apply {
                 text = tag
                 isClickable = true

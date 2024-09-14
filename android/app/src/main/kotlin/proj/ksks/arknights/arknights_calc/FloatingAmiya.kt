@@ -101,17 +101,19 @@ class FloatingAmiya : Service() {
 
     @TargetApi(Build.VERSION_CODES.TIRAMISU)
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        Log.d(TAG, "Amiya, " + intent.action)
-        if (intent.action.equals("STOP")) {
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        Log.d(TAG, "Amiya, " + intent?.action)
+        if (intent?.action.equals("STOP")) {
             Log.d(TAG, "Hide amiya.")
             removeAllViews()
-        } else if (intent.action.equals("START")) {
+        } else if (intent?.action.equals("START")) {
             Log.d(TAG, "Show amiya.")
-            mBitmap = intent.getParcelable("icon")!!
+            mBitmap = intent?.getParcelable("icon")!!
             showIcon()
-        } else if (intent.action.equals("SHOW_PANEL")) {
+        } else if (intent?.action.equals("SHOW_PANEL")) {
             Log.d(TAG, "Show panel.")
-            val matchedTags : ArrayList<String> = intent.getStringArrayListExtra("tags")?: arrayListOf()
+            val matchedTags: ArrayList<String> =
+                intent?.getStringArrayListExtra("tags") ?: arrayListOf()
             showPanel(matchedTags)
         }
         return START_STICKY
