@@ -254,8 +254,8 @@ class FloatingAmiya : Service() {
                     null
                 ) as List<Int?>
             ) {
-                this[2]?.let { outerLayoutParams.width = it }
-                this[3]?.let { outerLayoutParams.height = it }
+                this[2]?.let { outerLayoutParams.width = min(it, screenWidth) }
+                this[3]?.let { outerLayoutParams.height = min(it, screenHeight) }
                 mOuterLayoutParams = outerLayoutParams;
                 mWindowManager.updateViewLayout(layout, outerLayoutParams)
             }
