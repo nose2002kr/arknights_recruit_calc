@@ -403,11 +403,11 @@ class FloatingAmiya : Service() {
                     initialX = mOuterLayoutParams!!.x
                     initialY = mOuterLayoutParams!!.y
 
-                    initialX.coerceIn(
+                    initialX = initialX.coerceIn(
                         -screenWidth / 2 + (mOuterLayoutParams!!.width / 2),
                          screenWidth / 2 - (mOuterLayoutParams!!.width / 2)
                     )
-                    initialY.coerceIn(
+                    initialY = initialY.coerceIn(
                         -screenHeight / 2 + (mOuterLayoutParams!!.height / 2),
                          screenHeight / 2 - (mOuterLayoutParams!!.height / 2)
                     )
