@@ -214,4 +214,12 @@ class MainActivity: FlutterActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         onRequestPermissionsResultListener?.invoke(requestCode, permissions, grantResults)
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        val intent = Intent(this, ScreenCaptureService::class.java)
+        intent.setAction("STOP_SCREEN_CAPTURE")
+        stopService()
+    }
 }
