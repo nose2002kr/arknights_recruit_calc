@@ -9,12 +9,15 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Paint
 import android.graphics.PixelFormat
 import android.graphics.Point
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
 import android.graphics.Rect
+import android.graphics.RectF
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.ShapeDrawable
@@ -67,7 +70,7 @@ class FloatingAmiya : Service() {
     override fun onCreate() {
         super.onCreate()
         mWindowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        gestureHandler.buildTextView()
+        gestureHandler.buildViews()
 
         retakeScreenSize()
     }
@@ -276,6 +279,7 @@ class FloatingAmiya : Service() {
         private var dragged = false
         private var resizing = false
         private lateinit var terminateIndicator: TerminateIndicator
+        private lateinit var rubberBand: RubberBand
 
         @SuppressLint("AppCompatCustomView")
         private inner class TerminateIndicator(context: Context) : TextView(context) {
@@ -399,8 +403,66 @@ class FloatingAmiya : Service() {
             }
         }
 
-        fun buildTextView() {
+        private inner class RubberBand(context: Context): View(context) {
+
+            private var rect: Rect = Rect()
+
+            @SuppressLint("DrawAllocation")
+            override fun onDraw(canvas: Canvas) {
+                super.onDraw(canvas)
+                canvas.drawRoundRect(
+                    RectF(rect), 50f, 50f, Paint().apply {
+                        color = Color.parseColor("#12818589")
+                        style = Paint.Style.FILL
+                    }
+                )
+
+                canvas.drawRoundRect(
+                    RectF(rect), 50f, 50f, Paint().apply {
+                        color = Color.parseColor("#FF708090")
+                        strokeWidth = 9f
+                        style = Paint.Style.STROKE
+                    }
+                )
+            }
+
+            fun show() {
+                hide()
+                // do not insert `addedViews`
+                mWindowManager.addView(this, WindowManager.LayoutParams(
+                    LayoutParams.MATCH_PARENT,
+                    LayoutParams.MATCH_PARENT,
+                    WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                    PixelFormat.TRANSLUCENT
+                ).apply {
+                    gravity = Gravity.TOP or Gravity.LEFT;
+                })
+            }
+
+            fun hide() {
+                this.parent?.let {
+                    mWindowManager.removeView(this)
+                }
+                this.rect = Rect()
+            }
+
+            fun setRect(rect: Rect) {
+                this.rect = rect
+            }
+        }
+
+        fun buildTerminateIndicator() {
             terminateIndicator = TerminateIndicator(this@FloatingAmiya)
+        }
+
+        fun buildRubberBand() {
+            rubberBand = RubberBand(this@FloatingAmiya)
+        }
+
+        fun buildViews() {
+            buildTerminateIndicator()
+            buildRubberBand()
         }
 
         private val mLongPressed = Runnable {
@@ -481,6 +543,8 @@ class FloatingAmiya : Service() {
                             mLongPressed,
                             ViewConfiguration.getLongPressTimeout().toLong()
                         )
+                    } else {
+                        rubberBand.show()
                     }
 
                     initialX = mOuterLayoutParams!!.x
@@ -503,7 +567,27 @@ class FloatingAmiya : Service() {
                 }
                 MotionEvent.ACTION_MOVE -> {
                     if (resizing) {
+                        Log.d(TAG, "initialTouch[$initialTouchX, $initialTouchY]," +
+                                " event.raw[${event.rawX}, ${event.rawY}]")
 
+                        val rect = Rect()
+                        rect.left = mOuterLayoutParams!!.x
+                        rect.top = mOuterLayoutParams!!.y
+                        rect.right = mOuterLayoutParams!!.x + mOuterLayoutParams!!.width
+                        rect.bottom = mOuterLayoutParams!!.y + mOuterLayoutParams!!.height
+
+                        if (edgeTouched.left) {
+                            rect.left += (event.rawX - initialTouchX).toInt()
+                        }
+                        if (edgeTouched.right) {
+                            rect.right += (event.rawX - initialTouchX).toInt()
+                        }
+                        if (edgeTouched.bottom) {
+                            rect.bottom += (event.rawY - initialTouchY).toInt()
+                        }
+
+                        rubberBand.setRect(rect)
+                        rubberBand.invalidate()
                     } else {
                         mOuterLayoutParams!!.x = initialX + (event.rawX - initialTouchX).toInt()
                         mOuterLayoutParams!!.y = initialY + (event.rawY - initialTouchY).toInt()
@@ -542,6 +626,8 @@ class FloatingAmiya : Service() {
                             mOuterLayoutParams!!.setCanPlayMoveAnimation(false)
                         }
                         mWindowManager.updateViewLayout(view, mOuterLayoutParams)
+
+                        rubberBand.hide()
                     } else {
                         view.handler.removeCallbacks(mLongPressed)
 
@@ -550,13 +636,14 @@ class FloatingAmiya : Service() {
                             intent.setAction("STOP_SCREEN_CAPTURE")
                             startForegroundService(intent)
                         }
+
+                        terminateIndicator.hide()
                     }
                     val distance = hypot((initialTouchX - event.rawX).toDouble(), (initialTouchY - event.rawY).toDouble())
                     if (distance > ICON_SIZE / 4) {
                         dragged = true
                     }
                     Log.d(TAG, "distance: $distance, dragged: $dragged")
-                    terminateIndicator.hide()
 
                     CoroutineScope(Dispatchers.Main).launch {
                         ChannelManager.callFunction(
