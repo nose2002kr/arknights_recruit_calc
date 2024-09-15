@@ -70,7 +70,7 @@ class FloatingAmiya : Service() {
     private var panelWidth = 1200
     private var panelHeight = 700
     private var minimumPanelWidth = 400
-    private var minimumPanelHeight = 300
+    private var minimumPanelHeight = 353
 
     override fun onCreate() {
         super.onCreate()
