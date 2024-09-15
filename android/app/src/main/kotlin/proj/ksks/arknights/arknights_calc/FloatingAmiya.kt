@@ -564,21 +564,6 @@ class FloatingAmiya : Service() {
                     resizing = edgeTouched.it() && !edgeTouched.top &&
                             view is OperatorChartLayout // FIXME: should check as `view.isResizeable()`
 
-                    if (resizing) {
-                        rubberBand.show(
-                            Rect(mOuterLayoutParams!!.x,
-                                mOuterLayoutParams!!.y,
-                                mOuterLayoutParams!!.x + mOuterLayoutParams!!.width,
-                                mOuterLayoutParams!!.y + mOuterLayoutParams!!.height,
-                            )
-                        )
-                    } else {
-                        view.handler.postDelayed(
-                            mLongPressed,
-                            ViewConfiguration.getLongPressTimeout().toLong()
-                        )
-                    }
-
                     initialX = mOuterLayoutParams!!.x
                     initialY = mOuterLayoutParams!!.y
 
@@ -593,30 +578,45 @@ class FloatingAmiya : Service() {
 
                     initialTouchX = event.rawX
                     initialTouchY = event.rawY
+
                     dragged = false
 
+                    if (resizing) {
+                        rubberBand.show(
+                            Rect(initialX,
+                                initialY,
+                                initialX + mOuterLayoutParams!!.width,
+                                initialY + mOuterLayoutParams!!.height,
+                            )
+                        )
+                    } else {
+                        view.handler.postDelayed(
+                            mLongPressed,
+                            ViewConfiguration.getLongPressTimeout().toLong()
+                        )
+                    }
                     return false
                 }
                 MotionEvent.ACTION_MOVE -> {
                     if (resizing) {
-                        Log.d(TAG, "initialTouch[$initialTouchX, $initialTouchY]," +
-                                " event.raw[${event.rawX}, ${event.rawY}]")
+                        /*Log.d(TAG, "initialTouch[$initialTouchX, $initialTouchY]," +
+                                " event.raw[${event.rawX}, ${event.rawY}]")*/
 
                         if (edgeTouched.left) {
                             rubberBand.stretchLeft(
-                                mOuterLayoutParams!!.x
+                                initialX
                                         + (event.rawX - initialTouchX).toInt()
                             )
                         }
                         if (edgeTouched.right) {
                             rubberBand.stretchRight(
-                                mOuterLayoutParams!!.x + mOuterLayoutParams!!.width
+                                initialX + mOuterLayoutParams!!.width
                                         + (event.rawX - initialTouchX).toInt()
                             )
                         }
                         if (edgeTouched.bottom) {
                             rubberBand.stretchBottom(
-                                mOuterLayoutParams!!.y + mOuterLayoutParams!!.height
+                                initialY + mOuterLayoutParams!!.height
                                         + (event.rawY - initialTouchY).toInt()
                             )
                         }
