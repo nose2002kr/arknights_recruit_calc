@@ -343,13 +343,15 @@ class OperatorChartLayout (
         super.onSizeChanged(w, h, oldw, oldh)
         Log.d(TAG, "re-size $w, $h [$oldw, $oldh]")
 
+        val minimumUpperViewHeight = 120
+        val usedSpace = 400
         upperView.post {
             upperView.layoutParams.apply {
-                height = max(h - 400, 220)
+                height = max(h - usedSpace, minimumUpperViewHeight)
             }.also {
                 upperView.layoutParams = it
             }
-            upperView.visibility = if (h < 520) GONE else VISIBLE
+            upperView.visibility = if (h < 480) GONE else VISIBLE
         }
     }
 }
