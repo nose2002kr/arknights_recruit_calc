@@ -5,8 +5,10 @@ import android.animation.TypeEvaluator
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.app.Service
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.res.ColorStateList
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -43,7 +45,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import proj.ksks.arknights.arknights_calc.OperatorChartLayout.Listener
-import kotlin.math.abs
 import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.min
@@ -77,7 +78,20 @@ class FloatingAmiya : Service() {
         mWindowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         gestureHandler.buildViews()
 
+        registerRotationReceiver()
         retakeScreenSize()
+    }
+
+    private fun registerRotationReceiver() {
+        registerReceiver(
+            object: BroadcastReceiver() {
+                override fun onReceive(context: Context?, intent: Intent) {
+                    if (intent.action == Intent.ACTION_CONFIGURATION_CHANGED) {
+                        showIcon()
+                    }
+                }
+            },
+            IntentFilter(Intent.ACTION_CONFIGURATION_CHANGED))
     }
 
     private fun retakeScreenSize() {
@@ -583,8 +597,7 @@ class FloatingAmiya : Service() {
 
                     if (resizing) {
                         rubberBand.show(
-                            Rect(initialX,
-                                initialY,
+                            Rect(initialX, initialY,
                                 initialX + mOuterLayoutParams!!.width,
                                 initialY + mOuterLayoutParams!!.height,
                             )
