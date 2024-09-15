@@ -134,7 +134,10 @@ class FloatingAmiya : Service() {
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT
-        )
+        ).apply {
+            x = (screenWidth / 2) - (ICON_SIZE / 2)
+            y = (screenHeight / 2) - (ICON_SIZE / 2)
+        }
 
         outerLayoutParams.gravity = Gravity.TOP or Gravity.LEFT;
         val frameLayout = FrameLayout(this).apply {
