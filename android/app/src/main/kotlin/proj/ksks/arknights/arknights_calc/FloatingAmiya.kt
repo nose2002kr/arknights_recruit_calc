@@ -4,7 +4,6 @@ import android.animation.ArgbEvaluator
 import android.animation.TypeEvaluator
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
-import android.annotation.TargetApi
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -34,7 +33,6 @@ import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -65,7 +63,6 @@ class FloatingAmiya : Service() {
     private var screenWidth: Int = 0
     private var screenHeight: Int = 0
 
-    @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate() {
         super.onCreate()
         mWindowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
@@ -99,8 +96,6 @@ class FloatingAmiya : Service() {
         addedViews.clear()
     }
 
-    @TargetApi(Build.VERSION_CODES.TIRAMISU)
-    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d(TAG, "Amiya, " + intent?.action)
         if (intent?.action.equals("STOP")) {
@@ -119,7 +114,6 @@ class FloatingAmiya : Service() {
         return START_STICKY
     }
 
-    @TargetApi(Build.VERSION_CODES.O)
     private fun showIcon() {
         val outerLayoutParams = WindowManager.LayoutParams(
             ICON_SIZE,
@@ -208,7 +202,6 @@ class FloatingAmiya : Service() {
                 tags) as List<Map<String, Any>>
     }
 
-    @TargetApi(Build.VERSION_CODES.O)
     private fun showPanel(matchedTags : ArrayList<String>) {
         val layout = OperatorChartLayout(this, matchedTags, object : Listener {
             override fun requestDismiss(self: OperatorChartLayout) {
@@ -263,7 +256,6 @@ class FloatingAmiya : Service() {
         private lateinit var terminateIndicator: TerminateIndicator
 
         @SuppressLint("AppCompatCustomView")
-        @RequiresApi(Build.VERSION_CODES.R)
         private inner class TerminateIndicator(context: Context) : TextView(context) {
             @JvmField
             var activated = false
@@ -385,7 +377,6 @@ class FloatingAmiya : Service() {
             }
         }
 
-        @RequiresApi(Build.VERSION_CODES.R)
         fun buildTextView() {
             terminateIndicator = TerminateIndicator(this@FloatingAmiya)
         }
@@ -395,7 +386,6 @@ class FloatingAmiya : Service() {
             terminateIndicator.show()
         }
 
-        @RequiresApi(Build.VERSION_CODES.R)
         override fun onTouch(view: View, event: MotionEvent): Boolean {
             when (event.action) {
 
@@ -466,7 +456,6 @@ class FloatingAmiya : Service() {
             return false
         }
 
-        @TargetApi(Build.VERSION_CODES.O)
         override fun onClick(v: View?) {
             if (dragged) {
                 return

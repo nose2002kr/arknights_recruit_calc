@@ -1,6 +1,5 @@
 package proj.ksks.arknights.arknights_calc
 
-import android.annotation.TargetApi
 import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
@@ -20,7 +19,6 @@ import java.io.ByteArrayOutputStream
 import java.io.OutputStream
 import java.nio.ByteBuffer
 
-@TargetApi(Build.VERSION_CODES.KITKAT)
 private fun yuv420888ToNv21(image: Image): ByteArray {
     val width = image.width
     val height = image.height
@@ -69,7 +67,6 @@ private fun yuv420888ToNv21(image: Image): ByteArray {
     return nv21
 }
 
-@TargetApi(Build.VERSION_CODES.KITKAT)
 fun imageToBitmap(image: Image): Bitmap? {
     try {
         if (image.format == ImageFormat.YUV_420_888) {

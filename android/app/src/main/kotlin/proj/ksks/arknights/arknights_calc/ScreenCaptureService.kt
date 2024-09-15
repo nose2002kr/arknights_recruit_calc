@@ -1,6 +1,5 @@
 package proj.ksks.arknights.arknights_calc
 
-import android.annotation.TargetApi
 import android.app.Activity
 import android.app.Notification
 import android.app.NotificationChannel
@@ -30,7 +29,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
 
-@TargetApi(Build.VERSION_CODES.TIRAMISU)
 class ScreenCaptureService : Service() {
     /* Constant val */
     private val TAG = "ScreenCaptureService"
@@ -138,14 +136,12 @@ class ScreenCaptureService : Service() {
         mBitmapIcon = bitmap;
         val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        if (SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                NOTIFI_CHANNEL_ID, "Foreground notification",
-                NotificationManager.IMPORTANCE_DEFAULT
-            )
+        val channel = NotificationChannel(
+            NOTIFI_CHANNEL_ID, "Foreground notification",
+            NotificationManager.IMPORTANCE_DEFAULT
+        )
 
-            manager.createNotificationChannel(channel)
-        }
+        manager.createNotificationChannel(channel)
 
         startForeground(NOTIFI_ID_RECORD, Notification.Builder(this, NOTIFI_CHANNEL_ID)
             .build())

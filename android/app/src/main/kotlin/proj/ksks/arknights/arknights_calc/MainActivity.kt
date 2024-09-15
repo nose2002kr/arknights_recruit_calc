@@ -1,7 +1,6 @@
 package proj.ksks.arknights.arknights_calc
 
 import android.Manifest
-import android.annotation.TargetApi
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -25,7 +24,6 @@ import kotlin.coroutines.resume
 import kotlin.io.path.Path
 import kotlin.io.path.exists
 
-@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 class MainActivity: FlutterActivity() {
     /* Constant val */
     private val TAG = "MainActivity"
