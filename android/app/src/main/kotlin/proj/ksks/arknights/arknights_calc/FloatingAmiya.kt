@@ -686,6 +686,11 @@ class FloatingAmiya : Service() {
                         )
                     }
                 }
+                MotionEvent.ACTION_CANCEL -> {
+                    if (resizing) rubberBand.hide()
+                    else terminateIndicator.hide()
+                }
+                else -> Log.d(TAG, "Collect touch else ${event.action}")
             }
             return false
         }
