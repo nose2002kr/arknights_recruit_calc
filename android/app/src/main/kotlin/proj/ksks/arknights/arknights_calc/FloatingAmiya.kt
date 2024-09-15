@@ -27,6 +27,7 @@ import android.os.IBinder
 import android.os.Parcelable
 import android.util.DisplayMetrics
 import android.util.Log
+import android.util.Size
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
@@ -42,7 +43,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import proj.ksks.arknights.arknights_calc.OperatorChartLayout.Listener
+import kotlin.math.abs
 import kotlin.math.hypot
+import kotlin.math.max
 import kotlin.math.min
 
 
@@ -66,6 +69,8 @@ class FloatingAmiya : Service() {
     private var screenHeight = 0
     private var panelWidth = 1200
     private var panelHeight = 700
+    private var minimumPanelWidth = 400
+    private var minimumPanelHeight = 300
 
     override fun onCreate() {
         super.onCreate()
@@ -257,8 +262,8 @@ class FloatingAmiya : Service() {
                     null
                 ) as List<Int?>
             ) {
-                this[2]?.let { outerLayoutParams.width = min(it, screenWidth) }
-                this[3]?.let { outerLayoutParams.height = min(it, screenHeight) }
+                this[2]?.let { outerLayoutParams.width = it.coerceIn(minimumPanelWidth, screenWidth) }
+                this[3]?.let { outerLayoutParams.height = it.coerceIn(minimumPanelHeight, screenHeight) }
                 mOuterLayoutParams = outerLayoutParams;
                 mWindowManager.updateViewLayout(layout, outerLayoutParams)
             }
@@ -403,7 +408,7 @@ class FloatingAmiya : Service() {
             }
         }
 
-        private inner class RubberBand(context: Context): View(context) {
+        private inner class RubberBand(context: Context, val minimumSize: Size = Size(0,0)): View(context) {
 
             private var rect: Rect = Rect()
 
@@ -426,7 +431,7 @@ class FloatingAmiya : Service() {
                 )
             }
 
-            fun show() {
+            fun show(rect: Rect = Rect()) {
                 hide()
                 // do not insert `addedViews`
                 mWindowManager.addView(this, WindowManager.LayoutParams(
@@ -438,6 +443,8 @@ class FloatingAmiya : Service() {
                 ).apply {
                     gravity = Gravity.TOP or Gravity.LEFT;
                 })
+
+                this.rect = rect
             }
 
             fun hide() {
@@ -447,9 +454,24 @@ class FloatingAmiya : Service() {
                 this.rect = Rect()
             }
 
-            fun setRect(rect: Rect) {
-                this.rect = rect
+            fun stretchLeft(left: Int) {
+                rect.left = min(rect.right - minimumPanelWidth, left)
+                invalidate()
             }
+            fun stretchTop(top: Int) {
+                rect.top = min(rect.bottom - minimumPanelHeight, top)
+                invalidate()
+            }
+            fun stretchRight(right: Int) {
+                rect.right = max(rect.left + minimumPanelWidth, right)
+                invalidate()
+            }
+            fun stretchBottom(bottom: Int) {
+                rect.bottom = max(rect.top + minimumPanelHeight, bottom)
+                invalidate()
+            }
+
+            fun getRect(): Rect = rect
         }
 
         fun buildTerminateIndicator() {
@@ -457,7 +479,8 @@ class FloatingAmiya : Service() {
         }
 
         fun buildRubberBand() {
-            rubberBand = RubberBand(this@FloatingAmiya)
+            rubberBand = RubberBand(this@FloatingAmiya,
+                Size(minimumPanelWidth, minimumPanelHeight))
         }
 
         fun buildViews() {
@@ -538,13 +561,19 @@ class FloatingAmiya : Service() {
                     resizing = edgeTouched.it() && !edgeTouched.top &&
                             view is OperatorChartLayout // FIXME: should check as `view.isResizeable()`
 
-                    if (!resizing) {
+                    if (resizing) {
+                        rubberBand.show(
+                            Rect(mOuterLayoutParams!!.x,
+                                mOuterLayoutParams!!.y,
+                                mOuterLayoutParams!!.x + mOuterLayoutParams!!.width,
+                                mOuterLayoutParams!!.y + mOuterLayoutParams!!.height,
+                            )
+                        )
+                    } else {
                         view.handler.postDelayed(
                             mLongPressed,
                             ViewConfiguration.getLongPressTimeout().toLong()
                         )
-                    } else {
-                        rubberBand.show()
                     }
 
                     initialX = mOuterLayoutParams!!.x
@@ -570,24 +599,24 @@ class FloatingAmiya : Service() {
                         Log.d(TAG, "initialTouch[$initialTouchX, $initialTouchY]," +
                                 " event.raw[${event.rawX}, ${event.rawY}]")
 
-                        val rect = Rect()
-                        rect.left = mOuterLayoutParams!!.x
-                        rect.top = mOuterLayoutParams!!.y
-                        rect.right = mOuterLayoutParams!!.x + mOuterLayoutParams!!.width
-                        rect.bottom = mOuterLayoutParams!!.y + mOuterLayoutParams!!.height
-
                         if (edgeTouched.left) {
-                            rect.left += (event.rawX - initialTouchX).toInt()
+                            rubberBand.stretchLeft(
+                                mOuterLayoutParams!!.x
+                                        + (event.rawX - initialTouchX).toInt()
+                            )
                         }
                         if (edgeTouched.right) {
-                            rect.right += (event.rawX - initialTouchX).toInt()
+                            rubberBand.stretchRight(
+                                mOuterLayoutParams!!.x + mOuterLayoutParams!!.width
+                                        + (event.rawX - initialTouchX).toInt()
+                            )
                         }
                         if (edgeTouched.bottom) {
-                            rect.bottom += (event.rawY - initialTouchY).toInt()
+                            rubberBand.stretchBottom(
+                                mOuterLayoutParams!!.y + mOuterLayoutParams!!.height
+                                        + (event.rawY - initialTouchY).toInt()
+                            )
                         }
-
-                        rubberBand.setRect(rect)
-                        rubberBand.invalidate()
                     } else {
                         mOuterLayoutParams!!.x = initialX + (event.rawX - initialTouchX).toInt()
                         mOuterLayoutParams!!.y = initialY + (event.rawY - initialTouchY).toInt()
@@ -611,19 +640,16 @@ class FloatingAmiya : Service() {
                 }
                 MotionEvent.ACTION_UP -> {
                     if (resizing) {
-                        if (edgeTouched.left) {
-                            mOuterLayoutParams!!.x += (event.rawX - initialTouchX).toInt()
-                            mOuterLayoutParams!!.width += (initialTouchX - event.rawX).toInt()
-                            mWindowManager.updateViewLayout(view, mOuterLayoutParams)
-                        }
-                        if (edgeTouched.right) {
-                            mOuterLayoutParams!!.width += (event.rawX - initialTouchX).toInt()
-                        }
-                        if (edgeTouched.bottom) {
-                            mOuterLayoutParams!!.height += (event.rawY - initialTouchY).toInt()
-                        }
+
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
                             mOuterLayoutParams!!.setCanPlayMoveAnimation(false)
+                        }
+                        val rect = rubberBand.getRect()
+                        mOuterLayoutParams!!.apply {
+                            x = rect.left
+                            y = rect.top
+                            width = rect.width().coerceIn(minimumPanelWidth, screenWidth)
+                            height = rect.height().coerceIn(minimumPanelHeight, screenHeight)
                         }
                         mWindowManager.updateViewLayout(view, mOuterLayoutParams)
 
