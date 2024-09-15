@@ -50,16 +50,22 @@ class ArknightsService {
                   .map<String>((element) => element.toString()) // Convert each element to a string
                   .toList();
               return await _lookupOperator(tags);
-            case "amiyaPositionIsChanged":
+            case "amiyaLayoutIsChanged":
               List<int> pos = List<int>.from(methodCall.arguments);
-              print("received amiyaPositionIsChanged: ${pos[0]}, ${pos[1]}");
+              print("received amiyaLayoutIsChanged: ${pos[0]}, ${pos[1]}");
               Config().iconXPos = pos[0];
               Config().iconYPos = pos[1];
+              if (pos.length > 2) {
+                print("received amiyaLayoutIsChanged extend: ${pos[2]}, ${pos[3]}");
+                Config().panelWidth = pos[2];
+                Config().panelHeight = pos[3];
+              }
               Config.saveConfig();
               break;
-            case "getAmiyaPosition":
-              print("received getAmiyaPosition");
-              return [Config().iconXPos, Config().iconYPos];
+            case "getAmiyaLayout":
+              print("received getAmiyaLayout");
+              return [Config().iconXPos, Config().iconYPos,
+                      Config().panelWidth, Config().panelHeight];
           }
         }
     );

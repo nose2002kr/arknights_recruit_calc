@@ -11,6 +11,7 @@ import android.graphics.drawable.GradientDrawable
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
+import android.util.Log
 import android.view.ContextThemeWrapper
 import android.view.MotionEvent
 import android.view.ViewGroup
@@ -22,6 +23,7 @@ import com.google.android.flexbox.FlexboxLayout
 import com.google.android.material.R
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.chip.Chip
+import kotlin.math.max
 
 
 @SuppressLint("NewApi", "ViewConstructor")
@@ -30,6 +32,9 @@ class OperatorChartLayout (
     matchedTags: List<String>,
     private val listener: Listener,
 ) : LinearLayout(context) {
+    private val TAG = "OperatorChartLayout"
+
+    private var upperView: ScrollView
 
     var lastClickedChip: Chip? = null
     @SuppressLint("SetTextI18n")
@@ -202,17 +207,17 @@ class OperatorChartLayout (
     init {
 
         // Set background with rounded corners
-        val shapeGray = GradientDrawable().apply {
+        layoutParams = LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
+        ).apply {
+            // for easier grip
+            setMargins(40, 40, 40, 80)
+        }
+        background = GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
             cornerRadius = 50f
             setColor(Color.GRAY)
-        }
-
-        // Set background with rounded corners
-        val shapeWhite = GradientDrawable().apply {
-            shape = GradientDrawable.RECTANGLE
-            cornerRadius = 50f
-            setColor(rgb(244,244,244))
         }
 
         val container = LinearLayout(themedContext).apply {
@@ -222,26 +227,17 @@ class OperatorChartLayout (
             ).apply {
                 setMargins(10,10,10,10)
             }
-            background = shapeWhite
+            background = GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                cornerRadius = 50f
+                setColor(rgb(244,244,244))
+            }
             orientation = VERTICAL
         }
 
         addView(container)
 
-        layoutParams = LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT
-        )
-        background = shapeGray
-
-        selectedTagLayout = LinearLayout(themedContext).apply {
-            layoutParams = LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-            orientation = HORIZONTAL
-        }
-
+        // Top Bar ------------------ //
         container.addView(
             AllowTouchToolbar(themedContext).apply {
                 layoutParams = ViewGroup.LayoutParams(
@@ -258,18 +254,22 @@ class OperatorChartLayout (
                             ViewGroup.LayoutParams.MATCH_PARENT,
                             ViewGroup.LayoutParams.WRAP_CONTENT
                         )
-                        addView(selectedTagLayout)
+                        addView(LinearLayout(themedContext).apply {
+                            layoutParams = LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.WRAP_CONTENT
+                            )
+                            orientation = HORIZONTAL
+                        }.also {
+                            selectedTagLayout = it
+                        })
                     }
                 )
             }
         )
+        // ------------------ Top Bar //
 
-        val upperScrollView = ScrollView(themedContext).apply {
-            layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                300
-            )
-        }
+        // Upper White Panel -------- //
         val upperLayout = FlexboxLayout(themedContext).apply {
             layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -305,8 +305,17 @@ class OperatorChartLayout (
 
             upperLayout.addView(chip)
         }
-        upperScrollView.addView(upperLayout)
-        container.addView(upperScrollView)
+        ScrollView(themedContext).apply {
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                200,
+            )
+            addView(upperLayout)
+        }.also {
+            upperView = it
+            container.addView(it)
+        }
+        // -------- Upper White Panel //
 
         val lowerScrollView = HorizontalScrollView(themedContext).apply {
             layoutParams = ViewGroup.LayoutParams(
@@ -328,5 +337,21 @@ class OperatorChartLayout (
 
         selectTag(matchedTags)
         updateTags(selectedTag)
+    }
+
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+        Log.d(TAG, "re-size $w, $h [$oldw, $oldh]")
+
+        val minimumUpperViewHeight = 120
+        val usedSpace = 400
+        upperView.post {
+            upperView.layoutParams.apply {
+                height = max(h - usedSpace, minimumUpperViewHeight)
+            }.also {
+                upperView.layoutParams = it
+            }
+            upperView.visibility = if (h < 480) GONE else VISIBLE
+        }
     }
 }

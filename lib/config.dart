@@ -10,12 +10,17 @@ class Config {
   int? iconXPos;
   int? iconYPos;
 
+  int? panelWidth;
+  int? panelHeight;
+
   bool? hideLowOperators;
 
   Map<String, dynamic> toJson() => {
     'locale': locale,
     'iconXPos': iconXPos,
     'iconYPos': iconYPos,
+    'panelWidth': panelWidth,
+    'panelHeight': panelHeight,
     'hideLowOperators': hideLowOperators,
   };
 
@@ -23,6 +28,8 @@ class Config {
     locale = json['locale'];
     iconXPos = json['iconXPos'];
     iconYPos = json['iconYPos'];
+    panelWidth = json['panelWidth'];
+    panelHeight = json['panelHeight'];
     hideLowOperators = json['hideLowOperators'];
   }
 
