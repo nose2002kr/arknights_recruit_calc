@@ -38,7 +38,7 @@ import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.min
 
-interface ResizeableFloatingWidget {
+interface ResizableFloatingWidget {
     fun minimumWidth(): Int
     fun minimumHeight(): Int
     fun marginForEasierGrab(): Int
@@ -192,7 +192,7 @@ open class FloatingWidgetGestureHandler(private val context: Context):
     private inner class RubberBand(context: Context): View(context) {
 
         private var rect: Rect = Rect()
-        var floatingWidget: ResizeableFloatingWidget? = null
+        var floatingWidget: ResizableFloatingWidget? = null
 
         @SuppressLint("DrawAllocation")
         override fun onDraw(canvas: Canvas) {
@@ -293,7 +293,7 @@ open class FloatingWidgetGestureHandler(private val context: Context):
 
     private lateinit var edgeTouched: EdgeTouched
     private fun <T> isEdgeTouched(view: T, event: MotionEvent): EdgeTouched
-        where T: View, T: ResizeableFloatingWidget {
+        where T: View, T: ResizableFloatingWidget {
 
         val layoutParams = view.layoutParams as WindowManager.LayoutParams
         val pos = IntArray(2)
@@ -351,7 +351,7 @@ open class FloatingWidgetGestureHandler(private val context: Context):
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 screenSize = takeScreenSize(mWindowManager)
-                if (view is ResizeableFloatingWidget) {
+                if (view is ResizableFloatingWidget) {
                     edgeTouched = isEdgeTouched(view, event)
                     resizing = edgeTouched.it() && !edgeTouched.top
                 }
@@ -374,7 +374,7 @@ open class FloatingWidgetGestureHandler(private val context: Context):
                 dragged = false
 
                 if (resizing) {
-                    rubberBand.floatingWidget = view as ResizeableFloatingWidget
+                    rubberBand.floatingWidget = view as ResizableFloatingWidget
                     rubberBand.show(
                         Rect(
                             initialX, initialY,

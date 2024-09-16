@@ -34,7 +34,7 @@ class OperatorChartLayout (
     matchedTags: List<String>,
     private val listener: Listener,
 ) : LinearLayout(context),
-    ResizeableFloatingWidget {
+    ResizableFloatingWidget {
 
     /* Constant val */
     private val TAG = "OperatorChartLayout"
