@@ -14,6 +14,7 @@ import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.view.ContextThemeWrapper
 import android.view.MotionEvent
+import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.HorizontalScrollView
@@ -34,14 +35,12 @@ class OperatorChartLayout (
     context: Context,
     matchedTags: List<String>,
     private val listener: Listener,
-) : LinearLayout(context),
-    ResizableFloatingWidget {
+): ResizableFloatingView(context) {
 
     /* Constant val */
     private val TAG = "OperatorChartLayout"
     private val MIN_PANEL_WIDTH = 400
     private val MIN_PANEL_HEIGHT = 353
-    private val MARGIN = 20
 
     /* Member */
     private var upperView: ScrollView
@@ -213,47 +212,18 @@ class OperatorChartLayout (
         }
     }
 
-
     init {
-
-        val backgroundLayer = FrameLayout(themedContext).apply {
-            // Set background with rounded corners
-            layoutParams = LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-            ).apply {
-                // for easier grip
-                setMargins(MARGIN)
-            }
-            background = GradientDrawable().apply {
-                shape = GradientDrawable.RECTANGLE
-                cornerRadius = 50f
-                setColor(Color.GRAY)
-            }
-        }.also {
-            addView(it)
-        }
-
-
+        // Top Bar ------------------ //
         val container = LinearLayout(themedContext).apply {
             layoutParams = LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
-            ).apply {
-                setMargins(10,10,10,10)
-            }
-            background = GradientDrawable().apply {
-                shape = GradientDrawable.RECTANGLE
-                cornerRadius = 50f
-                setColor(rgb(244,244,244))
-            }
-            orientation = VERTICAL
+            )
+            orientation = LinearLayout.VERTICAL
         }.also {
-            backgroundLayer.addView(it)
+            addSubView(it)
         }
 
-
-        // Top Bar ------------------ //
         container.addView(
             AllowTouchToolbar(themedContext).apply {
                 layoutParams = ViewGroup.LayoutParams(
@@ -275,7 +245,7 @@ class OperatorChartLayout (
                                 ViewGroup.LayoutParams.MATCH_PARENT,
                                 ViewGroup.LayoutParams.WRAP_CONTENT
                             )
-                            orientation = HORIZONTAL
+                            orientation = LinearLayout.HORIZONTAL
                         }.also {
                             selectedTagLayout = it
                         })
@@ -346,7 +316,7 @@ class OperatorChartLayout (
                 ViewGroup.LayoutParams.WRAP_CONTENT
             )
             minimumHeight = 70
-            orientation = HORIZONTAL
+            orientation = LinearLayout.HORIZONTAL
         }
         lowerScrollView.addView(matchedOperatorLayout)
         container.addView(lowerScrollView)
@@ -373,5 +343,4 @@ class OperatorChartLayout (
 
     override fun minimumWidth(): Int = MIN_PANEL_WIDTH
     override fun minimumHeight(): Int = MIN_PANEL_HEIGHT
-    override fun marginForEasierGrab(): Int = MARGIN
 }
