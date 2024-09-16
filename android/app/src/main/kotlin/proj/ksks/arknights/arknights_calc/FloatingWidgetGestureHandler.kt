@@ -160,7 +160,6 @@ open class FloatingWidgetGestureHandler(private val context: Context):
 
         fun show() {
             hide()
-            // do not insert `addedViews`
             mWindowManager.addView(this, WindowManager.LayoutParams(
                 LayoutParams.WRAP_CONTENT,
                 LayoutParams.WRAP_CONTENT,
@@ -220,7 +219,6 @@ open class FloatingWidgetGestureHandler(private val context: Context):
 
         fun show(rect: Rect = Rect()) {
             hide()
-            // do not insert `addedViews`
             mWindowManager.addView(this, WindowManager.LayoutParams(
                 LayoutParams.MATCH_PARENT,
                 LayoutParams.MATCH_PARENT,

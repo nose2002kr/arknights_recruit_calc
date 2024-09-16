@@ -111,25 +111,6 @@ class FloatingAmiya : Service() {
     }
 
     private fun showIcon() {
-        val outerLayoutParams = WindowManager.LayoutParams(
-            ICON_SIZE,
-            ICON_SIZE,
-            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-            PixelFormat.TRANSLUCENT
-        ).apply {
-            x = (screenWidth / 2) - (ICON_SIZE / 2)
-            y = (screenHeight / 2) - (ICON_SIZE / 2)
-        }
-
-        outerLayoutParams.gravity = Gravity.TOP or Gravity.LEFT;
-        val frameLayout = FrameLayout(this).apply {
-            layoutParams = FrameLayout.LayoutParams (
-                LayoutParams.MATCH_PARENT,
-                LayoutParams.MATCH_PARENT
-            )
-        }
-
         CoroutineScope(Dispatchers.Main).launch {
             with(
                 ChannelManager.callFunction(
@@ -138,53 +119,70 @@ class FloatingAmiya : Service() {
                     null
                 ) as List<Int?>
             ) {
+                val outerLayoutParams = WindowManager.LayoutParams(
+                    ICON_SIZE,
+                    ICON_SIZE,
+                    WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                    PixelFormat.TRANSLUCENT
+                ).apply {
+                    x = (screenWidth / 2) - (ICON_SIZE / 2)
+                    y = (screenHeight / 2) - (ICON_SIZE / 2)
+                }
+
+                outerLayoutParams.gravity = Gravity.TOP or Gravity.LEFT;
+                val frameLayout = FrameLayout(this@FloatingAmiya).apply {
+                    layoutParams = FrameLayout.LayoutParams (
+                        LayoutParams.MATCH_PARENT,
+                        LayoutParams.MATCH_PARENT
+                    )
+                }
+
                 this[0]?.let { outerLayoutParams.x = it }
                 this[1]?.let { outerLayoutParams.y = it }
-                mWindowManager.updateViewLayout(frameLayout, outerLayoutParams)
+
+                val backgroundView = View(this@FloatingAmiya)
+                backgroundView.layoutParams = FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                    FrameLayout.LayoutParams.MATCH_PARENT
+                ).apply {
+                    setMargins(
+                        ICON_SHADOW_MARGIN,
+                        ICON_SHADOW_MARGIN,
+                        ICON_SHADOW_MARGIN,
+                        ICON_SHADOW_MARGIN)
+                }
+
+                backgroundView.background = ShapeDrawable(OvalShape()).apply {
+                    paint.color = Color.WHITE
+                }
+                backgroundView.elevation = ICON_ELEVATION
+
+                val imageView = ImageView(this@FloatingAmiya)
+                imageView.setImageBitmap(mBitmap)
+                imageView.elevation = ICON_ELEVATION+1
+                imageView.layoutParams = FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                    FrameLayout.LayoutParams.MATCH_PARENT
+                ).apply {
+                    setMargins(
+                        ICON_SHADOW_MARGIN,
+                        ICON_SHADOW_MARGIN,
+                        ICON_SHADOW_MARGIN,
+                        ICON_SHADOW_MARGIN)
+                }
+
+                frameLayout.setOnTouchListener(gestureHandler)
+                frameLayout.setOnClickListener(gestureHandler)
+                frameLayout.setOnLongClickListener(gestureHandler)
+
+                frameLayout.addView(backgroundView)
+                frameLayout.addView(imageView)
+                Log.i(TAG, "showIcon")
+                removeAllViews()
+                addView(frameLayout, outerLayoutParams)
             }
         }
-
-        val backgroundView = View(this)
-        backgroundView.layoutParams = FrameLayout.LayoutParams(
-            FrameLayout.LayoutParams.MATCH_PARENT,
-            FrameLayout.LayoutParams.MATCH_PARENT
-        ).apply {
-            setMargins(
-                ICON_SHADOW_MARGIN,
-                ICON_SHADOW_MARGIN,
-                ICON_SHADOW_MARGIN,
-                ICON_SHADOW_MARGIN)
-        }
-
-        backgroundView.background = ShapeDrawable(OvalShape()).apply {
-            paint.color = Color.WHITE
-        }
-        backgroundView.elevation = ICON_ELEVATION
-
-        val imageView = ImageView(this)
-        imageView.setImageBitmap(mBitmap)
-        imageView.elevation = ICON_ELEVATION+1
-        imageView.layoutParams = FrameLayout.LayoutParams(
-            FrameLayout.LayoutParams.MATCH_PARENT,
-            FrameLayout.LayoutParams.MATCH_PARENT
-        ).apply {
-            setMargins(
-                ICON_SHADOW_MARGIN,
-                ICON_SHADOW_MARGIN,
-                ICON_SHADOW_MARGIN,
-                ICON_SHADOW_MARGIN)
-        }
-
-        
-        frameLayout.setOnTouchListener(gestureHandler)
-        frameLayout.setOnClickListener(gestureHandler)
-        frameLayout.setOnLongClickListener(gestureHandler)
-
-        frameLayout.addView(backgroundView)
-        frameLayout.addView(imageView)
-        Log.i(TAG, "showIcon")
-        removeAllViews()
-        addView(frameLayout, outerLayoutParams)
     }
 
     private suspend fun requestLookingUpOperator(tags: List<String>): List<Map<String, Any>> {
@@ -195,38 +193,6 @@ class FloatingAmiya : Service() {
     }
 
     private fun showPanel(matchedTags : ArrayList<String>) {
-        val layout = OperatorChartLayout(this, matchedTags, object : Listener {
-            override fun requestDismiss(self: OperatorChartLayout) {
-                showIcon()
-            }
-
-            override fun requestUpdate(self: OperatorChartLayout, tags: List<String>) {
-                CoroutineScope(Dispatchers.Main).launch {
-                    try {
-                        val dataDeferred = async { requestLookingUpOperator(tags) }
-                        val operatorMap = dataDeferred.await()
-                        println("Received operator data: $operatorMap")
-
-                        self.updateOperatorView(operatorMap)
-
-                    } catch (e: NotImplementedError) {
-                        println("The method is not implemented")
-                    } catch (e: Exception) {
-                        println("An error occurred: ${e.message}")
-                    }
-                }
-            }
-        })
-
-        val outerLayoutParams = WindowManager.LayoutParams(
-            min(PANEL_WIDTH, screenWidth),
-            min(PANEL_HEIGHT, screenHeight),
-            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-            PixelFormat.TRANSLUCENT
-        )
-
-        outerLayoutParams.gravity = Gravity.TOP or Gravity.LEFT;
         CoroutineScope(Dispatchers.Main).launch {
             with(
                 ChannelManager.callFunction(
@@ -235,18 +201,51 @@ class FloatingAmiya : Service() {
                     null
                 ) as List<Int?>
             ) {
+                val layout = OperatorChartLayout(this@FloatingAmiya, matchedTags, object : Listener {
+                    override fun requestDismiss(self: OperatorChartLayout) {
+                        showIcon()
+                    }
+
+                    override fun requestUpdate(self: OperatorChartLayout, tags: List<String>) {
+                        CoroutineScope(Dispatchers.Main).launch {
+                            try {
+                                val dataDeferred = async { requestLookingUpOperator(tags) }
+                                val operatorMap = dataDeferred.await()
+                                println("Received operator data: $operatorMap")
+
+                                self.updateOperatorView(operatorMap)
+
+                            } catch (e: NotImplementedError) {
+                                println("The method is not implemented")
+                            } catch (e: Exception) {
+                                println("An error occurred: ${e.message}")
+                            }
+                        }
+                    }
+                })
+
+                val outerLayoutParams = WindowManager.LayoutParams(
+                    min(PANEL_WIDTH, screenWidth),
+                    min(PANEL_HEIGHT, screenHeight),
+                    WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                    PixelFormat.TRANSLUCENT
+                )
+
+                outerLayoutParams.gravity = Gravity.TOP or Gravity.LEFT;
+
                 this[0]?.let { outerLayoutParams.x = it }
                 this[1]?.let { outerLayoutParams.y = it }
                 this[2]?.let { outerLayoutParams.width = it.coerceIn(layout.minimumWidth(), screenWidth) }
                 this[3]?.let { outerLayoutParams.height = it.coerceIn(layout.minimumHeight(), screenHeight) }
-                mWindowManager.updateViewLayout(layout, outerLayoutParams)
+
+                layout.setOnTouchListener(gestureHandler)
+
+                Log.i(TAG, "showPanel")
+                removeAllViews()
+                addView(layout, outerLayoutParams)
             }
         }
-        layout.setOnTouchListener(gestureHandler)
-
-        Log.i(TAG, "showPanel")
-        removeAllViews()
-        addView(layout, outerLayoutParams)
     }
 
     override fun onBind(intent: Intent?): IBinder? {
