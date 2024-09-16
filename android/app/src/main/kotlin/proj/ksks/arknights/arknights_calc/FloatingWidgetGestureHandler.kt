@@ -291,7 +291,7 @@ open class FloatingWidgetGestureHandler(private val context: Context):
         fun it(): Boolean = left or right or top or bottom
     }
 
-    private lateinit var edgeTouched: EdgeTouched
+    private var edgeTouched: EdgeTouched? = null
     private fun <T> isEdgeTouched(view: T, event: MotionEvent): EdgeTouched
         where T: View, T: ResizableFloatingWidget {
 
@@ -351,10 +351,12 @@ open class FloatingWidgetGestureHandler(private val context: Context):
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 screenSize = takeScreenSize(mWindowManager)
-                if (view is ResizableFloatingWidget) {
-                    edgeTouched = isEdgeTouched(view, event)
-                    resizing = edgeTouched.it() && !edgeTouched.top
+                edgeTouched = if (view is ResizableFloatingWidget) {
+                    isEdgeTouched(view, event)
+                } else {
+                    null
                 }
+                resizing = edgeTouched?.it() == true
 
                 initialX = layoutParams.x
                 initialY = layoutParams.y
@@ -396,19 +398,19 @@ open class FloatingWidgetGestureHandler(private val context: Context):
                     /*Log.d(TAG, "initialTouch[$initialTouchX, $initialTouchY]," +
                             " event.raw[${event.rawX}, ${event.rawY}]")*/
 
-                    if (edgeTouched.left) {
+                    if (edgeTouched?.left == true) {
                         rubberBand.stretchLeft(
                             initialX
                                     + (event.rawX - initialTouchX).toInt()
                         )
                     }
-                    if (edgeTouched.right) {
+                    if (edgeTouched?.right == true) {
                         rubberBand.stretchRight(
                             initialX + layoutParams.width
                                     + (event.rawX - initialTouchX).toInt()
                         )
                     }
-                    if (edgeTouched.bottom) {
+                    if (edgeTouched?.bottom == true) {
                         rubberBand.stretchBottom(
                             initialY + layoutParams.height
                                     + (event.rawY - initialTouchY).toInt()
