@@ -292,7 +292,9 @@ open class FloatingWidgetGestureHandler(private val context: Context):
     }
 
     private lateinit var edgeTouched: EdgeTouched
-    private fun isEdgeTouched(view: View, event: MotionEvent): EdgeTouched {
+    private fun <T> isEdgeTouched(view: T, event: MotionEvent): EdgeTouched
+        where T: View, T: ResizeableFloatingWidget {
+
         val layoutParams = view.layoutParams as WindowManager.LayoutParams
         val pos = IntArray(2)
         view.getLocationOnScreen(pos)
@@ -307,7 +309,7 @@ open class FloatingWidgetGestureHandler(private val context: Context):
         )
 
         fun isTouchedAt(at: Int, what: Int): Boolean {
-            val gap = 40
+            val gap = view.marginForEasierGrab() * 3
             return (at - gap..at + gap).contains(what)
         }
 
@@ -349,9 +351,10 @@ open class FloatingWidgetGestureHandler(private val context: Context):
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 screenSize = takeScreenSize(mWindowManager)
-                edgeTouched = isEdgeTouched(view, event)
-                resizing = edgeTouched.it() && !edgeTouched.top &&
-                        view is ResizeableFloatingWidget
+                if (view is ResizeableFloatingWidget) {
+                    edgeTouched = isEdgeTouched(view, event)
+                    resizing = edgeTouched.it() && !edgeTouched.top
+                }
 
                 initialX = layoutParams.x
                 initialY = layoutParams.y
