@@ -15,9 +15,11 @@ import android.util.Log
 import android.view.ContextThemeWrapper
 import android.view.MotionEvent
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.HorizontalScrollView
 import android.widget.LinearLayout
 import android.widget.ScrollView
+import androidx.core.view.setMargins
 import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.material.R
@@ -38,6 +40,7 @@ class OperatorChartLayout (
     private val TAG = "OperatorChartLayout"
     private val MIN_PANEL_WIDTH = 400
     private val MIN_PANEL_HEIGHT = 353
+    private val MARGIN = 20
 
     /* Member */
     private var upperView: ScrollView
@@ -212,19 +215,24 @@ class OperatorChartLayout (
 
     init {
 
-        // Set background with rounded corners
-        layoutParams = LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT
-        ).apply {
-            // for easier grip
-            setMargins(40, 40, 40, 80)
+        val backgroundLayer = FrameLayout(themedContext).apply {
+            // Set background with rounded corners
+            layoutParams = LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            ).apply {
+                // for easier grip
+                setMargins(MARGIN)
+            }
+            background = GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                cornerRadius = 50f
+                setColor(Color.GRAY)
+            }
+        }.also {
+            addView(it)
         }
-        background = GradientDrawable().apply {
-            shape = GradientDrawable.RECTANGLE
-            cornerRadius = 50f
-            setColor(Color.GRAY)
-        }
+
 
         val container = LinearLayout(themedContext).apply {
             layoutParams = LayoutParams(
@@ -239,9 +247,10 @@ class OperatorChartLayout (
                 setColor(rgb(244,244,244))
             }
             orientation = VERTICAL
+        }.also {
+            backgroundLayer.addView(it)
         }
 
-        addView(container)
 
         // Top Bar ------------------ //
         container.addView(
@@ -363,4 +372,5 @@ class OperatorChartLayout (
 
     override fun minimumWidth(): Int = MIN_PANEL_WIDTH
     override fun minimumHeight(): Int = MIN_PANEL_HEIGHT
+    override fun marginForEasierGrab(): Int = MARGIN
 }

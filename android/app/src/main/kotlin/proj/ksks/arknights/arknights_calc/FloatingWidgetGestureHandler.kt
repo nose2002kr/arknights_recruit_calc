@@ -41,6 +41,7 @@ import kotlin.math.min
 interface ResizeableFloatingWidget {
     fun minimumWidth(): Int
     fun minimumHeight(): Int
+    fun marginForEasierGrab(): Int
 }
 
 open class FloatingWidgetGestureHandler(private val context: Context):
@@ -188,28 +189,29 @@ open class FloatingWidgetGestureHandler(private val context: Context):
         }
     }
 
-    private inner class RubberBand(context: Context) :
-        View(context) {
+    private inner class RubberBand(context: Context): View(context) {
 
         private var rect: Rect = Rect()
-        private var minSize: Size = Size(0,0)
-
-        fun setMinimumSize(size: Size) {
-            minSize = size
-        }
+        var floatingWidget: ResizeableFloatingWidget? = null
 
         @SuppressLint("DrawAllocation")
         override fun onDraw(canvas: Canvas) {
             super.onDraw(canvas)
+            val rectWithMargin = RectF(
+                (rect.left + (floatingWidget?.marginForEasierGrab() ?: 0)).toFloat(),
+                (rect.top + (floatingWidget?.marginForEasierGrab() ?: 0)).toFloat(),
+                (rect.right - (floatingWidget?.marginForEasierGrab() ?: 0)).toFloat(),
+                (rect.bottom - (floatingWidget?.marginForEasierGrab() ?: 0)).toFloat()
+            )
             canvas.drawRoundRect(
-                RectF(rect), 50f, 50f, Paint().apply {
+                rectWithMargin, 50f, 50f, Paint().apply {
                     color = Color.parseColor("#12818589")
                     style = Paint.Style.FILL
                 }
             )
 
             canvas.drawRoundRect(
-                RectF(rect), 50f, 50f, Paint().apply {
+                rectWithMargin, 50f, 50f, Paint().apply {
                     color = Color.parseColor("#FF708090")
                     strokeWidth = 9f
                     style = Paint.Style.STROKE
@@ -240,22 +242,22 @@ open class FloatingWidgetGestureHandler(private val context: Context):
         }
 
         fun stretchLeft(left: Int) {
-            rect.left = min(rect.right - minSize.width, left)
+            rect.left = min(rect.right - (floatingWidget?.minimumWidth() ?: 0), left)
             invalidate()
         }
 
         fun stretchTop(top: Int) {
-            rect.top = min(rect.bottom - minSize.height, top)
+            rect.top = min(rect.bottom - (floatingWidget?.minimumHeight() ?: 0), top)
             invalidate()
         }
 
         fun stretchRight(right: Int) {
-            rect.right = max(rect.left + minSize.width, right)
+            rect.right = max(rect.left + (floatingWidget?.minimumWidth() ?: 0), right)
             invalidate()
         }
 
         fun stretchBottom(bottom: Int) {
-            rect.bottom = max(rect.top + minSize.height, bottom)
+            rect.bottom = max(rect.top + (floatingWidget?.minimumHeight() ?: 0), bottom)
             invalidate()
         }
 
@@ -369,7 +371,7 @@ open class FloatingWidgetGestureHandler(private val context: Context):
                 dragged = false
 
                 if (resizing) {
-                    rubberBand.setMinimumSize(Size(view.minimumWidth, view.minimumHeight))
+                    rubberBand.floatingWidget = view as ResizeableFloatingWidget
                     rubberBand.show(
                         Rect(
                             initialX, initialY,
