@@ -1,4 +1,4 @@
-package proj.ksks.arknights.arknights_calc
+package proj.ksks.arknights.arknights_calc.ui
 
 import android.animation.ArgbEvaluator
 import android.animation.ValueAnimator
@@ -25,6 +25,7 @@ import com.google.android.flexbox.FlexboxLayout
 import com.google.android.material.R
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.chip.Chip
+import proj.ksks.arknights.arknights_calc.util.tagDictionary
 import kotlin.math.max
 
 

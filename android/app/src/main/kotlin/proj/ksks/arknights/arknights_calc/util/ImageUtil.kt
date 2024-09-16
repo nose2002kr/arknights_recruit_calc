@@ -1,4 +1,4 @@
-package proj.ksks.arknights.arknights_calc
+package proj.ksks.arknights.arknights_calc.util
 
 import android.content.ContentValues
 import android.content.Context
@@ -7,9 +7,7 @@ import android.graphics.BitmapFactory
 import android.graphics.ImageFormat
 import android.graphics.YuvImage
 import android.media.Image
-import android.os.Build
 import android.provider.MediaStore
-import android.util.Log
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.Text

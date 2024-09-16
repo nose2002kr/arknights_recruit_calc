@@ -1,4 +1,4 @@
-package proj.ksks.arknights.arknights_calc
+package proj.ksks.arknights.arknights_calc.bridge
 
 import android.util.Log
 import io.flutter.embedding.engine.FlutterEngine

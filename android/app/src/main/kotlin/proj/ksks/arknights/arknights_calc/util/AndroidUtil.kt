@@ -1,4 +1,4 @@
-package proj.ksks.arknights.arknights_calc
+package proj.ksks.arknights.arknights_calc.util
 
 import android.graphics.Point
 import android.os.Build

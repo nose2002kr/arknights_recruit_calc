@@ -1,4 +1,4 @@
-package proj.ksks.arknights.arknights_calc
+package proj.ksks.arknights.arknights_calc.service
 
 import android.app.Service
 import android.content.BroadcastReceiver
@@ -25,12 +25,16 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import proj.ksks.arknights.arknights_calc.OperatorChartLayout.Listener
+import proj.ksks.arknights.arknights_calc.bridge.ChannelManager
+import proj.ksks.arknights.arknights_calc.ui.FloatingWidgetGestureHandler
+import proj.ksks.arknights.arknights_calc.ui.OperatorChartLayout
+import proj.ksks.arknights.arknights_calc.ui.OperatorChartLayout.Listener
+import proj.ksks.arknights.arknights_calc.util.takeScreenSize
 import kotlin.math.min
 
 
 class FloatingAmiya : Service() {
-    private val gestureHandler = object:FloatingWidgetGestureHandler(this) {
+    private val gestureHandler = object: FloatingWidgetGestureHandler(this) {
         override fun onClickNotDragged(v: View?) {
             removeAllViews()
             startForegroundService(
@@ -181,8 +185,9 @@ class FloatingAmiya : Service() {
     private suspend fun requestLookingUpOperator(tags: List<String>): List<Map<String, Any>> {
         return ChannelManager.callFunction(
             ChannelManager.getChannelInstance(ChannelManager.ARKNIGHTS),
-                "lookupOperator",
-                tags) as List<Map<String, Any>>
+            "lookupOperator",
+            tags
+        ) as List<Map<String, Any>>
     }
 
     private fun showPanel(matchedTags : ArrayList<String>) {

@@ -46,13 +46,13 @@
             android:value="ca-app-pub-4133634045586474~3990987640"/>
 
         <service
-            android:name="proj.ksks.arknights.arknights_calc.ScreenCaptureService"
+            android:name="proj.ksks.arknights.arknights_calc.service.ScreenCaptureService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="mediaProjection"
             />
         <service
-            android:name="proj.ksks.arknights.arknights_calc.FloatingAmiya"
+            android:name="proj.ksks.arknights.arknights_calc.service.FloatingAmiya"
             android:enabled="true"
             android:exported="false"
             />

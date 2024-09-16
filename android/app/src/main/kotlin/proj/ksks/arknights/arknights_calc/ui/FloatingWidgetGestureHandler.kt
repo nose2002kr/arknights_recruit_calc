@@ -1,4 +1,4 @@
-package proj.ksks.arknights.arknights_calc
+package proj.ksks.arknights.arknights_calc.ui
 
 import android.animation.ArgbEvaluator
 import android.animation.TypeEvaluator
@@ -34,6 +34,10 @@ import androidx.core.content.ContextCompat.getSystemService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import proj.ksks.arknights.arknights_calc.bridge.ChannelManager
+import proj.ksks.arknights.arknights_calc.bridge.Tr
+import proj.ksks.arknights.arknights_calc.service.ScreenCaptureService
+import proj.ksks.arknights.arknights_calc.util.takeScreenSize
 import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.min

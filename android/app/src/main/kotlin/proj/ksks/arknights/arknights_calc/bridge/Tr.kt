@@ -1,4 +1,4 @@
-package proj.ksks.arknights.arknights_calc
+package proj.ksks.arknights.arknights_calc.bridge
 
 import android.util.Log
 import kotlin.properties.ReadOnlyProperty
@@ -23,7 +23,7 @@ object Tr {
 
     private var translations: Map<String, Any?>? = null
     fun installTranslation(translations: Map<String, Any?>) {
-        this.translations = translations
+        Tr.translations = translations
         Log.d(TAG, "install Done.")
     }
 }

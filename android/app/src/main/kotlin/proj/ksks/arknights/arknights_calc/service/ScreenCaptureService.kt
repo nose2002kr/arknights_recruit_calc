@@ -1,4 +1,4 @@
-package proj.ksks.arknights.arknights_calc
+package proj.ksks.arknights.arknights_calc.service
 
 import android.app.Activity
 import android.app.Notification
@@ -28,6 +28,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
+import proj.ksks.arknights.arknights_calc.bridge.Tr
+import proj.ksks.arknights.arknights_calc.util.imageToBitmap
+import proj.ksks.arknights.arknights_calc.util.ocrBitmap
+import proj.ksks.arknights.arknights_calc.util.tagDictionary
 
 class ScreenCaptureService : Service() {
     /* Constant val */
