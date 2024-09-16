@@ -20,6 +20,7 @@ import android.view.ViewGroup.LayoutParams
 import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.ImageView
+import androidx.core.view.setMargins
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -146,11 +147,7 @@ class FloatingAmiya : Service() {
                     FrameLayout.LayoutParams.MATCH_PARENT,
                     FrameLayout.LayoutParams.MATCH_PARENT
                 ).apply {
-                    setMargins(
-                        ICON_SHADOW_MARGIN,
-                        ICON_SHADOW_MARGIN,
-                        ICON_SHADOW_MARGIN,
-                        ICON_SHADOW_MARGIN)
+                    setMargins(ICON_SHADOW_MARGIN)
                 }
 
                 backgroundView.background = ShapeDrawable(OvalShape()).apply {
@@ -165,11 +162,7 @@ class FloatingAmiya : Service() {
                     FrameLayout.LayoutParams.MATCH_PARENT,
                     FrameLayout.LayoutParams.MATCH_PARENT
                 ).apply {
-                    setMargins(
-                        ICON_SHADOW_MARGIN,
-                        ICON_SHADOW_MARGIN,
-                        ICON_SHADOW_MARGIN,
-                        ICON_SHADOW_MARGIN)
+                    setMargins(ICON_SHADOW_MARGIN)
                 }
 
                 frameLayout.setOnTouchListener(gestureHandler)
