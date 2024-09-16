@@ -408,6 +408,12 @@ open class FloatingWidgetGestureHandler(private val context: Context):
                                     + (event.rawX - initialTouchX).toInt()
                         )
                     }
+                    if (edgeTouched?.top == true) {
+                        rubberBand.stretchTop(
+                            initialY
+                                    + (event.rawY - initialTouchY).toInt()
+                        )
+                    }
                     if (edgeTouched?.right == true) {
                         rubberBand.stretchRight(
                             initialX + layoutParams.width
