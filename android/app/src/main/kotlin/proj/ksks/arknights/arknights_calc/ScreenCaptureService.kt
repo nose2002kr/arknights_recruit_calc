@@ -181,7 +181,6 @@ class ScreenCaptureService : Service() {
         mMediaProjection?.registerCallback(object : MediaProjection.Callback() {
             override fun onStop() {
                 super.onStop()
-                stopScreenCapture()
                 Log.i(TAG, "MediaProjection stopped")
             }
         }, null)
@@ -198,6 +197,13 @@ class ScreenCaptureService : Service() {
         mImageReader!!.setOnImageAvailableListener({ reader ->
             image?.close()
             image = reader.acquireLatestImage()
+            /*Log.d(TAG, "capturing image. image:{\n" +
+                    "  image.width: ${image?.width},\n" +
+                    "  image.height: ${image?.height},\n" +
+                    "  image.format: ${image?.format},\n" +
+                    "  image.planes.size: ${image?.planes?.size},\n" +
+                    "  image.timestamp: ${image?.timestamp}\n" +
+                    "}")*/
         }, null)
         Log.d(TAG, "started service");
     }
