@@ -31,12 +31,18 @@ class OperatorChartLayout (
     context: Context,
     matchedTags: List<String>,
     private val listener: Listener,
-) : LinearLayout(context) {
+) : LinearLayout(context),
+    ResizeableFloatingWidget {
+
+    /* Constant val */
     private val TAG = "OperatorChartLayout"
+    private val MIN_PANEL_WIDTH = 400
+    private val MIN_PANEL_HEIGHT = 353
 
+    /* Member */
     private var upperView: ScrollView
+    private var lastClickedChip: Chip? = null
 
-    var lastClickedChip: Chip? = null
     @SuppressLint("SetTextI18n")
     fun updateOperatorView(operatorMap: List<Map<String, Any>>) {
         matchedOperatorLayout.removeAllViews()
@@ -354,4 +360,7 @@ class OperatorChartLayout (
             upperView.visibility = if (h < 480) GONE else VISIBLE
         }
     }
+
+    override fun minimumWidth(): Int = MIN_PANEL_WIDTH
+    override fun minimumHeight(): Int = MIN_PANEL_HEIGHT
 }
