@@ -75,17 +75,17 @@ class ScreenCaptureService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val bitmap: Bitmap? = intent?.getParcelable("icon")
 
-        if (intent != null && intent.action.equals("START_SCREEN_CAPTURE")) {
+        if (intent?.action.equals("START_SCREEN_CAPTURE")) {
             createNotification(bitmap)
             launchAmiya(mBitmapIcon)
             stopScreenCapture()
-            startScreenCapture(intent)
-        } else if (intent != null && intent.action.equals("STOP_SCREEN_CAPTURE")) {
+            intent?.let { startScreenCapture(it) }
+        } else if (intent?.action.equals("STOP_SCREEN_CAPTURE")) {
             removeNotification()
             stopScreenCapture()
             closeAmiya()
             stopSelf()
-        } else if (intent != null && intent.action.equals("CAPTURE")) {
+        } else if (intent?.action.equals("CAPTURE")) {
             Log.d(TAG, "capture start")
             var captureBitmap = image?.let { imageToBitmap(it) }
             if (captureBitmap == null) {
@@ -181,7 +181,6 @@ class ScreenCaptureService : Service() {
         mMediaProjection?.registerCallback(object : MediaProjection.Callback() {
             override fun onStop() {
                 super.onStop()
-                stopScreenCapture()
                 Log.i(TAG, "MediaProjection stopped")
             }
         }, null)
@@ -198,6 +197,13 @@ class ScreenCaptureService : Service() {
         mImageReader!!.setOnImageAvailableListener({ reader ->
             image?.close()
             image = reader.acquireLatestImage()
+            /*Log.d(TAG, "capturing image. image:{\n" +
+                    "  image.width: ${image?.width},\n" +
+                    "  image.height: ${image?.height},\n" +
+                    "  image.format: ${image?.format},\n" +
+                    "  image.planes.size: ${image?.planes?.size},\n" +
+                    "  image.timestamp: ${image?.timestamp}\n" +
+                    "}")*/
         }, null)
         Log.d(TAG, "started service");
     }
