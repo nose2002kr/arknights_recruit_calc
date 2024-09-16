@@ -45,18 +45,16 @@ class FloatingAmiya : Service() {
     private val ICON_SIZE = 200
     private val ICON_SHADOW_MARGIN = 20
     private val ICON_ELEVATION = 10f
-
+    private val PANEL_WIDTH = 1200
+    private val PANEL_HEIGHT = 700
 
     /* Member */
     private lateinit var mWindowManager : WindowManager
     private lateinit var mBitmap : Bitmap
-    private var mOuterLayoutParams: WindowManager.LayoutParams? = null
     private val addedViews = mutableListOf<View>()
 
     private var screenWidth = 0
     private var screenHeight = 0
-    private var panelWidth = 1200
-    private var panelHeight = 700
 
     override fun onCreate() {
         super.onCreate()
@@ -132,25 +130,17 @@ class FloatingAmiya : Service() {
             )
         }
 
-        if (mOuterLayoutParams != null) {
-            outerLayoutParams.x = mOuterLayoutParams!!.x
-            outerLayoutParams.y = mOuterLayoutParams!!.y
-        } else {
-            CoroutineScope(Dispatchers.Main).launch {
-                with(
-                    ChannelManager.callFunction(
-                        ChannelManager.getChannelInstance(ChannelManager.ARKNIGHTS),
-                        "getAmiyaLayout",
-                        null
-                    ) as List<Int?>
-                ) {
-                    this[0]?.let { outerLayoutParams.x = it }
-                    this[1]?.let { outerLayoutParams.y = it }
-                    this[2]?.let { panelWidth = it }
-                    this[3]?.let { panelHeight = it }
-                    mOuterLayoutParams = outerLayoutParams;
-                    mWindowManager.updateViewLayout(frameLayout, outerLayoutParams)
-                }
+        CoroutineScope(Dispatchers.Main).launch {
+            with(
+                ChannelManager.callFunction(
+                    ChannelManager.getChannelInstance(ChannelManager.ARKNIGHTS),
+                    "getAmiyaLayout",
+                    null
+                ) as List<Int?>
+            ) {
+                this[0]?.let { outerLayoutParams.x = it }
+                this[1]?.let { outerLayoutParams.y = it }
+                mWindowManager.updateViewLayout(frameLayout, outerLayoutParams)
             }
         }
 
@@ -195,7 +185,6 @@ class FloatingAmiya : Service() {
         Log.i(TAG, "showIcon")
         removeAllViews()
         addView(frameLayout, outerLayoutParams)
-        mOuterLayoutParams = outerLayoutParams
     }
 
     private suspend fun requestLookingUpOperator(tags: List<String>): List<Map<String, Any>> {
@@ -230,18 +219,14 @@ class FloatingAmiya : Service() {
         })
 
         val outerLayoutParams = WindowManager.LayoutParams(
-            min(panelWidth, screenWidth),
-            min(panelHeight, screenHeight),
+            min(PANEL_WIDTH, screenWidth),
+            min(PANEL_HEIGHT, screenHeight),
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT
         )
 
         outerLayoutParams.gravity = Gravity.TOP or Gravity.LEFT;
-        mOuterLayoutParams?.let { param ->
-            outerLayoutParams.x = param.x
-            outerLayoutParams.y = param.y
-        }
         CoroutineScope(Dispatchers.Main).launch {
             with(
                 ChannelManager.callFunction(
@@ -250,9 +235,10 @@ class FloatingAmiya : Service() {
                     null
                 ) as List<Int?>
             ) {
+                this[0]?.let { outerLayoutParams.x = it }
+                this[1]?.let { outerLayoutParams.y = it }
                 this[2]?.let { outerLayoutParams.width = it.coerceIn(layout.minimumWidth(), screenWidth) }
                 this[3]?.let { outerLayoutParams.height = it.coerceIn(layout.minimumHeight(), screenHeight) }
-                mOuterLayoutParams = outerLayoutParams;
                 mWindowManager.updateViewLayout(layout, outerLayoutParams)
             }
         }
@@ -261,7 +247,6 @@ class FloatingAmiya : Service() {
         Log.i(TAG, "showPanel")
         removeAllViews()
         addView(layout, outerLayoutParams)
-        mOuterLayoutParams = outerLayoutParams
     }
 
     override fun onBind(intent: Intent?): IBinder? {
