@@ -33,12 +33,13 @@ object ChannelManager {
 
     suspend fun callFunction(channel: MethodChannel, method: String, argument: Any?): Any? {
         return suspendCancellableCoroutine { continuation ->
+            Log.d("ChannelManager", "call $method($argument)")
             channel.invokeMethod(
                 method,
                 argument,
                 Callback(continuation)
             )
-            Log.d("ChannelManager", "resumed")
+            Log.d("ChannelManager", "resumed $method")
         }
     }
 }
