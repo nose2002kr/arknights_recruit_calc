@@ -318,6 +318,12 @@ open class FloatingWidgetGestureHandler(private val context: Context):
             bottom = isTouchedAt(viewRect.bottom, y)
         }
 
+        if (touched.top)
+            if (((viewRect.width() / 2 - view.holderWidth() / 2) ..
+                (viewRect.width() / 2 + view.holderWidth() / 2)).contains(event.x.toInt())) {
+                touched.top = false
+            }
+
         Log.d(TAG, "touchedEdge: ${touched.it()}")
         return touched
     }

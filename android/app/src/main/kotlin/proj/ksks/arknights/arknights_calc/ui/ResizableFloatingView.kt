@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.Color.rgb
 import android.graphics.drawable.GradientDrawable
+import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
@@ -16,6 +17,8 @@ abstract class ResizableFloatingView(
     /* Constant val */
     private val TAG = "ResizableFloatingView"
     private val MARGIN = 20
+    private val HOLDER_WIDTH = 150
+    private val HOLDER_HEIGHT = 15
 
     /* Member */
     private var container: FrameLayout
@@ -23,6 +26,7 @@ abstract class ResizableFloatingView(
     abstract fun minimumWidth(): Int
     abstract fun minimumHeight(): Int
     fun marginForEasierGrab(): Int = MARGIN
+    fun holderWidth(): Int = HOLDER_WIDTH
 
     fun addSubView(child: View) {
         container.addView(child)
@@ -61,6 +65,20 @@ abstract class ResizableFloatingView(
             }
         }.also {
             backgroundLayer.addView(it)
+        }
+
+        View(context).apply {
+            layoutParams = LayoutParams(HOLDER_WIDTH, HOLDER_HEIGHT).apply {
+                gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
+                setMargins(MARGIN - 2)
+            }
+            background = GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                cornerRadius = 50f
+                setColor(rgb(50, 50, 50))
+            }
+        }.also {
+            addView(it)
         }
     }
 }
