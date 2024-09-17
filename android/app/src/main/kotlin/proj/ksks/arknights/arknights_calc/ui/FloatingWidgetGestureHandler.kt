@@ -468,9 +468,7 @@ open class FloatingWidgetGestureHandler(private val context: Context):
                     view.handler.removeCallbacks(mLongPressed)
 
                     if (terminateIndicator.activated) {
-                        val intent = Intent(context, ScreenCaptureService::class.java)
-                        intent.setAction("STOP_SCREEN_CAPTURE")
-                        ContextCompat.startForegroundService(context, intent)
+                        ScreenCaptureService.stop(context)
                     }
 
                     terminateIndicator.hide()

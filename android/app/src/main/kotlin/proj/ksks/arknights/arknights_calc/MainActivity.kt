@@ -68,17 +68,11 @@ class MainActivity: FlutterActivity() {
     }
 
     private fun launchService(data: Intent?) {
-        val intent: Intent = Intent(this, ScreenCaptureService::class.java)
-        intent.setAction("START_SCREEN_CAPTURE")
-        intent.putExtra("data", data)
-        intent.putExtra("icon", bitmap)
-        startForegroundService(intent)
+        ScreenCaptureService.start(this, data, bitmap)
     }
 
     private fun stopService() {
-        val intent: Intent = Intent(this, ScreenCaptureService::class.java)
-        intent.setAction("STOP_SCREEN_CAPTURE")
-        startForegroundService(intent)
+        ScreenCaptureService.stop(this)
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -90,8 +84,6 @@ class MainActivity: FlutterActivity() {
             .setMethodCallHandler { call, _ ->
                 when(call.method) {
                     "stopScreenCapture" -> {
-                        val intent = Intent(this, ScreenCaptureService::class.java)
-                        intent.setAction("STOP_SCREEN_CAPTURE")
                         stopService()
                     }
                     "startProjectionRequest" -> {
@@ -221,9 +213,6 @@ class MainActivity: FlutterActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-
-        val intent = Intent(this, ScreenCaptureService::class.java)
-        intent.setAction("STOP_SCREEN_CAPTURE")
         stopService()
     }
 }

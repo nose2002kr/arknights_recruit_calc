@@ -20,6 +20,7 @@ import android.view.ViewGroup.LayoutParams
 import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.ImageView
+import androidx.core.content.ContextCompat
 import androidx.core.view.setMargins
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -37,11 +38,7 @@ class FloatingAmiya : Service() {
     private val gestureHandler = object: FloatingWidgetGestureHandler(this) {
         override fun onClickNotDragged(v: View?) {
             removeAllViews()
-            startForegroundService(
-                Intent(this@FloatingAmiya, ScreenCaptureService::class.java).apply {
-                    action = "CAPTURE"
-                }
-            )
+            ScreenCaptureService.capture(this@FloatingAmiya)
         }
     }
 
@@ -66,6 +63,48 @@ class FloatingAmiya : Service() {
             if (intent.action == Intent.ACTION_CONFIGURATION_CHANGED) {
                 showIcon()
             }
+        }
+    }
+    
+    companion object {
+        private val ACTION_START = "START"
+        data class StartParam(val icon:Bitmap?)
+
+        private val ACTION_STOP = "STOP"
+
+        private val ACTION_SHOW_PANEL = "SHOW_PANEL"
+        data class ShowPanelParam(val tags: ArrayList<String>)
+
+        fun start(
+            context: Context,
+            param: StartParam
+        ) {
+            context.startService(
+                Intent(context, FloatingAmiya::class.java).apply {
+                    action = ACTION_START
+                    putExtra("icon", param.icon)
+                }
+            )
+        }
+        fun stop(
+            context: Context
+        ) {
+            context.startService(
+                Intent(context, FloatingAmiya::class.java).apply {
+                    action = ACTION_STOP
+                }
+            )
+        }
+        fun showPanel(
+            context: Context,
+            param: ShowPanelParam
+        ) {
+            context.startService(
+                Intent(context, FloatingAmiya::class.java).apply {
+                    action = ACTION_SHOW_PANEL
+                    putExtra("tags", param.tags)
+                }
+            )
         }
     }
 
@@ -106,14 +145,14 @@ class FloatingAmiya : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d(TAG, "Amiya, " + intent?.action)
-        if (intent?.action.equals("STOP")) {
+        if (intent?.action.equals(ACTION_STOP)) {
             Log.d(TAG, "Hide amiya.")
             removeAllViews()
-        } else if (intent?.action.equals("START")) {
+        } else if (intent?.action.equals(ACTION_START)) {
             Log.d(TAG, "Show amiya.")
             mBitmap = intent?.getParcelable("icon")!!
             showIcon()
-        } else if (intent?.action.equals("SHOW_PANEL")) {
+        } else if (intent?.action.equals(ACTION_SHOW_PANEL)) {
             Log.d(TAG, "Show panel.")
             val matchedTags: ArrayList<String> =
                 intent?.getStringArrayListExtra("tags") ?: arrayListOf()
