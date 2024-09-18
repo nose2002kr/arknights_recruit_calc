@@ -32,6 +32,8 @@ import kotlinx.coroutines.yield
 import proj.ksks.arknights.arknights_calc.bridge.Tr
 import proj.ksks.arknights.arknights_calc.util.imageToBitmap
 import proj.ksks.arknights.arknights_calc.util.ocrBitmap
+import proj.ksks.arknights.arknights_calc.util.startForegroundService
+import proj.ksks.arknights.arknights_calc.util.startService
 import proj.ksks.arknights.arknights_calc.util.tagDictionary
 
 class ScreenCaptureService : Service() {
@@ -56,6 +58,9 @@ class ScreenCaptureService : Service() {
 
     companion object {
         private val ACTION_START_CAPTURE = "START_SCREEN_CAPTURE"
+        private data class StartParam(val projectionMediaAccepted: Intent?,
+                                      val icon:Bitmap?)
+
         private val ACTION_STOP_CAPTURE = "STOP_SCREEN_CAPTURE"
         private val ACTION_CAPTURE = "CAPTURE"
 
@@ -64,32 +69,32 @@ class ScreenCaptureService : Service() {
             projectionMediaAccepted: Intent?,
             icon: Bitmap?
         ) {
-            ContextCompat.startForegroundService(context,
-                Intent(context, ScreenCaptureService::class.java).apply {
-                    action = ACTION_START_CAPTURE
-                    putExtra("data", projectionMediaAccepted)
-                    putExtra("icon", icon)
-                }
+            startForegroundService(
+                context,
+                ScreenCaptureService::class.java,
+                ACTION_START_CAPTURE,
+                StartParam(icon=icon,
+                    projectionMediaAccepted = projectionMediaAccepted)
             )
         }
 
         fun stop(
             context: Context,
         ) {
-            ContextCompat.startForegroundService(context,
-                Intent(context, ScreenCaptureService::class.java).apply {
-                    action = ACTION_STOP_CAPTURE
-                }
+            startForegroundService(
+                context,
+                ScreenCaptureService::class.java,
+                ACTION_STOP_CAPTURE
             )
         }
 
         fun capture(
             context: Context,
         ) {
-            ContextCompat.startForegroundService(context,
-                Intent(context, ScreenCaptureService::class.java).apply {
-                    action = ACTION_CAPTURE
-                }
+            startForegroundService(
+                context,
+                ScreenCaptureService::class.java,
+                ACTION_CAPTURE
             )
         }
     }
@@ -101,7 +106,7 @@ class ScreenCaptureService : Service() {
     }
 
     private fun launchAmiya(bitmap: Bitmap?) {
-        FloatingAmiya.start(this, FloatingAmiya.Companion.StartParam(bitmap))
+        FloatingAmiya.start(this, bitmap)
     }
 
     private fun closeAmiya() {
@@ -152,7 +157,7 @@ class ScreenCaptureService : Service() {
                         if (matchedTag.isEmpty()) {
                             Toast.makeText(this@ScreenCaptureService, TOAST_MESSAGE_NOT_FOUND_TAGS, Toast.LENGTH_SHORT).show()
                         }
-                        FloatingAmiya.showPanel(this@ScreenCaptureService, FloatingAmiya.Companion.ShowPanelParam(matchedTag))
+                        FloatingAmiya.showPanel(this@ScreenCaptureService, matchedTag)
                     }
                 }
                 Log.d(TAG, "capture success")
@@ -205,7 +210,7 @@ class ScreenCaptureService : Service() {
         if (mMediaProjection == null) {
             mMediaProjection = mProjectionManager?.getMediaProjection(
                 Activity.RESULT_OK,
-                intent.getParcelable("data")!!
+                intent.getParcelable("projectionMediaAccepted")!!
             )
         }
 

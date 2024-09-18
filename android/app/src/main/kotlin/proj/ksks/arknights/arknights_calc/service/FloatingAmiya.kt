@@ -30,6 +30,7 @@ import proj.ksks.arknights.arknights_calc.bridge.ChannelManager
 import proj.ksks.arknights.arknights_calc.ui.FloatingWidgetGestureHandler
 import proj.ksks.arknights.arknights_calc.ui.OperatorChartLayout
 import proj.ksks.arknights.arknights_calc.ui.OperatorChartLayout.Listener
+import proj.ksks.arknights.arknights_calc.util.startService
 import proj.ksks.arknights.arknights_calc.util.takeScreenSize
 import kotlin.math.min
 
@@ -68,43 +69,41 @@ class FloatingAmiya : Service() {
     
     companion object {
         private val ACTION_START = "START"
-        data class StartParam(val icon:Bitmap?)
+        private data class StartParam(val icon:Bitmap?)
 
         private val ACTION_STOP = "STOP"
 
         private val ACTION_SHOW_PANEL = "SHOW_PANEL"
-        data class ShowPanelParam(val tags: ArrayList<String>)
+        private data class ShowPanelParam(val tags: ArrayList<String>?)
 
         fun start(
             context: Context,
-            param: StartParam
+            icon: Bitmap?
         ) {
-            context.startService(
-                Intent(context, FloatingAmiya::class.java).apply {
-                    action = ACTION_START
-                    putExtra("icon", param.icon)
-                }
-            )
+            startService(
+                context,
+                FloatingAmiya::class.java,
+                ACTION_START,
+                StartParam(icon))
         }
+
         fun stop(
             context: Context
         ) {
-            context.startService(
-                Intent(context, FloatingAmiya::class.java).apply {
-                    action = ACTION_STOP
-                }
-            )
+            startService(
+                context,
+                FloatingAmiya::class.java,
+                ACTION_STOP)
         }
         fun showPanel(
             context: Context,
-            param: ShowPanelParam
+            tags: ArrayList<String>?
         ) {
-            context.startService(
-                Intent(context, FloatingAmiya::class.java).apply {
-                    action = ACTION_SHOW_PANEL
-                    putExtra("tags", param.tags)
-                }
-            )
+            startService(
+                context,
+                FloatingAmiya::class.java,
+                ACTION_SHOW_PANEL,
+                ShowPanelParam(tags))
         }
     }
 
