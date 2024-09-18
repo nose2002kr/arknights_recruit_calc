@@ -110,54 +110,25 @@ class ScreenCaptureService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent?.action.equals(ACTION_START_CAPTURE)) {
-            val param = StartParam::class.fromIntent(intent!!)
-            createNotification(param.icon)
-            launchAmiya(mBitmapIcon)
-            stopScreenCapture()
-            startScreenCapture(param.projectionMediaAccepted!!)
-        } else if (intent?.action.equals(ACTION_STOP_CAPTURE)) {
-            removeNotification()
-            stopScreenCapture()
-            closeAmiya()
-            stopSelf()
-        } else if (intent?.action.equals(ACTION_CAPTURE)) {
-            Log.d(TAG, "capture start")
-            var captureBitmap = image?.let { imageToBitmap(it) }
-            if (captureBitmap == null) {
-                Log.i(TAG,"caught the error. try one more again.")
-                captureBitmap = image?.let { imageToBitmap(it) }
-            }
-            if (captureBitmap == null) {
-                Toast.makeText(this, TOAST_MESSAGE_FAILED_TO_CONVERT_CAPTURE, Toast.LENGTH_SHORT).show()
+        intent?: return START_STICKY
+
+        when (intent.action) {
+            ACTION_START_CAPTURE -> {
+                val param = StartParam::class.fromIntent(intent)
+                createNotification(param.icon)
                 launchAmiya(mBitmapIcon)
+                stopScreenCapture()
+                startScreenCapture(param.projectionMediaAccepted!!)
             }
-            captureBitmap?.let {
-                ocrBitmap(it) { visionText ->
-                    CoroutineScope(Dispatchers.Main).launch {
-                        while (tagDictionary == null) {
-                            Log.d(TAG, "yield until load tagDictionary")
-                            delay(10)
-                            yield()
-                        }
-                        val matchedTag = ArrayList<String>()
-                        for (block in visionText.textBlocks) {
-                            val blockText: String = block.text
-                            //Log.d(TAG, "recognized text: ${blockText}")
-                            if (tagDictionary!!.contains(blockText.trim())) {
-                                matchedTag.add(blockText.trim())
-                            }
-                        }
-                        Log.d(TAG, "Complete detection.")
-                        if (matchedTag.isEmpty()) {
-                            Toast.makeText(this@ScreenCaptureService, TOAST_MESSAGE_NOT_FOUND_TAGS, Toast.LENGTH_SHORT).show()
-                        }
-                        FloatingAmiya.showPanel(this@ScreenCaptureService, matchedTag)
-                    }
-                }
-                Log.d(TAG, "capture success")
+            ACTION_STOP_CAPTURE -> {
+                removeNotification()
+                stopScreenCapture()
+                closeAmiya()
+                stopSelf()
             }
-            Log.d(TAG, "capture done")
+            ACTION_CAPTURE-> {
+                captureImage()
+            }
         }
 
         return START_STICKY
@@ -243,6 +214,49 @@ class ScreenCaptureService : Service() {
         mVirtualDisplay?.release()
         mMediaProjection?.stop()
         mMediaProjection = null
+    }
+
+    private fun captureImage() {
+        Log.d(TAG, "capture start")
+        var captureBitmap = image?.let { imageToBitmap(it) }
+        if (captureBitmap == null) {
+            Log.i(TAG, "caught the error. try one more again.")
+            captureBitmap = image?.let { imageToBitmap(it) }
+        }
+        if (captureBitmap == null) {
+            Toast.makeText(this, TOAST_MESSAGE_FAILED_TO_CONVERT_CAPTURE, Toast.LENGTH_SHORT).show()
+            launchAmiya(mBitmapIcon)
+        }
+        captureBitmap?.let {
+            ocrBitmap(it) { visionText ->
+                CoroutineScope(Dispatchers.Main).launch {
+                    while (tagDictionary == null) {
+                        Log.d(TAG, "yield until load tagDictionary")
+                        delay(10)
+                        yield()
+                    }
+                    val matchedTag = ArrayList<String>()
+                    for (block in visionText.textBlocks) {
+                        val blockText: String = block.text
+                        //Log.d(TAG, "recognized text: ${blockText}")
+                        if (tagDictionary!!.contains(blockText.trim())) {
+                            matchedTag.add(blockText.trim())
+                        }
+                    }
+                    Log.d(TAG, "Complete detection.")
+                    if (matchedTag.isEmpty()) {
+                        Toast.makeText(
+                            this@ScreenCaptureService,
+                            TOAST_MESSAGE_NOT_FOUND_TAGS,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                    FloatingAmiya.showPanel(this@ScreenCaptureService, matchedTag)
+                }
+            }
+            Log.d(TAG, "capture success")
+        }
+        Log.d(TAG, "capture done")
     }
 
     override fun onBind(intent: Intent?): IBinder? {

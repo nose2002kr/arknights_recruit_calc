@@ -144,22 +144,17 @@ class FloatingAmiya : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d(TAG, "Amiya, " + intent?.action)
-        if (intent?.action.equals(ACTION_STOP)) {
-            Log.d(TAG, "Hide amiya.")
-            removeAllViews()
-        } else if (intent?.action.equals(ACTION_START)) {
-            Log.d(TAG, "Show amiya.")
-            mBitmap = StartParam::class.fromIntent(intent!!).icon!!
-            showIcon()
-        } else if (intent?.action.equals(ACTION_SHOW_PANEL)) {
-            Log.d(TAG, "Show panel.")
-            val matchedTags = ShowPanelParam::class.fromIntent(intent!!).tags ?: arrayListOf()
-            showPanel(matchedTags)
+        intent?: return START_STICKY
+
+        when (intent.action) {
+            ACTION_START -> showIcon(StartParam::class.fromIntent(intent).icon!!)
+            ACTION_STOP -> removeAllViews()
+            ACTION_SHOW_PANEL -> showPanel(ShowPanelParam::class.fromIntent(intent).tags)
         }
         return START_STICKY
     }
 
-    private fun showIcon() {
+    private fun showIcon(bitmap: Bitmap? = null) {
         CoroutineScope(Dispatchers.Main).launch {
             with(
                 ChannelManager.callFunction(
@@ -204,6 +199,7 @@ class FloatingAmiya : Service() {
                 backgroundView.elevation = ICON_ELEVATION
 
                 val imageView = ImageView(this@FloatingAmiya)
+                bitmap?.let { mBitmap = it }
                 imageView.setImageBitmap(mBitmap)
                 imageView.elevation = ICON_ELEVATION+1
                 imageView.layoutParams = FrameLayout.LayoutParams(
@@ -234,7 +230,7 @@ class FloatingAmiya : Service() {
         ) as List<Map<String, Any>>
     }
 
-    private fun showPanel(matchedTags : ArrayList<String>) {
+    private fun showPanel(matchedTags : ArrayList<String>?) {
         CoroutineScope(Dispatchers.Main).launch {
             with(
                 ChannelManager.callFunction(
@@ -243,28 +239,30 @@ class FloatingAmiya : Service() {
                     null
                 ) as List<Int?>
             ) {
-                val layout = OperatorChartLayout(this@FloatingAmiya, matchedTags, object : Listener {
-                    override fun requestDismiss(self: OperatorChartLayout) {
-                        showIcon()
-                    }
+                val layout = OperatorChartLayout(this@FloatingAmiya, matchedTags ?: arrayListOf(),
+                    object : Listener {
+                        override fun requestDismiss(self: OperatorChartLayout) {
+                            showIcon()
+                        }
 
-                    override fun requestUpdate(self: OperatorChartLayout, tags: List<String>) {
-                        CoroutineScope(Dispatchers.Main).launch {
-                            try {
-                                val dataDeferred = async { requestLookingUpOperator(tags) }
-                                val operatorMap = dataDeferred.await()
-                                println("Received operator data: $operatorMap")
+                        override fun requestUpdate(self: OperatorChartLayout, tags: List<String>) {
+                            CoroutineScope(Dispatchers.Main).launch {
+                                try {
+                                    val dataDeferred = async { requestLookingUpOperator(tags) }
+                                    val operatorMap = dataDeferred.await()
+                                    println("Received operator data: $operatorMap")
 
-                                self.updateOperatorView(operatorMap)
+                                    self.updateOperatorView(operatorMap)
 
-                            } catch (e: NotImplementedError) {
-                                println("The method is not implemented")
-                            } catch (e: Exception) {
-                                println("An error occurred: ${e.message}")
+                                } catch (e: NotImplementedError) {
+                                    println("The method is not implemented")
+                                } catch (e: Exception) {
+                                    println("An error occurred: ${e.message}")
+                                }
                             }
                         }
                     }
-                })
+                )
 
                 val outerLayoutParams = WindowManager.LayoutParams(
                     min(PANEL_WIDTH, screenWidth),
