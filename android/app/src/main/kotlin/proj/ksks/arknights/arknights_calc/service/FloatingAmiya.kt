@@ -20,7 +20,6 @@ import android.view.ViewGroup.LayoutParams
 import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.ImageView
-import androidx.core.content.ContextCompat
 import androidx.core.view.setMargins
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -30,6 +29,7 @@ import proj.ksks.arknights.arknights_calc.bridge.ChannelManager
 import proj.ksks.arknights.arknights_calc.ui.FloatingWidgetGestureHandler
 import proj.ksks.arknights.arknights_calc.ui.OperatorChartLayout
 import proj.ksks.arknights.arknights_calc.ui.OperatorChartLayout.Listener
+import proj.ksks.arknights.arknights_calc.util.fromIntent
 import proj.ksks.arknights.arknights_calc.util.startService
 import proj.ksks.arknights.arknights_calc.util.takeScreenSize
 import kotlin.math.min
@@ -149,12 +149,11 @@ class FloatingAmiya : Service() {
             removeAllViews()
         } else if (intent?.action.equals(ACTION_START)) {
             Log.d(TAG, "Show amiya.")
-            mBitmap = intent?.getParcelable("icon")!!
+            mBitmap = StartParam::class.fromIntent(intent!!).icon!!
             showIcon()
         } else if (intent?.action.equals(ACTION_SHOW_PANEL)) {
             Log.d(TAG, "Show panel.")
-            val matchedTags: ArrayList<String> =
-                intent?.getStringArrayListExtra("tags") ?: arrayListOf()
+            val matchedTags = ShowPanelParam::class.fromIntent(intent!!).tags ?: arrayListOf()
             showPanel(matchedTags)
         }
         return START_STICKY
@@ -293,14 +292,5 @@ class FloatingAmiya : Service() {
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
-    }
-
-    @Suppress("DEPRECATION")
-    private inline fun <reified P : Parcelable> Intent.getParcelable(key: String): P? {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            getParcelableExtra(key, P::class.java)
-        } else {
-            getParcelableExtra(key)
-        }
     }
 }

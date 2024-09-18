@@ -17,23 +17,19 @@ import android.media.Image
 import android.media.ImageReader
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
-import android.os.Build
-import android.os.Build.VERSION.SDK_INT
 import android.os.IBinder
-import android.os.Parcelable
 import android.util.Log
 import android.widget.Toast
-import androidx.core.content.ContextCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
 import proj.ksks.arknights.arknights_calc.bridge.Tr
+import proj.ksks.arknights.arknights_calc.util.fromIntent
 import proj.ksks.arknights.arknights_calc.util.imageToBitmap
 import proj.ksks.arknights.arknights_calc.util.ocrBitmap
 import proj.ksks.arknights.arknights_calc.util.startForegroundService
-import proj.ksks.arknights.arknights_calc.util.startService
 import proj.ksks.arknights.arknights_calc.util.tagDictionary
 
 class ScreenCaptureService : Service() {
@@ -114,13 +110,12 @@ class ScreenCaptureService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val bitmap: Bitmap? = intent?.getParcelable("icon")
-
         if (intent?.action.equals(ACTION_START_CAPTURE)) {
-            createNotification(bitmap)
+            val param = StartParam::class.fromIntent(intent!!)
+            createNotification(param.icon)
             launchAmiya(mBitmapIcon)
             stopScreenCapture()
-            intent?.let { startScreenCapture(it) }
+            startScreenCapture(param.projectionMediaAccepted!!)
         } else if (intent?.action.equals(ACTION_STOP_CAPTURE)) {
             removeNotification()
             stopScreenCapture()
@@ -206,11 +201,11 @@ class ScreenCaptureService : Service() {
         manager.cancel(NOTIFI_ID_AMIYA)
     }
 
-    private fun startScreenCapture(intent: Intent) {
+    private fun startScreenCapture(data: Intent) {
         if (mMediaProjection == null) {
             mMediaProjection = mProjectionManager?.getMediaProjection(
                 Activity.RESULT_OK,
-                intent.getParcelable("projectionMediaAccepted")!!
+                data
             )
         }
 
@@ -252,14 +247,5 @@ class ScreenCaptureService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
-    }
-
-    @Suppress("DEPRECATION")
-    private inline fun <reified P : Parcelable> Intent.getParcelable(key: String): P? {
-        return if (SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            getParcelableExtra(key, P::class.java)
-        } else {
-            getParcelableExtra(key)
-        }
     }
 }
