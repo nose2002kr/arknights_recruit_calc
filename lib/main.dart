@@ -177,7 +177,7 @@ class _HomePage extends State<HomePage> {
                   Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text('version:1.0.0+12'),
+                        Text('version:1.0.0+13'),
                         IconButton(onPressed: () =>
                            showDialog<Map<String,Object>>(
                               context: context,
