@@ -10,9 +10,7 @@ import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.drawable.ShapeDrawable
 import android.graphics.drawable.shapes.OvalShape
-import android.os.Build
 import android.os.IBinder
-import android.os.Parcelable
 import android.util.Log
 import android.view.Gravity
 import android.view.View
@@ -29,6 +27,7 @@ import proj.ksks.arknights.arknights_calc.bridge.ChannelManager
 import proj.ksks.arknights.arknights_calc.ui.FloatingWidgetGestureHandler
 import proj.ksks.arknights.arknights_calc.ui.OperatorChartLayout
 import proj.ksks.arknights.arknights_calc.ui.OperatorChartLayout.Listener
+import proj.ksks.arknights.arknights_calc.ui.UIPreference
 import proj.ksks.arknights.arknights_calc.util.fromIntent
 import proj.ksks.arknights.arknights_calc.util.startService
 import proj.ksks.arknights.arknights_calc.util.takeScreenSize
@@ -45,15 +44,9 @@ class FloatingAmiya : Service() {
 
     /* Constant val */
     private val TAG = "FloatingAmiya"
-    private val ICON_SIZE = 200
-    private val ICON_SHADOW_MARGIN = 20
-    private val ICON_ELEVATION = 10f
-    private val PANEL_WIDTH = 1200
-    private val PANEL_HEIGHT = 700
 
     /* Member */
     private lateinit var mWindowManager : WindowManager
-    private lateinit var mBitmap : Bitmap
     private val addedViews = mutableListOf<View>()
 
     private var screenWidth = 0
@@ -69,7 +62,6 @@ class FloatingAmiya : Service() {
     
     companion object {
         private val ACTION_START = "START"
-        private data class StartParam(val icon:Bitmap?)
 
         private val ACTION_STOP = "STOP"
 
@@ -77,14 +69,12 @@ class FloatingAmiya : Service() {
         private data class ShowPanelParam(val tags: ArrayList<String>?)
 
         fun start(
-            context: Context,
-            icon: Bitmap?
+            context: Context
         ) {
             startService(
                 context,
                 FloatingAmiya::class.java,
-                ACTION_START,
-                StartParam(icon))
+                ACTION_START)
         }
 
         fun stop(
@@ -147,7 +137,7 @@ class FloatingAmiya : Service() {
         intent?: return START_STICKY
 
         when (intent.action) {
-            ACTION_START -> showIcon(StartParam::class.fromIntent(intent).icon!!)
+            ACTION_START -> showIcon()
             ACTION_STOP -> stopSelf()
             ACTION_SHOW_PANEL -> showPanel(ShowPanelParam::class.fromIntent(intent).tags)
         }
@@ -164,14 +154,14 @@ class FloatingAmiya : Service() {
                 ) as List<Int?>
             ) {
                 val outerLayoutParams = WindowManager.LayoutParams(
-                    ICON_SIZE,
-                    ICON_SIZE,
+                    UIPreference.Icon.SIZE,
+                    UIPreference.Icon.SIZE,
                     WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
                     WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                     PixelFormat.TRANSLUCENT
                 ).apply {
-                    x = (screenWidth / 2) - (ICON_SIZE / 2)
-                    y = (screenHeight / 2) - (ICON_SIZE / 2)
+                    x = (screenWidth / 2) - (UIPreference.Icon.SIZE / 2)
+                    y = (screenHeight / 2) - (UIPreference.Icon.SIZE / 2)
                 }
 
                 outerLayoutParams.gravity = Gravity.TOP or Gravity.LEFT;
@@ -190,23 +180,22 @@ class FloatingAmiya : Service() {
                     FrameLayout.LayoutParams.MATCH_PARENT,
                     FrameLayout.LayoutParams.MATCH_PARENT
                 ).apply {
-                    setMargins(ICON_SHADOW_MARGIN)
+                    setMargins(UIPreference.Icon.SHADOW_MARGIN)
                 }
 
                 backgroundView.background = ShapeDrawable(OvalShape()).apply {
-                    paint.color = Color.WHITE
+                    paint.color = UIPreference.Icon.BG_COLOR
                 }
-                backgroundView.elevation = ICON_ELEVATION
+                backgroundView.elevation = UIPreference.Icon.ELEVATION
 
                 val imageView = ImageView(this@FloatingAmiya)
-                bitmap?.let { mBitmap = it }
-                imageView.setImageBitmap(mBitmap)
-                imageView.elevation = ICON_ELEVATION+1
+                imageView.setImageBitmap(UIPreference.icon)
+                imageView.elevation = UIPreference.Icon.ELEVATION+1
                 imageView.layoutParams = FrameLayout.LayoutParams(
                     FrameLayout.LayoutParams.MATCH_PARENT,
                     FrameLayout.LayoutParams.MATCH_PARENT
                 ).apply {
-                    setMargins(ICON_SHADOW_MARGIN)
+                    setMargins(UIPreference.Icon.SHADOW_MARGIN)
                 }
 
                 frameLayout.setOnTouchListener(gestureHandler)
@@ -265,8 +254,8 @@ class FloatingAmiya : Service() {
                 )
 
                 val outerLayoutParams = WindowManager.LayoutParams(
-                    min(PANEL_WIDTH, screenWidth),
-                    min(PANEL_HEIGHT, screenHeight),
+                    min(UIPreference.OperatorChart.DEFAULT_WIDTH, screenWidth),
+                    min(UIPreference.OperatorChart.DEFAULT_HEIGHT, screenHeight),
                     WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
                     WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                     PixelFormat.TRANSLUCENT

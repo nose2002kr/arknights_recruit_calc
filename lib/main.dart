@@ -71,6 +71,7 @@ Future<void> main() async {
   // Returns locale string in the form 'en_US'
   final String defaultLocale = Config().locale ?? Platform.localeName;
 
+  await ArknightsService.sendIcon();
   await applyLocale(defaultLocale);
 }
 

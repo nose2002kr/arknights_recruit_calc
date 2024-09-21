@@ -26,6 +26,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
 import proj.ksks.arknights.arknights_calc.bridge.Tr
+import proj.ksks.arknights.arknights_calc.ui.UIPreference
 import proj.ksks.arknights.arknights_calc.util.fromIntent
 import proj.ksks.arknights.arknights_calc.util.imageToBitmap
 import proj.ksks.arknights.arknights_calc.util.ocrBitmap
@@ -49,28 +50,24 @@ class ScreenCaptureService : Service() {
     private var mMediaProjection: MediaProjection? = null
     private var mVirtualDisplay: VirtualDisplay? = null
     private var mImageReader: ImageReader? = null
-    private var mBitmapIcon : Bitmap? = null
     private var image: Image? = null
 
     companion object {
         private val ACTION_START_CAPTURE = "START_SCREEN_CAPTURE"
-        private data class StartParam(val projectionMediaAccepted: Intent?,
-                                      val icon:Bitmap?)
+        private data class StartParam(val projectionMediaAccepted: Intent?)
 
         private val ACTION_STOP_CAPTURE = "STOP_SCREEN_CAPTURE"
         private val ACTION_CAPTURE = "CAPTURE"
 
         fun start(
             context: Context,
-            projectionMediaAccepted: Intent?,
-            icon: Bitmap?
+            projectionMediaAccepted: Intent?
         ) {
             startForegroundService(
                 context,
                 ScreenCaptureService::class.java,
                 ACTION_START_CAPTURE,
-                StartParam(icon=icon,
-                    projectionMediaAccepted = projectionMediaAccepted)
+                StartParam(projectionMediaAccepted = projectionMediaAccepted)
             )
         }
 
@@ -101,8 +98,8 @@ class ScreenCaptureService : Service() {
             getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager?
     }
 
-    private fun launchAmiya(bitmap: Bitmap?) {
-        FloatingAmiya.start(this, bitmap)
+    private fun launchAmiya() {
+        FloatingAmiya.start(this)
     }
 
     private fun closeAmiya() {
@@ -115,8 +112,8 @@ class ScreenCaptureService : Service() {
         when (intent.action) {
             ACTION_START_CAPTURE -> {
                 val param = StartParam::class.fromIntent(intent)
-                createNotification(param.icon)
-                launchAmiya(mBitmapIcon)
+                createNotification()
+                launchAmiya()
                 stopScreenCapture()
                 startScreenCapture(param.projectionMediaAccepted!!)
             }
@@ -134,8 +131,7 @@ class ScreenCaptureService : Service() {
         return START_STICKY
     }
 
-    private fun createNotification(bitmap: Bitmap?) {
-        mBitmapIcon = bitmap;
+    private fun createNotification() {
         val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         val channel = NotificationChannel(
@@ -160,7 +156,7 @@ class ScreenCaptureService : Service() {
             .setDeleteIntent(pendingIntent)
             .setAutoCancel(true)
             .setOngoing(true)
-            .setSmallIcon(Icon.createWithBitmap(mBitmapIcon))
+            .setSmallIcon(Icon.createWithBitmap(UIPreference.icon))
             .build())
 
         Toast.makeText(this, TOAST_MESSAGE_CHECK_NOTIICATION, Toast.LENGTH_SHORT).show()
@@ -225,7 +221,7 @@ class ScreenCaptureService : Service() {
         }
         if (captureBitmap == null) {
             Toast.makeText(this, TOAST_MESSAGE_FAILED_TO_CONVERT_CAPTURE, Toast.LENGTH_SHORT).show()
-            launchAmiya(mBitmapIcon)
+            launchAmiya()
         }
         captureBitmap?.let {
             ocrBitmap(it) { visionText ->

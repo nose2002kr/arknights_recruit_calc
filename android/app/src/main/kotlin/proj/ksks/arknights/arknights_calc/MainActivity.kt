@@ -23,6 +23,7 @@ import kotlinx.coroutines.withContext
 import proj.ksks.arknights.arknights_calc.bridge.ChannelManager
 import proj.ksks.arknights.arknights_calc.bridge.Tr
 import proj.ksks.arknights.arknights_calc.service.ScreenCaptureService
+import proj.ksks.arknights.arknights_calc.ui.UIPreference
 import proj.ksks.arknights.arknights_calc.util.tagDictionary
 import kotlin.coroutines.resume
 import kotlin.io.path.Path
@@ -40,7 +41,6 @@ class MainActivity: FlutterActivity() {
     /* Member */
     private var data: Intent? = null
     private var permissionGranted = 0
-    private var bitmap: Bitmap? = null
     private var alreadyProgressInRequest = false
     private suspend fun requestPermissions() {
         synchronized(this) {
@@ -68,7 +68,7 @@ class MainActivity: FlutterActivity() {
     }
 
     private fun launchService(data: Intent?) {
-        ScreenCaptureService.start(this, data, bitmap)
+        ScreenCaptureService.start(this, data)
     }
 
     private fun stopService() {
@@ -87,10 +87,12 @@ class MainActivity: FlutterActivity() {
                         stopService()
                     }
                     "startProjectionRequest" -> {
-                        val byteArray = call.arguments as ByteArray
-                        bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
-                        CoroutineScope(Dispatchers.Main).launch {
-                            requestPermissions()
+                        if (UIPreference.iconIsReadied()) {
+                            CoroutineScope(Dispatchers.Main).launch {
+                                requestPermissions()
+                            }
+                        } else {
+                            Log.w(TAG, "Icon is not installed yet.")
                         }
                     }
                 }
@@ -103,6 +105,10 @@ class MainActivity: FlutterActivity() {
                         val list = call.arguments as ArrayList<String>
                         tagDictionary = list
                         Log.d(TAG, "Debug tagDictionary: " + (tagDictionary!!.get(0)))
+                    }
+                    "icon" -> {
+                        val byteArray = call.arguments as ByteArray
+                        UIPreference.icon = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
                     }
                 }
             }
