@@ -184,7 +184,7 @@ class FloatingAmiya : Service() {
                 }
 
                 backgroundView.background = ShapeDrawable(OvalShape()).apply {
-                    paint.color = Color.WHITE
+                    paint.color = UIPreference.Icon.BG_COLOR
                 }
                 backgroundView.elevation = UIPreference.Icon.ELEVATION
 
