@@ -11,31 +11,31 @@ object UIPreference {
         val MIN_WIDTH = 400
         val MIN_HEIGHT = 353
 
-        val TAG_BETWEEN = 8
+        val CHIP_BETWEEN = 8
 
         val MIN_TAGS_VIEW_HEIGHT = 120
         val MIN_OPERATORS_VIEW_HEIGHT = 80
         val CONTAINER_SIZE = 400
-        val THRESHOLD_FOR_HIDING_OF_TAGS_VIEW = 480
+        val HIDING_OF_TAGS_VIEW_THRESHOLD = 480
 
-        val COLOR_PANEL_LIGHT: Int = Color.WHITE
+        val PANEL_LIGHT_COLOR: Int = Color.WHITE
 
         object Chip {
-            val STROKE_THIN_WIDTH: Float = 5.0f
+            val THIN_STROKE_WIDTH: Float = 5.0f
             val STROKE_WIDTH: Float = 7.0f
 
-            val COLOR_BACKGROUND: Int = Color.WHITE
-            val COLOR_BACKGROUND_SELECTED: Int = Color.parseColor("#C8C8C8")
-            val COLOR_BACKGROUND_DISABLED: Int = Color.parseColor("#BEBEBE")
-            val COLOR_BACKGROUND_HIGHLIGHT: Int = Color.parseColor("#F4F4F4")
-            val COLOR_BACKGROUND_HIGHLIGHT_ANI_START: Int = Color.parseColor("#FFFFD2")
-            val COLOR_STROKE: Int = Color.parseColor("#C8C8C8")
+            val BG_COLOR: Int = Color.WHITE
+            val BG_SELECTED_COLOR: Int = Color.parseColor("#C8C8C8")
+            val BG_DISABLED_COLOR: Int = Color.parseColor("#BEBEBE")
+            val BG_HIGHLIGHT_COLOR: Int = Color.parseColor("#F4F4F4")
+            val BG_HIGHLIGHT_ANI_START_COLOR: Int = Color.parseColor("#FFFFD2")
+            val STROKE_COLOR: Int = Color.parseColor("#C8C8C8")
 
-            val COLOR_GRADE6_STROKE: Int = Color.parseColor("#FCC278")
-            val COLOR_GRADE5_STROKE: Int = Color.parseColor("#EEEE01")
-            val COLOR_GRADE4_STROKE: Int = Color.parseColor("#BF8DF0")
-            val COLOR_GRADE3_STROKE: Int = Color.parseColor("#BCBCBC")
-            val COLOR_GRADE2_STROKE: Int = Color.parseColor("#EAEAEA")
+            val GRADE6_STROKE_COLOR: Int = Color.parseColor("#FCC278")
+            val GRADE5_STROKE_COLOR: Int = Color.parseColor("#EEEE01")
+            val GRADE4_STROKE_COLOR: Int = Color.parseColor("#BF8DF0")
+            val GRADE3_STROKE_COLOR: Int = Color.parseColor("#BCBCBC")
+            val GRADE2_STROKE_COLOR: Int = Color.parseColor("#EAEAEA")
         }
     }
 
@@ -47,26 +47,25 @@ object UIPreference {
     }
 
     object TerminateIndicator {
-        val COLOR_BG_NORMAL_STATE = Color.parseColor("#FF444444")
-        val COLOR_BG_ACTIVE_STATE = Color.parseColor("#AAD63A31")
+        val BG_NORMAL_STATE_COLOR = Color.parseColor("#FF444444")
+        val BG_ACTIVE_STATE_COLOR = Color.parseColor("#AAD63A31")
         val CORNER_RADIUS = 34f
 
         val FONT_SIZE = 22f
-        val COLOR_FONT = Color.WHITE
+        val FONT_COLOR = Color.WHITE
 
         val PADDING_LEFT = 26
         val PADDING_TOP = 16
         val PADDING_RIGHT = 46
         val PADDING_BOTTOM = 26
 
-        val SIZE_LEADING_ICON = 60
-        val BETWEEN_ICON = 16
+        val LEADING_ICON_SIZE = 60
+        val ICON_BETWEEN = 16
     }
 
     object RubberBand {
-        val COLOR_FILL = Color.parseColor("#12818589")
-        val COLOR_STROKE = Color.parseColor("#FF708090")
-
+        val FILL_COLOR = Color.parseColor("#12818589")
+        val STROKE_COLOR = Color.parseColor("#FF708090")
         val STROKE_WIDTH = 9f
     }
 
@@ -76,13 +75,13 @@ object UIPreference {
         val HOLDER_HEIGHT = 15
         val HOLDER_COLOR: Int = Color.parseColor("#323232")
 
-        val COLOR_PANEL_LIGHT_GRAY: Int = Color.parseColor("#F4F4F4")
+        val PANEL_LIGHT_GRAY_COLOR: Int = Color.parseColor("#F4F4F4")
         val BORDER_WIDTH: Int = 10
-        val COLOR_BORDER: Int = Color.GRAY
+        val BORDER_COLOR: Int = Color.GRAY
     }
 
-    val COLOR_FONT: Int = Color.BLACK
-    val COLOR_FONT_DISABLED: Int = Color.parseColor("#646464")
+    val FONT_COLOR: Int = Color.BLACK
+    val FONT_DISABLED_COLOR: Int = Color.parseColor("#646464")
     val CORNER_RADIUS = 50f
 
     lateinit var icon: Bitmap

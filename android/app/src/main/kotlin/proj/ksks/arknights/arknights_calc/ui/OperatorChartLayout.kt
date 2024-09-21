@@ -52,11 +52,11 @@ class OperatorChartLayout (
             val grade = it["grade"] as Int
             val color = (
                     when (grade) {
-                        6 -> preferenceChip.COLOR_GRADE6_STROKE
-                        5 -> preferenceChip.COLOR_GRADE5_STROKE
-                        4 -> preferenceChip.COLOR_GRADE4_STROKE
-                        3 -> preferenceChip.COLOR_GRADE3_STROKE
-                        else -> preferenceChip.COLOR_GRADE2_STROKE
+                        6 -> preferenceChip.GRADE6_STROKE_COLOR
+                        5 -> preferenceChip.GRADE5_STROKE_COLOR
+                        4 -> preferenceChip.GRADE4_STROKE_COLOR
+                        3 -> preferenceChip.GRADE3_STROKE_COLOR
+                        else -> preferenceChip.GRADE2_STROKE_COLOR
                     }
                 )
             val spannableString = SpannableString("${grade}★ ${name}")
@@ -66,26 +66,26 @@ class OperatorChartLayout (
                 Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
             )
             spannableString.setSpan(
-                ForegroundColorSpan(UIPreference.COLOR_FONT),
+                ForegroundColorSpan(UIPreference.FONT_COLOR),
                 2, spannableString.length,
                 Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
             )
 
             val chip = Chip(themedContext).apply {
                 text = spannableString
-                chipStrokeWidth = preferenceChip.STROKE_THIN_WIDTH
-                chipBackgroundColor = ColorStateList.valueOf(preferenceChip.COLOR_BACKGROUND)
+                chipStrokeWidth = preferenceChip.THIN_STROKE_WIDTH
+                chipBackgroundColor = ColorStateList.valueOf(preferenceChip.BG_COLOR)
                 chipStrokeColor = ColorStateList.valueOf(color)
                 layoutParams = MarginLayoutParams(
                     MarginLayoutParams.WRAP_CONTENT,
                     MarginLayoutParams.WRAP_CONTENT
                 ).apply {
-                    marginEnd = preference.TAG_BETWEEN
+                    marginEnd = preference.CHIP_BETWEEN
                 }
 
                 setOnClickListener { v ->
-                    lastClickedChip?.chipBackgroundColor = ColorStateList.valueOf(preferenceChip.COLOR_BACKGROUND)
-                    (v as Chip).chipBackgroundColor = ColorStateList.valueOf(preferenceChip.COLOR_BACKGROUND_SELECTED)
+                    lastClickedChip?.chipBackgroundColor = ColorStateList.valueOf(preferenceChip.BG_COLOR)
+                    (v as Chip).chipBackgroundColor = ColorStateList.valueOf(preferenceChip.BG_SELECTED_COLOR)
                     lastClickedChip = v
 
                     selectedTag.sortWith { first, second ->
@@ -101,14 +101,14 @@ class OperatorChartLayout (
                     selectedChipDictionary.forEach { (t, u) ->
                         if (tags.contains(t)) {
                             u.chipBackgroundColor =
-                                ColorStateList.valueOf(preferenceChip.COLOR_BACKGROUND_HIGHLIGHT)
+                                ColorStateList.valueOf(preferenceChip.BG_HIGHLIGHT_COLOR)
                             u.chipStrokeWidth = preferenceChip.STROKE_WIDTH
-                            u.chipStrokeColor = ColorStateList.valueOf(preferenceChip.COLOR_STROKE)
+                            u.chipStrokeColor = ColorStateList.valueOf(preferenceChip.STROKE_COLOR)
 
                             val colorAnimation =
                                 ValueAnimator.ofObject(ArgbEvaluator(),
-                                    preferenceChip.COLOR_BACKGROUND_HIGHLIGHT_ANI_START,
-                                    preferenceChip.COLOR_BACKGROUND_HIGHLIGHT)
+                                    preferenceChip.BG_HIGHLIGHT_ANI_START_COLOR,
+                                    preferenceChip.BG_HIGHLIGHT_COLOR)
                             colorAnimation.setDuration(200)
 
                             colorAnimation.addUpdateListener { animator ->
@@ -120,8 +120,8 @@ class OperatorChartLayout (
 
                         } else {
                             u.chipBackgroundColor =
-                                ColorStateList.valueOf(preferenceChip.COLOR_BACKGROUND_DISABLED)
-                            u.setTextColor(ColorStateList.valueOf(UIPreference.COLOR_FONT_DISABLED))
+                                ColorStateList.valueOf(preferenceChip.BG_DISABLED_COLOR)
+                            u.setTextColor(ColorStateList.valueOf(UIPreference.FONT_DISABLED_COLOR))
                         }
                     }
                 }
@@ -189,8 +189,8 @@ class OperatorChartLayout (
                     MarginLayoutParams.WRAP_CONTENT,
                     MarginLayoutParams.WRAP_CONTENT
                 ).apply {
-                    marginEnd = preference.TAG_BETWEEN
-                    bottomMargin = preference.TAG_BETWEEN
+                    marginEnd = preference.CHIP_BETWEEN
+                    bottomMargin = preference.CHIP_BETWEEN
                 }
             }
             selectedChipDictionary[v] = chip
@@ -260,7 +260,7 @@ class OperatorChartLayout (
             clipToPadding = false
             clipChildren = false
             flexWrap = FlexWrap.WRAP
-            setBackgroundColor(preference.COLOR_PANEL_LIGHT)
+            setBackgroundColor(preference.PANEL_LIGHT_COLOR)
         }
 
         for (tag in tagDictionary!!) {
@@ -281,8 +281,8 @@ class OperatorChartLayout (
                 MarginLayoutParams.WRAP_CONTENT,
                 MarginLayoutParams.WRAP_CONTENT
             )
-            params.marginEnd = preference.TAG_BETWEEN
-            params.bottomMargin = preference.TAG_BETWEEN
+            params.marginEnd = preference.CHIP_BETWEEN
+            params.bottomMargin = preference.CHIP_BETWEEN
             chip.layoutParams = params
 
             upperLayout.addView(chip)
@@ -304,7 +304,7 @@ class OperatorChartLayout (
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
             )
-            setBackgroundColor(preference.COLOR_PANEL_LIGHT)
+            setBackgroundColor(preference.PANEL_LIGHT_COLOR)
         }
         matchedOperatorLayout = LinearLayout(themedContext).apply {
             layoutParams = ViewGroup.LayoutParams(
@@ -331,7 +331,7 @@ class OperatorChartLayout (
             }.also {
                 upperView.layoutParams = it
             }
-            upperView.visibility = if (h < preference.THRESHOLD_FOR_HIDING_OF_TAGS_VIEW)
+            upperView.visibility = if (h < preference.HIDING_OF_TAGS_VIEW_THRESHOLD)
                 GONE else VISIBLE
         }
     }

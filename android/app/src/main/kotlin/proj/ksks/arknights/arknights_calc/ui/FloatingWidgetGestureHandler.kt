@@ -5,10 +5,8 @@ import android.animation.TypeEvaluator
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.PixelFormat
 import android.graphics.Point
@@ -72,12 +70,12 @@ open class FloatingWidgetGestureHandler(private val context: Context):
         @JvmField
         var activated = false
         private val normalStateBackgroundColor = GradientDrawable().apply {
-            setColor(preference.COLOR_BG_NORMAL_STATE)
+            setColor(preference.BG_NORMAL_STATE_COLOR)
             cornerRadius = preference.CORNER_RADIUS
         }
 
         private val activeStateBackgroundColor = GradientDrawable().apply {
-            setColor(preference.COLOR_BG_ACTIVE_STATE)
+            setColor(preference.BG_ACTIVE_STATE_COLOR)
             cornerRadius = preference.CORNER_RADIUS
         }
 
@@ -114,16 +112,16 @@ open class FloatingWidgetGestureHandler(private val context: Context):
                 ContextCompat.getDrawable(context, android.R.drawable.ic_delete)
                     ?.apply {
                         setBounds(0, 0,
-                            preference.SIZE_LEADING_ICON, preference.SIZE_LEADING_ICON)
+                            preference.LEADING_ICON_SIZE, preference.LEADING_ICON_SIZE)
                         colorFilter = PorterDuffColorFilter(
-                            preference.COLOR_FONT, PorterDuff.Mode.SRC_ATOP
+                            preference.FONT_COLOR, PorterDuff.Mode.SRC_ATOP
                         )
                     }, null, null, null
             ) // Set icon to the left
 
-            compoundDrawablePadding = preference.BETWEEN_ICON // Padding between the text and the drawable
+            compoundDrawablePadding = preference.ICON_BETWEEN // Padding between the text and the drawable
 
-            setTextColor(ColorStateList.valueOf(preference.COLOR_FONT))
+            setTextColor(ColorStateList.valueOf(preference.FONT_COLOR))
         }
 
         fun active() {
@@ -210,14 +208,14 @@ open class FloatingWidgetGestureHandler(private val context: Context):
             )
             canvas.drawRoundRect(
                 rectWithMargin, UIPreference.CORNER_RADIUS, UIPreference.CORNER_RADIUS, Paint().apply {
-                    color = preference.COLOR_FILL
+                    color = preference.FILL_COLOR
                     style = Paint.Style.FILL
                 }
             )
 
             canvas.drawRoundRect(
                 rectWithMargin, UIPreference.CORNER_RADIUS, UIPreference.CORNER_RADIUS, Paint().apply {
-                    color = preference.COLOR_STROKE
+                    color = preference.STROKE_COLOR
                     strokeWidth = preference.STROKE_WIDTH
                     style = Paint.Style.STROKE
                 }

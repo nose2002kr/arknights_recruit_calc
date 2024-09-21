@@ -1,7 +1,6 @@
 package proj.ksks.arknights.arknights_calc.ui
 
 import android.content.Context
-import android.graphics.Color.rgb
 import android.graphics.drawable.GradientDrawable
 import android.view.Gravity
 import android.view.View
@@ -42,7 +41,7 @@ abstract class ResizableFloatingView(
             background = GradientDrawable().apply {
                 shape = GradientDrawable.RECTANGLE
                 cornerRadius = UIPreference.CORNER_RADIUS
-                setColor(preference.COLOR_BORDER)
+                setColor(preference.BORDER_COLOR)
             }
         }.also {
             addView(it)
@@ -58,7 +57,7 @@ abstract class ResizableFloatingView(
             background = GradientDrawable().apply {
                 shape = GradientDrawable.RECTANGLE
                 cornerRadius = UIPreference.CORNER_RADIUS
-                setColor(preference.COLOR_PANEL_LIGHT_GRAY)
+                setColor(preference.PANEL_LIGHT_GRAY_COLOR)
             }
         }.also {
             grabLayer.addView(it)
