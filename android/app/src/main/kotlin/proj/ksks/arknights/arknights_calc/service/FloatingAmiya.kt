@@ -29,6 +29,7 @@ import proj.ksks.arknights.arknights_calc.bridge.ChannelManager
 import proj.ksks.arknights.arknights_calc.ui.FloatingWidgetGestureHandler
 import proj.ksks.arknights.arknights_calc.ui.OperatorChartLayout
 import proj.ksks.arknights.arknights_calc.ui.OperatorChartLayout.Listener
+import proj.ksks.arknights.arknights_calc.ui.UIPreference
 import proj.ksks.arknights.arknights_calc.util.fromIntent
 import proj.ksks.arknights.arknights_calc.util.startService
 import proj.ksks.arknights.arknights_calc.util.takeScreenSize
@@ -53,7 +54,6 @@ class FloatingAmiya : Service() {
 
     /* Member */
     private lateinit var mWindowManager : WindowManager
-    private lateinit var mBitmap : Bitmap
     private val addedViews = mutableListOf<View>()
 
     private var screenWidth = 0
@@ -69,7 +69,6 @@ class FloatingAmiya : Service() {
     
     companion object {
         private val ACTION_START = "START"
-        private data class StartParam(val icon:Bitmap?)
 
         private val ACTION_STOP = "STOP"
 
@@ -77,14 +76,12 @@ class FloatingAmiya : Service() {
         private data class ShowPanelParam(val tags: ArrayList<String>?)
 
         fun start(
-            context: Context,
-            icon: Bitmap?
+            context: Context
         ) {
             startService(
                 context,
                 FloatingAmiya::class.java,
-                ACTION_START,
-                StartParam(icon))
+                ACTION_START)
         }
 
         fun stop(
@@ -147,7 +144,7 @@ class FloatingAmiya : Service() {
         intent?: return START_STICKY
 
         when (intent.action) {
-            ACTION_START -> showIcon(StartParam::class.fromIntent(intent).icon!!)
+            ACTION_START -> showIcon()
             ACTION_STOP -> stopSelf()
             ACTION_SHOW_PANEL -> showPanel(ShowPanelParam::class.fromIntent(intent).tags)
         }
@@ -199,8 +196,7 @@ class FloatingAmiya : Service() {
                 backgroundView.elevation = ICON_ELEVATION
 
                 val imageView = ImageView(this@FloatingAmiya)
-                bitmap?.let { mBitmap = it }
-                imageView.setImageBitmap(mBitmap)
+                imageView.setImageBitmap(UIPreference.icon)
                 imageView.elevation = ICON_ELEVATION+1
                 imageView.layoutParams = FrameLayout.LayoutParams(
                     FrameLayout.LayoutParams.MATCH_PARENT,

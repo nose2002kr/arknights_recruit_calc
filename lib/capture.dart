@@ -8,8 +8,6 @@ class ScreenCaptureService {
   }
 
   static Future<void> startProjectionRequest() async {
-    ByteData imageData = await rootBundle.load('assets/sticker-10_small.png');
-    final Uint8List bytes = imageData.buffer.asUint8List();
-    await _channel.invokeMethod('startProjectionRequest', bytes);
+    await _channel.invokeMethod('startProjectionRequest');
   }
 }

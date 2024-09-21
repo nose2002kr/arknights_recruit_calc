@@ -6,7 +6,6 @@ import 'config.dart';
 class ArknightsService {
   static const MethodChannel _channel = MethodChannel('arknights');
 
-
   static Future<List<Map<String, Object>>> _lookupOperator(List<String> tags) async {
     var operators = await lookupOperatorByTags(tags: tags);
     /* operatorMap:
@@ -78,5 +77,11 @@ class ArknightsService {
       }).toList();
       _channel.invokeMethod('listTags', list);
     });
+  }
+
+  static Future<void> sendIcon() async {
+    ByteData imageData = await rootBundle.load('assets/sticker-10_small.png');
+    final Uint8List bytes = imageData.buffer.asUint8List();
+    _channel.invokeMethod('icon', bytes);
   }
 }
