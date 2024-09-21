@@ -61,6 +61,14 @@ class FloatingAmiya : Service() {
     private var screenWidth = 0
     private var screenHeight = 0
 
+    private val rotationReceiver = object: BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent) {
+            if (intent.action == Intent.ACTION_CONFIGURATION_CHANGED) {
+                showIcon()
+            }
+        }
+    }
+
     override fun onCreate() {
         super.onCreate()
         mWindowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
@@ -73,15 +81,14 @@ class FloatingAmiya : Service() {
         }
     }
 
+    override fun onDestroy() {
+        unregisterReceiver(rotationReceiver)
+        removeAllViews()
+    }
+
     private fun registerRotationReceiver() {
         registerReceiver(
-            object: BroadcastReceiver() {
-                override fun onReceive(context: Context?, intent: Intent) {
-                    if (intent.action == Intent.ACTION_CONFIGURATION_CHANGED) {
-                        showIcon()
-                    }
-                }
-            },
+            rotationReceiver,
             IntentFilter(Intent.ACTION_CONFIGURATION_CHANGED))
     }
 
