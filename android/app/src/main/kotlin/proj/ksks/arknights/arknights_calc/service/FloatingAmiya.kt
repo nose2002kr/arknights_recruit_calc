@@ -148,7 +148,7 @@ class FloatingAmiya : Service() {
 
         when (intent.action) {
             ACTION_START -> showIcon(StartParam::class.fromIntent(intent).icon!!)
-            ACTION_STOP -> removeAllViews()
+            ACTION_STOP -> stopSelf()
             ACTION_SHOW_PANEL -> showPanel(ShowPanelParam::class.fromIntent(intent).tags)
         }
         return START_STICKY
