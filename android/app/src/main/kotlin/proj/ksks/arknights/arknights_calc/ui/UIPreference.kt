@@ -14,6 +14,7 @@ object UIPreference {
         val TAG_BETWEEN = 8
 
         val MIN_TAGS_VIEW_HEIGHT = 120
+        val MIN_OPERATORS_VIEW_HEIGHT = 80
         val CONTAINER_SIZE = 400
         val THRESHOLD_FOR_HIDING_OF_TAGS_VIEW = 480
 

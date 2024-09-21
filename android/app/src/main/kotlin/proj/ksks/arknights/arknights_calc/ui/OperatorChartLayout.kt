@@ -76,6 +76,13 @@ class OperatorChartLayout (
                 chipStrokeWidth = preferenceChip.STROKE_THIN_WIDTH
                 chipBackgroundColor = ColorStateList.valueOf(preferenceChip.COLOR_BACKGROUND)
                 chipStrokeColor = ColorStateList.valueOf(color)
+                layoutParams = MarginLayoutParams(
+                    MarginLayoutParams.WRAP_CONTENT,
+                    MarginLayoutParams.WRAP_CONTENT
+                ).apply {
+                    marginEnd = preference.TAG_BETWEEN
+                }
+
                 setOnClickListener { v ->
                     lastClickedChip?.chipBackgroundColor = ColorStateList.valueOf(preferenceChip.COLOR_BACKGROUND)
                     (v as Chip).chipBackgroundColor = ColorStateList.valueOf(preferenceChip.COLOR_BACKGROUND_SELECTED)
@@ -181,10 +188,10 @@ class OperatorChartLayout (
                 layoutParams = MarginLayoutParams(
                     MarginLayoutParams.WRAP_CONTENT,
                     MarginLayoutParams.WRAP_CONTENT
-                    ).apply {
-                        marginEnd = preference.TAG_BETWEEN
-                        bottomMargin = preference.TAG_BETWEEN
-                    }
+                ).apply {
+                    marginEnd = preference.TAG_BETWEEN
+                    bottomMargin = preference.TAG_BETWEEN
+                }
             }
             selectedChipDictionary[v] = chip
             selectedTagLayout.addView(chip)
@@ -283,7 +290,7 @@ class OperatorChartLayout (
         ScrollView(themedContext).apply {
             layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                200,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
             )
             addView(upperLayout)
         }.also {
@@ -304,7 +311,7 @@ class OperatorChartLayout (
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
             )
-            minimumHeight = 70
+            minimumHeight = preference.MIN_OPERATORS_VIEW_HEIGHT
             orientation = LinearLayout.HORIZONTAL
         }
         lowerScrollView.addView(matchedOperatorLayout)
