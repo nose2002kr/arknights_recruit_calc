@@ -1,7 +1,6 @@
 package proj.ksks.arknights.arknights_calc.ui
 
 import android.content.Context
-import android.graphics.Color
 import android.graphics.Color.rgb
 import android.graphics.drawable.GradientDrawable
 import android.view.Gravity
@@ -16,24 +15,22 @@ abstract class ResizableFloatingView(
 
     /* Constant val */
     private val TAG = "ResizableFloatingView"
-    private val MARGIN = 20
-    private val HOLDER_WIDTH = 150
-    private val HOLDER_HEIGHT = 15
+    private val preference = UIPreference.ResizeableFloatingView
 
     /* Member */
     private var container: FrameLayout
 
     abstract fun minimumWidth(): Int
     abstract fun minimumHeight(): Int
-    fun marginForEasierGrab(): Int = MARGIN
-    fun holderWidth(): Int = HOLDER_WIDTH
+    fun marginForEasierGrab(): Int = preference.MARGIN
+    fun holderWidth(): Int = preference.HOLDER_WIDTH
 
     fun addSubView(child: View) {
         container.addView(child)
     }
 
     init {
-        val backgroundLayer = FrameLayout(context).apply {
+        val grabLayer = FrameLayout(context).apply {
             // Set background with rounded corners
             layoutParams = LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -44,8 +41,8 @@ abstract class ResizableFloatingView(
             }
             background = GradientDrawable().apply {
                 shape = GradientDrawable.RECTANGLE
-                cornerRadius = 50f
-                setColor(Color.GRAY)
+                cornerRadius = UIPreference.CORNER_RADIUS
+                setColor(preference.COLOR_BORDER)
             }
         }.also {
             addView(it)
@@ -56,26 +53,26 @@ abstract class ResizableFloatingView(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
             ).apply {
-                setMargins(10)
+                setMargins(preference.BORDER_WIDTH)
             }
             background = GradientDrawable().apply {
                 shape = GradientDrawable.RECTANGLE
-                cornerRadius = 50f
-                setColor(rgb(244,244,244))
+                cornerRadius = UIPreference.CORNER_RADIUS
+                setColor(preference.COLOR_PANEL_LIGHT_GRAY)
             }
         }.also {
-            backgroundLayer.addView(it)
+            grabLayer.addView(it)
         }
 
         View(context).apply {
-            layoutParams = LayoutParams(HOLDER_WIDTH, HOLDER_HEIGHT).apply {
+            layoutParams = LayoutParams(preference.HOLDER_WIDTH, preference.HOLDER_HEIGHT).apply {
                 gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
-                setMargins(MARGIN - 2)
+                setMargins(preference.MARGIN - 2)
             }
             background = GradientDrawable().apply {
                 shape = GradientDrawable.RECTANGLE
-                cornerRadius = 50f
-                setColor(rgb(50, 50, 50))
+                cornerRadius = UIPreference.CORNER_RADIUS
+                setColor(preference.HOLDER_COLOR)
             }
         }.also {
             addView(it)

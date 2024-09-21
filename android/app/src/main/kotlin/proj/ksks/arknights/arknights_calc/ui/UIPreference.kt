@@ -43,10 +43,47 @@ object UIPreference {
         val SIZE = 200
         val SHADOW_MARGIN = 20
         val ELEVATION = 10f
+        val BG_COLOR = Color.WHITE
+    }
+
+    object TerminateIndicator {
+        val COLOR_BG_NORMAL_STATE = Color.parseColor("#FF444444")
+        val COLOR_BG_ACTIVE_STATE = Color.parseColor("#AAD63A31")
+        val CORNER_RADIUS = 34f
+
+        val FONT_SIZE = 22f
+        val COLOR_FONT = Color.WHITE
+
+        val PADDING_LEFT = 26
+        val PADDING_TOP = 16
+        val PADDING_RIGHT = 46
+        val PADDING_BOTTOM = 26
+
+        val SIZE_LEADING_ICON = 60
+        val BETWEEN_ICON = 16
+    }
+
+    object RubberBand {
+        val COLOR_FILL = Color.parseColor("#12818589")
+        val COLOR_STROKE = Color.parseColor("#FF708090")
+
+        val STROKE_WIDTH = 9f
+    }
+
+    object ResizeableFloatingView {
+        val MARGIN = 20
+        val HOLDER_WIDTH = 150
+        val HOLDER_HEIGHT = 15
+        val HOLDER_COLOR: Int = Color.parseColor("#323232")
+
+        val COLOR_PANEL_LIGHT_GRAY: Int = Color.parseColor("#F4F4F4")
+        val BORDER_WIDTH: Int = 10
+        val COLOR_BORDER: Int = Color.GRAY
     }
 
     val COLOR_FONT: Int = Color.BLACK
     val COLOR_FONT_DISABLED: Int = Color.parseColor("#646464")
+    val CORNER_RADIUS = 50f
 
     lateinit var icon: Bitmap
     fun iconIsReadied() = this::icon.isInitialized

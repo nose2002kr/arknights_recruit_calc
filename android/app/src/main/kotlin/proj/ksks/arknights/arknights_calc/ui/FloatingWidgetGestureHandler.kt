@@ -67,16 +67,18 @@ open class FloatingWidgetGestureHandler(private val context: Context):
 
     @SuppressLint("AppCompatCustomView")
     private inner class TerminateIndicator(context: Context) : TextView(context) {
+        private val preference = UIPreference.TerminateIndicator
+
         @JvmField
         var activated = false
         private val normalStateBackgroundColor = GradientDrawable().apply {
-            setColor(Color.parseColor("#FF444444"))
-            cornerRadius = 34f
+            setColor(preference.COLOR_BG_NORMAL_STATE)
+            cornerRadius = preference.CORNER_RADIUS
         }
 
         private val activeStateBackgroundColor = GradientDrawable().apply {
-            setColor(Color.parseColor("#AAD63A31"))
-            cornerRadius = 34f
+            setColor(preference.COLOR_BG_ACTIVE_STATE)
+            cornerRadius = preference.CORNER_RADIUS
         }
 
         inner class GradientDrawableEvaluator : TypeEvaluator<GradientDrawable> {
@@ -94,30 +96,34 @@ open class FloatingWidgetGestureHandler(private val context: Context):
                             endValue.color!!.defaultColor
                         ) as Int
                     )
-                    cornerRadius = 34f
+                    cornerRadius = preference.CORNER_RADIUS
                 }
             }
         }
 
         init {
             text = Tr.QUIT
-            textSize = 22F
+            textSize = preference.FONT_SIZE
             background = normalStateBackgroundColor
-            setPadding(26, 16, 46, 26)
+            setPadding(preference.PADDING_LEFT,
+                preference.PADDING_TOP,
+                preference.PADDING_RIGHT,
+                preference.PADDING_BOTTOM)
 
             setCompoundDrawables(
                 ContextCompat.getDrawable(context, android.R.drawable.ic_delete)
                     ?.apply {
-                        setBounds(0, 0, 60, 60)
+                        setBounds(0, 0,
+                            preference.SIZE_LEADING_ICON, preference.SIZE_LEADING_ICON)
                         colorFilter = PorterDuffColorFilter(
-                            Color.WHITE, PorterDuff.Mode.SRC_ATOP
+                            preference.COLOR_FONT, PorterDuff.Mode.SRC_ATOP
                         )
                     }, null, null, null
             ) // Set icon to the left
 
-            compoundDrawablePadding = 16 // Padding between the text and the drawable
+            compoundDrawablePadding = preference.BETWEEN_ICON // Padding between the text and the drawable
 
-            setTextColor(ColorStateList.valueOf(Color.WHITE))
+            setTextColor(ColorStateList.valueOf(preference.COLOR_FONT))
         }
 
         fun active() {
@@ -188,6 +194,7 @@ open class FloatingWidgetGestureHandler(private val context: Context):
     }
 
     private inner class RubberBand(context: Context): View(context) {
+        private val preference = UIPreference.RubberBand
 
         private var rect: Rect = Rect()
         var floatingWidget: ResizableFloatingView? = null
@@ -202,16 +209,16 @@ open class FloatingWidgetGestureHandler(private val context: Context):
                 (rect.bottom - (floatingWidget?.marginForEasierGrab() ?: 0)).toFloat()
             )
             canvas.drawRoundRect(
-                rectWithMargin, 50f, 50f, Paint().apply {
-                    color = Color.parseColor("#12818589")
+                rectWithMargin, UIPreference.CORNER_RADIUS, UIPreference.CORNER_RADIUS, Paint().apply {
+                    color = preference.COLOR_FILL
                     style = Paint.Style.FILL
                 }
             )
 
             canvas.drawRoundRect(
-                rectWithMargin, 50f, 50f, Paint().apply {
-                    color = Color.parseColor("#FF708090")
-                    strokeWidth = 9f
+                rectWithMargin, UIPreference.CORNER_RADIUS, UIPreference.CORNER_RADIUS, Paint().apply {
+                    color = preference.COLOR_STROKE
+                    strokeWidth = preference.STROKE_WIDTH
                     style = Paint.Style.STROKE
                 }
             )
