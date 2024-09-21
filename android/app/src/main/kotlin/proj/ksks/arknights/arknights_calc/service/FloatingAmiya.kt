@@ -10,9 +10,7 @@ import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.drawable.ShapeDrawable
 import android.graphics.drawable.shapes.OvalShape
-import android.os.Build
 import android.os.IBinder
-import android.os.Parcelable
 import android.util.Log
 import android.view.Gravity
 import android.view.View
@@ -46,11 +44,6 @@ class FloatingAmiya : Service() {
 
     /* Constant val */
     private val TAG = "FloatingAmiya"
-    private val ICON_SIZE = 200
-    private val ICON_SHADOW_MARGIN = 20
-    private val ICON_ELEVATION = 10f
-    private val PANEL_WIDTH = 1200
-    private val PANEL_HEIGHT = 700
 
     /* Member */
     private lateinit var mWindowManager : WindowManager
@@ -161,14 +154,14 @@ class FloatingAmiya : Service() {
                 ) as List<Int?>
             ) {
                 val outerLayoutParams = WindowManager.LayoutParams(
-                    ICON_SIZE,
-                    ICON_SIZE,
+                    UIPreference.Icon.SIZE,
+                    UIPreference.Icon.SIZE,
                     WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
                     WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                     PixelFormat.TRANSLUCENT
                 ).apply {
-                    x = (screenWidth / 2) - (ICON_SIZE / 2)
-                    y = (screenHeight / 2) - (ICON_SIZE / 2)
+                    x = (screenWidth / 2) - (UIPreference.Icon.SIZE / 2)
+                    y = (screenHeight / 2) - (UIPreference.Icon.SIZE / 2)
                 }
 
                 outerLayoutParams.gravity = Gravity.TOP or Gravity.LEFT;
@@ -187,22 +180,22 @@ class FloatingAmiya : Service() {
                     FrameLayout.LayoutParams.MATCH_PARENT,
                     FrameLayout.LayoutParams.MATCH_PARENT
                 ).apply {
-                    setMargins(ICON_SHADOW_MARGIN)
+                    setMargins(UIPreference.Icon.SHADOW_MARGIN)
                 }
 
                 backgroundView.background = ShapeDrawable(OvalShape()).apply {
                     paint.color = Color.WHITE
                 }
-                backgroundView.elevation = ICON_ELEVATION
+                backgroundView.elevation = UIPreference.Icon.ELEVATION
 
                 val imageView = ImageView(this@FloatingAmiya)
                 imageView.setImageBitmap(UIPreference.icon)
-                imageView.elevation = ICON_ELEVATION+1
+                imageView.elevation = UIPreference.Icon.ELEVATION+1
                 imageView.layoutParams = FrameLayout.LayoutParams(
                     FrameLayout.LayoutParams.MATCH_PARENT,
                     FrameLayout.LayoutParams.MATCH_PARENT
                 ).apply {
-                    setMargins(ICON_SHADOW_MARGIN)
+                    setMargins(UIPreference.Icon.SHADOW_MARGIN)
                 }
 
                 frameLayout.setOnTouchListener(gestureHandler)
@@ -261,8 +254,8 @@ class FloatingAmiya : Service() {
                 )
 
                 val outerLayoutParams = WindowManager.LayoutParams(
-                    min(PANEL_WIDTH, screenWidth),
-                    min(PANEL_HEIGHT, screenHeight),
+                    min(UIPreference.OperatorChart.DEFAULT_WIDTH, screenWidth),
+                    min(UIPreference.OperatorChart.DEFAULT_HEIGHT, screenHeight),
                     WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
                     WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                     PixelFormat.TRANSLUCENT
