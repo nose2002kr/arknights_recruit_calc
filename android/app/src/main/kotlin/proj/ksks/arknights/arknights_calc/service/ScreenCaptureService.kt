@@ -17,10 +17,7 @@ import android.media.Image
 import android.media.ImageReader
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
-import android.os.Build
-import android.os.Build.VERSION.SDK_INT
 import android.os.IBinder
-import android.os.Parcelable
 import android.util.Log
 import android.widget.Toast
 import kotlinx.coroutines.CoroutineScope
@@ -29,8 +26,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
 import proj.ksks.arknights.arknights_calc.bridge.Tr
+import proj.ksks.arknights.arknights_calc.util.fromIntent
 import proj.ksks.arknights.arknights_calc.util.imageToBitmap
 import proj.ksks.arknights.arknights_calc.util.ocrBitmap
+import proj.ksks.arknights.arknights_calc.util.startForegroundService
 import proj.ksks.arknights.arknights_calc.util.tagDictionary
 
 class ScreenCaptureService : Service() {
@@ -45,15 +44,56 @@ class ScreenCaptureService : Service() {
     private val TOAST_MESSAGE_CHECK_NOTIICATION = Tr.CHECK_NOTIFICATION
     private val TOAST_MESSAGE_FAILED_TO_CONVERT_CAPTURE = Tr.FAILED_TO_CONVERT_CAPTURE
 
-
     /* Member */
-
     private var mProjectionManager: MediaProjectionManager? = null
     private var mMediaProjection: MediaProjection? = null
     private var mVirtualDisplay: VirtualDisplay? = null
     private var mImageReader: ImageReader? = null
     private var mBitmapIcon : Bitmap? = null
     private var image: Image? = null
+
+    companion object {
+        private val ACTION_START_CAPTURE = "START_SCREEN_CAPTURE"
+        private data class StartParam(val projectionMediaAccepted: Intent?,
+                                      val icon:Bitmap?)
+
+        private val ACTION_STOP_CAPTURE = "STOP_SCREEN_CAPTURE"
+        private val ACTION_CAPTURE = "CAPTURE"
+
+        fun start(
+            context: Context,
+            projectionMediaAccepted: Intent?,
+            icon: Bitmap?
+        ) {
+            startForegroundService(
+                context,
+                ScreenCaptureService::class.java,
+                ACTION_START_CAPTURE,
+                StartParam(icon=icon,
+                    projectionMediaAccepted = projectionMediaAccepted)
+            )
+        }
+
+        fun stop(
+            context: Context,
+        ) {
+            startForegroundService(
+                context,
+                ScreenCaptureService::class.java,
+                ACTION_STOP_CAPTURE
+            )
+        }
+
+        fun capture(
+            context: Context,
+        ) {
+            startForegroundService(
+                context,
+                ScreenCaptureService::class.java,
+                ACTION_CAPTURE
+            )
+        }
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -62,75 +102,33 @@ class ScreenCaptureService : Service() {
     }
 
     private fun launchAmiya(bitmap: Bitmap?) {
-        val intent = Intent(this, FloatingAmiya::class.java)
-        intent.setAction("START")
-        intent.putExtra("icon", bitmap)
-        startService(intent)
-        Log.d(TAG, "Trying to run service.")
+        FloatingAmiya.start(this, bitmap)
     }
 
     private fun closeAmiya() {
-        val intent = Intent(this, FloatingAmiya::class.java)
-        intent.setAction("STOP")
-        startService(intent)
-        Log.d(TAG, "Trying to stop service.")
+        FloatingAmiya.stop(this)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val bitmap: Bitmap? = intent?.getParcelable("icon")
+        intent?: return START_STICKY
 
-        if (intent?.action.equals("START_SCREEN_CAPTURE")) {
-            createNotification(bitmap)
-            launchAmiya(mBitmapIcon)
-            stopScreenCapture()
-            intent?.let { startScreenCapture(it) }
-        } else if (intent?.action.equals("STOP_SCREEN_CAPTURE")) {
-            removeNotification()
-            stopScreenCapture()
-            closeAmiya()
-            stopSelf()
-        } else if (intent?.action.equals("CAPTURE")) {
-            Log.d(TAG, "capture start")
-            var captureBitmap = image?.let { imageToBitmap(it) }
-            if (captureBitmap == null) {
-                Log.i(TAG,"caught the error. try one more again.")
-                captureBitmap = image?.let { imageToBitmap(it) }
-            }
-            if (captureBitmap == null) {
-                Toast.makeText(this, TOAST_MESSAGE_FAILED_TO_CONVERT_CAPTURE, Toast.LENGTH_SHORT).show()
+        when (intent.action) {
+            ACTION_START_CAPTURE -> {
+                val param = StartParam::class.fromIntent(intent)
+                createNotification(param.icon)
                 launchAmiya(mBitmapIcon)
+                stopScreenCapture()
+                startScreenCapture(param.projectionMediaAccepted!!)
             }
-            captureBitmap?.let {
-                ocrBitmap(it) { visionText ->
-                    CoroutineScope(Dispatchers.Main).launch {
-                        while (tagDictionary == null) {
-                            Log.d(TAG, "yield until load tagDictionary")
-                            delay(10)
-                            yield()
-                        }
-                        val matchedTag = ArrayList<String>()
-                        for (block in visionText.textBlocks) {
-                            val blockText: String = block.text
-                            //Log.d(TAG, "recognized text: ${blockText}")
-                            if (tagDictionary!!.contains(blockText.trim())) {
-                                matchedTag.add(blockText.trim())
-                            }
-                        }
-                        Log.d(TAG, "Complete detection.")
-                        if (matchedTag.isEmpty()) {
-                            Toast.makeText(this@ScreenCaptureService, TOAST_MESSAGE_NOT_FOUND_TAGS, Toast.LENGTH_SHORT).show()
-                        }
-                        startService(
-                            Intent(this@ScreenCaptureService, FloatingAmiya::class.java).apply {
-                                action = "SHOW_PANEL"
-                                putExtra("tags", matchedTag)
-                            }
-                        )
-                    }
-                }
-                Log.d(TAG, "capture success")
+            ACTION_STOP_CAPTURE -> {
+                removeNotification()
+                stopScreenCapture()
+                closeAmiya()
+                stopSelf()
             }
-            Log.d(TAG, "capture done")
+            ACTION_CAPTURE-> {
+                captureImage()
+            }
         }
 
         return START_STICKY
@@ -151,7 +149,7 @@ class ScreenCaptureService : Service() {
             .build())
 
         val intent = Intent(this, ScreenCaptureService::class.java).apply {
-            action = "STOP_SCREEN_CAPTURE"
+            action = ACTION_STOP_CAPTURE
         }
         val pendingIntent: PendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
 
@@ -174,11 +172,11 @@ class ScreenCaptureService : Service() {
         manager.cancel(NOTIFI_ID_AMIYA)
     }
 
-    private fun startScreenCapture(intent: Intent) {
+    private fun startScreenCapture(data: Intent) {
         if (mMediaProjection == null) {
             mMediaProjection = mProjectionManager?.getMediaProjection(
                 Activity.RESULT_OK,
-                intent.getParcelable("data")!!
+                data
             )
         }
 
@@ -218,16 +216,50 @@ class ScreenCaptureService : Service() {
         mMediaProjection = null
     }
 
-    override fun onBind(intent: Intent?): IBinder? {
-        return null
+    private fun captureImage() {
+        Log.d(TAG, "capture start")
+        var captureBitmap = image?.let { imageToBitmap(it) }
+        if (captureBitmap == null) {
+            Log.i(TAG, "caught the error. try one more again.")
+            captureBitmap = image?.let { imageToBitmap(it) }
+        }
+        if (captureBitmap == null) {
+            Toast.makeText(this, TOAST_MESSAGE_FAILED_TO_CONVERT_CAPTURE, Toast.LENGTH_SHORT).show()
+            launchAmiya(mBitmapIcon)
+        }
+        captureBitmap?.let {
+            ocrBitmap(it) { visionText ->
+                CoroutineScope(Dispatchers.Main).launch {
+                    while (tagDictionary == null) {
+                        Log.d(TAG, "yield until load tagDictionary")
+                        delay(10)
+                        yield()
+                    }
+                    val matchedTag = ArrayList<String>()
+                    for (block in visionText.textBlocks) {
+                        val blockText: String = block.text
+                        //Log.d(TAG, "recognized text: ${blockText}")
+                        if (tagDictionary!!.contains(blockText.trim())) {
+                            matchedTag.add(blockText.trim())
+                        }
+                    }
+                    Log.d(TAG, "Complete detection.")
+                    if (matchedTag.isEmpty()) {
+                        Toast.makeText(
+                            this@ScreenCaptureService,
+                            TOAST_MESSAGE_NOT_FOUND_TAGS,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                    FloatingAmiya.showPanel(this@ScreenCaptureService, matchedTag)
+                }
+            }
+            Log.d(TAG, "capture success")
+        }
+        Log.d(TAG, "capture done")
     }
 
-    @Suppress("DEPRECATION")
-    private inline fun <reified P : Parcelable> Intent.getParcelable(key: String): P? {
-        return if (SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            getParcelableExtra(key, P::class.java)
-        } else {
-            getParcelableExtra(key)
-        }
+    override fun onBind(intent: Intent?): IBinder? {
+        return null
     }
 }
